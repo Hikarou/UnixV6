@@ -26,4 +26,5 @@ int sector_read(FILE *f, uint32_t sector, void *data) {
       return ERR_IO;
    }
    fread(data, SECTOR_SIZE, 1, f);
+   return 0;
 }
