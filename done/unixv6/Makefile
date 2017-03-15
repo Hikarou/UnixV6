@@ -13,5 +13,7 @@ test-inodes: test-inodes.o test-core.o error.o
 
 sector.o: sector.c error.o
 
+mount.o: mount.c error.o
+
 clean:
 	rm -f *.o
