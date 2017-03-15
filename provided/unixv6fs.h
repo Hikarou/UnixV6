@@ -5,7 +5,7 @@
  * @brief This is the header file from Unix Version 6 that describes the superblock of
  * the file system.
  *
- * This file is an revision from Edouard Bugnion of a file created by
+ * This file is a revision from Edouard Bugnion of a file created by
  * Mendel Rosenblum (Stanford), who derived it himself from the actual
  * UNIX v6 source code.
  *
@@ -32,7 +32,7 @@
  * Superblock sector     | 1              | 1
  * Data block bitmap     | s_fbm_start    | s_fbm_start+s_fbm_size-1
  * inode bitmap          | s_ibm_start    | s_ibm_start+s_ibm_size-1
- * inodes                | s_inode_start  | s_inode_start_s_isize-1
+ * inodes                | s_inode_start  | s_inode_start+s_isize-1
  * data sectors          | s_block_start  | s_fsize
  * -----------------------------------------------------------------
  */
@@ -147,7 +147,7 @@ extern "C" {
 #define PATH_TOKEN '/'
 #define ROOTDIR_NAME "/"
 
-// Max. number of sector locations hold in an inode
+// Max. number of sector locations held in an inode
 #define ADDR_SMALL_LENGTH 8
 
 #define SECTOR_SIZE 512 /* bytes */

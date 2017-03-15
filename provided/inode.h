@@ -16,7 +16,7 @@ extern "C" {
 #endif
 
 /**
- * @brief Return the size of a given inode.
+ * @brief Return the size of a file associated to a given inode.
  *
  *        To save space, the UNIX v6 filesystem stores the maximal
  *        file size (which is 24 bits) in two fields or 8 bits and 16
