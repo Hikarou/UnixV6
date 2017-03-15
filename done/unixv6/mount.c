@@ -36,6 +36,14 @@ int mountv6(const char *filename, struct unix_filesystem *u) {
    if (returnSecRead != 0) {
       return returnSecRead;
    }
+   //travailler avec le data... Besoin de plus d'infos pour la manipulation de void*
+   
+   returnSecRead = sector_read(u -> f, 1, u -> s);
+   if (returnSecRead != 0) {
+      return returnSecRead;
+   }
+
+   return 0;
 }
 
 /**
