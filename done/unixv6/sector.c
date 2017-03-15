@@ -23,7 +23,6 @@
  */
 int sector_read(FILE *f, uint32_t sector, void *data) {
    M_REQUIRE_NON_NULL(f);
-   M_REQUIRE_NON_NULL(data);
    if (fseek(f, sector * SECTOR_SIZE, 0) == -1) {
       return ERR_IO;
    }
