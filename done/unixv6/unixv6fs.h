@@ -202,6 +202,17 @@ struct inode {
     /* TODO WEEK 04:
      * la première chose à faire est de définir cette structure.
      */
+
+	uint16_t i_mode;
+	uint8_t i_nlink;
+	uint8_t i_uid;
+	uint8_t i_gid;
+	uint8_t size0;
+	uint16_t size1;
+	uint16_t i_addr[ADDR_SMALL_LENGTH];
+	uint16_t atime[2];
+	uint16_t mtime[2];	
+	
 };
 
 #define INODES_PER_SECTOR (SECTOR_SIZE / sizeof(struct inode))
