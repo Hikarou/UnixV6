@@ -10,10 +10,13 @@
  */
 
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include "unixv6fs.h"
 #include "bmblock.h"
 #include "error.h"
+#include "mount.h"
+#include "sector.h"
 
 /**
  * @brief  mount a unix v6 filesystem
@@ -23,7 +26,7 @@
  */
 int mountv6(const char *filename, struct unix_filesystem *u) {
    M_REQUIRE_NON_NULL(filename);
-   M_REQUIRE_NON_NULL(unix_filesystem);
+   M_REQUIRE_NON_NULL(u);
    memset(u, 0, sizeof(&u));
    u -> fbm = NULL;
    u -> ibm = NULL;
@@ -31,18 +34,25 @@ int mountv6(const char *filename, struct unix_filesystem *u) {
    if (u -> f == NULL) {
       return ERR_IO;
    }
-   void* data;
-   int returnSecRead = sector_read(u -> f, BOOTBLOCK_SECTOR, data);
+   void* data = NULL;
+   int returnSecRead = ERR_IO;
+   returnSecRead = sector_read(u -> f, BOOTBLOCK_SECTOR, data);
    if (returnSecRead != 0) {
       return returnSecRead;
    }
-   //travailler avec le data... Besoin de plus d'infos pour la manipulation de void*
-   //fseek(data,BOOTBLOCK_MAGIC_NUM_OFFSET,0)
-   returnSecRead = sector_read(u -> f, SUPERBLOCK_SECTOR, u -> s);
+   fseek(data,BOOTBLOCK_MAGIC_NUM_OFFSET,0);
+   uint8_t toCheck;
+   fread(&toCheck, sizeof(BOOTBLOCK_MAGIC_NUM), 1, data);
+   if (toCheck !=BOOTBLOCK_MAGIC_NUM) {
+      return ERR_BADBOOTSECTOR;
+   }
+   void* superblock=NULL;
+   returnSecRead = sector_read(u -> f, SUPERBLOCK_SECTOR, superblock);
    if (returnSecRead != 0) {
       return returnSecRead;
    }
-
+   fseek(superblock, 0, 0);
+   fread(&(u -> s), SECTOR_SIZE, 1, superblock);
    return 0;
 }
 
