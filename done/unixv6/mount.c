@@ -32,13 +32,13 @@ int mountv6(const char *filename, struct unix_filesystem *u) {
       return ERR_IO;
    }
    void* data;
-   int returnSecRead = sector_read(u -> f, 0, data);
+   int returnSecRead = sector_read(u -> f, BOOTBLOCK_SECTOR, data);
    if (returnSecRead != 0) {
       return returnSecRead;
    }
    //travailler avec le data... Besoin de plus d'infos pour la manipulation de void*
-   
-   returnSecRead = sector_read(u -> f, 1, u -> s);
+   //fseek(data,BOOTBLOCK_MAGIC_NUM_OFFSET,0)
+   returnSecRead = sector_read(u -> f, SUPERBLOCK_SECTOR, u -> s);
    if (returnSecRead != 0) {
       return returnSecRead;
    }
