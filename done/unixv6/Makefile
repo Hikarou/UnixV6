@@ -8,7 +8,7 @@ test-core.o: test-core.c error.o
 
 test-inodes.o: test-inodes.c test-core.o error.o
 
-test-inodes: test-inodes.o test-core.o error.o
+test-inodes: test-inodes.o test-core.o error.o mount.o sector.o
 	gcc -o $@ $^
 
 sector.o: sector.c error.o

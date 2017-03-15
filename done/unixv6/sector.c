@@ -5,7 +5,7 @@
  * @brief block-level accessor function.
  *
  * @author José Ferro Pinto
- * @author Marc Favrod
+ * @author Marc Favrod-Coune
  * @date march 2017
  */
 
@@ -23,9 +23,13 @@
  */
 int sector_read(FILE *f, uint32_t sector, void *data) {
    M_REQUIRE_NON_NULL(f);
-   if (fseek(f, sector * SECTOR_SIZE, 0) == -1) {
+   size_t read = 0;
+   if (fseek(f, sector * SECTOR_SIZE, SEEK_SET) == -1) {
       return ERR_IO;
    }
-   fread(data, SECTOR_SIZE, 1, f);
+   read  = fread(data, SECTOR_SIZE, 1, f);
+   if (read == 0){
+   		return ERR_IO;
+   }
    return 0;
 }
