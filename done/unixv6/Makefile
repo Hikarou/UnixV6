@@ -11,5 +11,7 @@ test-inodes.o: test-inodes.c test-core.o error.o
 test-inodes: test-inodes.o test-core.o error.o
 	gcc -o $@ $^
 
+sector.o: sector.c error.o
+
 clean:
 	rm -f *.o
