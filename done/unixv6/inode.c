@@ -30,9 +30,9 @@ int inode_scan_print(const struct unix_filesystem *u)
                 if (inode.i_mode & IALLOC) {
                     ++count;
                     if (inode.i_mode & IFDIR) {
-                        fprintf(output, "Inode %-3d (%s) len %-6d\n", count, SHORT_DIR_NAME, inode_getsize(&inode));
+                        fprintf(output, "Inode %3d (%s) len %6d\n", count, SHORT_DIR_NAME, inode_getsize(&inode));
                     } else {
-                        fprintf(output, "Inode %-3d (%s) len %-6d\n", count, SHORT_FIL_NAME, inode_getsize(&inode));
+                        fprintf(output, "Inode %3d (%s) len %6d\n", count, SHORT_FIL_NAME, inode_getsize(&inode));
                     }
                 }
             }
