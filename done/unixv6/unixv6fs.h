@@ -207,8 +207,8 @@ struct inode {
 	uint8_t i_nlink;
 	uint8_t i_uid;
 	uint8_t i_gid;
-	uint8_t size0;
-	uint16_t size1;
+	uint8_t i_size0;
+	uint16_t i_size1;
 	uint16_t i_addr[ADDR_SMALL_LENGTH];
 	uint16_t atime[2];
 	uint16_t mtime[2];	
