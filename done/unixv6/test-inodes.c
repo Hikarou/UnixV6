@@ -3,9 +3,9 @@
 #include "unixv6fs.h"
 
 int test(struct unix_filesystem *u)
-{	
-	int err = 0;
-	err = inode_scan_print(u);
-	
-	return err;
+{
+    int err = 0;
+    err = inode_scan_print(u);
+
+    return err;
 }

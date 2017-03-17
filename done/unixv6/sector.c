@@ -21,15 +21,16 @@
  * @param data a pointer to 512-bytes of memory (OUT)
  * @return 0 on success; <0 on error
  */
-int sector_read(FILE *f, uint32_t sector, void *data) {
-   M_REQUIRE_NON_NULL(f);
-   size_t read = 0;
-   if (fseek(f, sector * SECTOR_SIZE, SEEK_SET) == -1) {
-      return ERR_IO;
-   }
-   read  = fread(data, SECTOR_SIZE, 1, f);
-   if (read == 0){
-   		return ERR_IO;
-   }
-   return 0;
+int sector_read(FILE *f, uint32_t sector, void *data)
+{
+    M_REQUIRE_NON_NULL(f);
+    size_t read = 0;
+    if (fseek(f, sector * SECTOR_SIZE, SEEK_SET) == -1) {
+        return ERR_IO;
+    }
+    read  = fread(data, SECTOR_SIZE, 1, f);
+    if (read == 0) {
+        return ERR_IO;
+    }
+    return 0;
 }
