@@ -27,5 +27,7 @@ sector.o: sector.c error.o
 
 mount.o: mount.c error.o
 
+filev6.o: filvev6.c mount.o error.o
+
 clean:
 	rm -f *.o
