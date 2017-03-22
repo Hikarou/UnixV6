@@ -13,6 +13,9 @@
 #include "mount.h"
 #include "filev6.h"
 #include "error.h"
+#include "inode.h"
+#include "sector.h"
+
 
 /**
  * @brief open up a file corresponding to a given inode; set offset to zero
@@ -21,21 +24,22 @@
  * @param fv6 the complete filve6 data structure (OUT)
  * @return 0 on success; <0 on errror
  */
-int filev6_open(const struct unix_filesystem *u, uint16_t inr, struct filev6 *fv6) {
-   M_REQUIRE_NON_NULL(u);
-   M_REQUIRE_NON_NULL(fv6);
-   
-   int readReturn = inode_read(u. inr, fv6->i_node);
+int filev6_open(const struct unix_filesystem *u, uint16_t inr, struct filev6 *fv6)
+{
+    M_REQUIRE_NON_NULL(u);
+    M_REQUIRE_NON_NULL(fv6);
 
-   if(readReturn < 0) {
-      return readReturn;
-   }
+    int readReturn = inode_read(u, inr, &fv6 -> i_node);
 
-   fv6->u = u;
-   fv6->i_number = inr;
-   fv6->offset = 0;
+    if(readReturn < 0) {
+        return readReturn;
+    }
 
-   return 0;
+    fv6->u = u;
+    fv6->i_number = inr;
+    fv6->offset = 0;
+
+    return 0;
 }
 
 /**
@@ -52,7 +56,24 @@ int filev6_lseek(struct filev6 *fv6, int32_t offset);
  * @param buf points to SECTOR_SIZE bytes of available memory (OUT)
  * @return >0: the number of bytes of the file read; 0: end of file; <0 error
  */
-int filev6_readblock(struct filev6 *fv6, void *buf);
+int filev6_readblock(struct filev6 *fv6, void *buf)
+{
+    //Already been fully read
+    if (fv6 -> offset == inode_getsize(&fv6 -> i_node)) {
+        return 0;
+    }
+
+    int findSector = inode_findsector(fv6 -> u, &fv6 -> i_node, 0);
+
+    if (findSector < 0) {
+        return findSector;
+    }
+
+    //TODO
+    int sectorRead = sector_read();
+
+    return 0;
+}
 
 /**
  * @brief create a new filev6
