@@ -107,6 +107,13 @@ int inode_alloc(struct unix_filesystem *u);
  */
 int inode_write(struct unix_filesystem *u, uint16_t inr, struct inode *inode);
 
+/**
+ * @brief print inode's content
+ * @param inode (IN)
+ * @return nothing
+ */
+void inode_print(const struct inode* pInode);
+
 #ifdef __cplusplus
 }
 #endif
