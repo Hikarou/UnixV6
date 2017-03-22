@@ -52,3 +52,7 @@ dkms.conf
 
 #astyle
 *.orig
+
+#Linux swap
+*.swp
+
