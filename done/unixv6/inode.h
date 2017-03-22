@@ -11,6 +11,8 @@
 #include "unixv6fs.h"
 #include "mount.h"
 
+//#define INODES_PER_SECTOR 16
+
 #ifdef __cplusplus
 extern "C" {
 #endif
