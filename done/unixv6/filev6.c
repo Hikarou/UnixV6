@@ -26,6 +26,7 @@
  */
 int filev6_open(const struct unix_filesystem *u, uint16_t inr, struct filev6 *fv6)
 {
+    //required_arguments
     M_REQUIRE_NON_NULL(u);
     M_REQUIRE_NON_NULL(fv6);
 
@@ -58,8 +59,13 @@ int filev6_lseek(struct filev6 *fv6, int32_t offset);
  */
 int filev6_readblock(struct filev6 *fv6, void *buf)
 {
+    //required arguments
+    M_REQUIRE_NON_NULL(fv6);
+    M_REQUIRE_NON_NULL(buf);
+
     //Already been fully read
-    if (fv6 -> offset == inode_getsize(&fv6 -> i_node)) {
+    int inodeSize = inode_getsize(&fv6 -> i_node);
+    if (fv6 -> offset == inodeSize) {
         return 0;
     }
 
@@ -69,10 +75,14 @@ int filev6_readblock(struct filev6 *fv6, void *buf)
         return findSector;
     }
 
-    //TODO
-    int sectorRead = sector_read();
+    int sectorRead = sector_read(fv6 -> u -> f,findSector, buf);
 
-    return 0;
+    if (sectorRead <0) {
+	return sectorRead;
+    }
+
+    fv6 -> offset += inodeSize;
+    return inodeSize;
 }
 
 /**
