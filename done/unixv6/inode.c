@@ -12,7 +12,7 @@ int inode_scan_print(const struct unix_filesystem *u)
      * @brief read the content of an inode from disk
      * @param u the filesystem (IN)
      * @param inr the inode number of the inode to read (IN)
-     * @param inode the inode structure, read from disk (OUT)
+     * @param inode the inodePourTestinode structure, read from disk (OUT)
      * @return 0 on success; <0 on error
      */
     uint8_t data[SECTOR_SIZE];
@@ -20,7 +20,7 @@ int inode_scan_print(const struct unix_filesystem *u)
     FILE * output = stdout;
     int count = 0;
     struct inode inode;
-
+	fprintf(output,"\n******INODE SCAN PRINT******\n");
     for (int i = 0; i < u -> s.s_isize; ++i) {
         err = sector_read(u -> f, u -> s.s_inode_start + i, data);
         if (!err) {
@@ -40,31 +40,30 @@ int inode_scan_print(const struct unix_filesystem *u)
         } else {
             i = u -> s.s_isize; // si il y a une erreur on sort de la boucle
         }
-
     }
-
+	fprintf(output,"\n");
     return err;
 }
 
 
-void inode_print(const struct inode* pInode)
+void inode_print(const struct inode* inode, uint16_t inr)
 {
 	FILE* output = stdout;
-	fprintf(output,"**********FS INODE START**********\n");
+	fprintf(output,"\n\n#PRINTING INODE %d\n**********FS INODE START**********\n",inr);
 	
-	if (pInode == NULL){
+	if (inode == NULL){
 		fprintf(output,"NULL ptr\n");
 	}
 	else{
-		fprintf(output,"i_mode : %d\n", pInode -> i_mode);
-		fprintf(output,"i_nlink : %d\n", pInode -> i_nlink);
-		fprintf(output,"i_i_uid : %d\n", pInode -> i_uid);
-		fprintf(output,"i_gid : %d\n", pInode -> i_gid);
-		fprintf(output,"i_size0 : %d\n", pInode -> i_size0);
-		fprintf(output,"i_size1 : %d\n", pInode -> i_size1);
-		fprintf(output,"size : %d\n", inode_getsize(pInode));
+		fprintf(output,"i_mode  : %d\n", inode -> i_mode);
+		fprintf(output,"i_nlink : %d\n", inode -> i_nlink);
+		fprintf(output,"i_i_uid : %d\n", inode -> i_uid);
+		fprintf(output,"i_gid   : %d\n", inode -> i_gid);
+		fprintf(output,"i_size0 : %d\n", inode -> i_size0);
+		fprintf(output,"i_size1 : %d\n", inode -> i_size1);
+		fprintf(output,"size    : %d\n", inode_getsize(inode));
 	}
-	fprintf(output,"***********FS INODE END***********\n");
+	fprintf(output,"***********FS INODE END***********\n\n ");
 }
 
 
@@ -108,4 +107,51 @@ int inode_read(const struct unix_filesystem *u, uint16_t inr, struct inode *inod
 	}
 	
 	return 0;
+}
+
+
+int inode_findsector(const struct unix_filesystem *u, const struct inode *i, int32_t file_sec_off)
+{
+	int nbSector = 0;
+	int32_t size = 0;
+	int err = 0;
+	int adNbSector = 0;
+	uint8_t data[SECTOR_SIZE];
+	
+	if (i -> i_mode & IALLOC){
+		size = inode_getsize(i);
+		if (size < 8*SECTOR_SIZE){
+			nbSector = file_sec_off;
+			if (nbSector > 7){
+				return ERR_OFFSET_OUT_OF_RANGE;
+			}
+			else{
+				return (i -> i_addr[nbSector]);
+			}
+		}
+		else if (size < 7 * ADDRESSES_PER_SECTOR * SECTOR_SIZE ){
+			adNbSector =  file_sec_off/ADDRESSES_PER_SECTOR;
+			nbSector = file_sec_off%ADDRESSES_PER_SECTOR;
+			if (adNbSector > 7){
+				return ERR_OFFSET_OUT_OF_RANGE;
+			}
+			else{
+				err = sector_read(u->f, i->i_addr[adNbSector], data);
+				if (!err){
+					return (data[2*nbSector+1]<<8)+data[2*nbSector];
+				}
+				else{
+					return err;
+				}
+			}
+		}
+		else {
+			return ERR_FILE_TOO_LARGE;
+		}
+	}
+	else{
+		return ERR_UNALLOCATED_INODE;	
+	}
+	
+	
 }
