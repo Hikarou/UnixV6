@@ -63,7 +63,8 @@ int inode_setsize(struct inode *inode, int new_size);
 
 /**
  * @brief prints the content of an inode structure
- * @param inode the inode structure to be displayed
+ * @param inode the inode structure to be displayed 
+ * @param inode number
  */
 void inode_print(const struct inode *inode, uint16_t inr);
 
