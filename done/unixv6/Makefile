@@ -29,7 +29,7 @@ mount.o: mount.c error.o
 
 filev6.o: filev6.c mount.o error.o
 
-sha.o: sha.c sha.h
+sha.o: sha.c inode.o mount.o filev6.o
 
 clean:
 	rm -f *.o
