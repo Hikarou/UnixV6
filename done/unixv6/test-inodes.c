@@ -11,7 +11,7 @@ int test(struct unix_filesystem *u)
     
     
     err = inode_scan_print(u);
-    if (!err){
+    /*if (!err){
     	struct inode inodePourTest;
     	printf("\nEntrez le numero de l'inode: ");
     	scanf("%d", &numeroInode);
@@ -30,7 +30,7 @@ int test(struct unix_filesystem *u)
     			err = numeroSecteur;
     		}
     	}
-    }
+    }*/
 
     return err;
 }
