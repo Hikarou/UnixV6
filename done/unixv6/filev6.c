@@ -64,50 +64,32 @@ int filev6_readblock(struct filev6 *fv6, void *buf)
     M_REQUIRE_NON_NULL(buf);
 
     //Already been fully read
-    /*
-    int inodeSize = inode_getsize(&fv6 -> i_node);
-    if (fv6 -> offset == inodeSize) {
-        return 0;
-    }    MODIFICATIONS */
-	
-	int inodeSize = inode_getsize(&(fv6 -> i_node));
-	
+    int inodeSize = inode_getsize(&(fv6 -> i_node));
+
     if (fv6 -> offset >= inodeSize) {
-    	fv6 -> offset = inodeSize; // ligne ajoutée
+        fv6 -> offset = inodeSize;
         return 0;
     }
-	
-	/*
-    int findSector = inode_findsector(fv6 -> u, &fv6 -> i_node, 0);
-    if (findSector < 0) {
-        return findSector;
-    } MODIFICATIONS */
 
     int findSector = inode_findsector(fv6 -> u, &(fv6 -> i_node), (fv6 -> offset)/SECTOR_SIZE);
     if (findSector < 0) {
         return findSector;
     }
-    
+
     int sectorRead = sector_read(fv6 -> u -> f,findSector, buf);
 
     if (sectorRead <0) {
-		return sectorRead;
+        return sectorRead;
     }
 
-
-	// Ajouté 
-	int diff = inodeSize - fv6 -> offset; 
-	if (diff <= SECTOR_SIZE){ // Si le secteur actuel est le dernier secteur à lire
-		fv6 -> offset = inodeSize;	
-		return diff;
-	}
-	else{
-		fv6 -> offset += SECTOR_SIZE;
-		return SECTOR_SIZE;
-	}
-	/*
-    fv6 -> offset += inodeSize;
-    return inodeSize; MODIFICATIONS */
+    int diff = inodeSize - fv6 -> offset;
+    if (diff <= SECTOR_SIZE) {
+        fv6 -> offset = inodeSize;
+        return diff;
+    } else {
+        fv6 -> offset += SECTOR_SIZE;
+        return SECTOR_SIZE;
+    }
 }
 
 /**

@@ -8,8 +8,8 @@ int test(struct unix_filesystem *u)
     int numeroInode = 0;
     int numeroSecteur = 0;
     int offset = 0;
-    
-    
+
+
     err = inode_scan_print(u);
     /*if (!err){
     	struct inode inodePourTest;

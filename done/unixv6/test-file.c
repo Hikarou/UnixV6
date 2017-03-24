@@ -50,30 +50,30 @@ int main(int argc, char *argv[])
         error = test(&u);
         struct filev6 fichier;
         int inodeNum = 0;
-        
-        printf("\nEntrez le numero de l'inode: ");
-    	scanf("%d", &inodeNum);
-        
-        error = filev6_open(&u,inodeNum,&fichier);
-        
-        if (error >= 0){
-        	// test si c'st un répertoire
-        	uint8_t table[SECTOR_SIZE+1];
-        	printf("****CONTENU DU FICHIER****\n\n");
-        	error = filev6_readblock(&fichier, table);
-        	while (error > 0) {
-		    			    	
 
-	    		table[SECTOR_SIZE] = '\0';
-	    		printf("%s",table);
-		    	error = filev6_readblock(&fichier, table);
-        	}
-        	
-        	printf("\n %d caractères trouvés dans le fichier.\n", fichier.offset);
-        	error = 0;
-        }	
+        printf("\nEntrez le numero de l'inode: ");
+        scanf("%d", &inodeNum);
+
+        error = filev6_open(&u,inodeNum,&fichier);
+
+        if (error >= 0) {
+            // test si c'st un répertoire
+            uint8_t table[SECTOR_SIZE+1];
+            printf("****CONTENU DU FICHIER****\n\n");
+            error = filev6_readblock(&fichier, table);
+            while (error > 0) {
+
+
+                table[SECTOR_SIZE] = '\0';
+                printf("%s",table);
+                error = filev6_readblock(&fichier, table);
+            }
+
+            printf("\n %d caractères trouvés dans le fichier.\n", fichier.offset);
+            error = 0;
+        }
     }
-    
+
     if (error) {
         puts(ERR_MESSAGES[error - ERR_FIRST]);
     }

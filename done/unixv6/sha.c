@@ -55,5 +55,10 @@ void print_sha_from_content(const unsigned char *content, size_t length)
  */
 void print_sha_inode(struct unix_filesystem *u, struct inode inode, int inr)
 {
-    printf("Pas encore implémenté");
+    //Need to check if inode is valid
+    if (inode -> i_mode != IALLOC){
+        return;
+    }
+    printf("SHA inode %zu"
+
 }
