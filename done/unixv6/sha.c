@@ -14,9 +14,11 @@
 #include "mount.h"
 #include "unixv6fs.h"
 #include "sha.h"
+#include "inode.h"
+#include "filev6.h"
 
 /**
- * @brief transforms an array of chars into something readable
+ * @brief transforms an array of chars into something readable given by the exercise
  * @param SHA the sha unreadable (IN)
  * @param sha_string the sha readable (OUT)
  */
@@ -56,9 +58,26 @@ void print_sha_from_content(const unsigned char *content, size_t length)
 void print_sha_inode(struct unix_filesystem *u, struct inode inode, int inr)
 {
     //Need to check if inode is valid
-    if (inode -> i_mode != IALLOC){
+    if (inode.i_mode & IALLOC){
         return;
     }
-    printf("SHA inode %zu"
-
+    printf("SHA inode %d: ", inr);
+    if (inode.i_mode & IFDIR) {
+        printf("no SHA for directories.");
+    } else {
+	uint8_t content[inode_getsize(&inode)*+1];
+        uint8_t subcontent[SECTOR_SIZE+1];
+	int length = 0;
+	struct filev6 f;
+	int error = filev6_open(u, inr, &f);
+	//getting all the content from inode 
+	do {
+            error = filev6_readblock(&f, subcontent);
+	    for(int i = 0; i < error; ++i) {
+               content[length + i] = subcontent[i];
+	    }
+	    length += error;
+	} while(error>= 0);
+        print_sha_from_content(content, length);
+    }
 }
