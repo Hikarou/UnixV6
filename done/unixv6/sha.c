@@ -24,7 +24,7 @@
  */
 static void sha_to_string(const unsigned char *SHA, char *sha_string)
 {
-    if ((SHA == NULL) || (sha_string == NULL)) {
+    if ((SHA == NULL) || (sha_string == NULL)) {   	
         return;
     }
 
@@ -77,7 +77,8 @@ void print_sha_inode(struct unix_filesystem *u, struct inode inode, int inr)
                 content[length + i] = subcontent[i];
             }
             length += error;
-        } while(error>= 0);
+        } while(error> 0);
         print_sha_from_content(content, length);
     }
+    printf("\n");
 }

@@ -117,25 +117,27 @@ int main(int argc, char *argv[])
     struct unix_filesystem u = {0};
     int error = mountv6(argv[1], &u);
     if (error == 0) {
-	mountv6_print_superblock(&u);
-	test(&u);
-        printTheInode(&u, 3, &f);
-	printf("----\n");
-	printTheInode(&u, 5, &f);
+		mountv6_print_superblock(&u);
+		test(&u);
+		    printTheInode(&u, 3, &f);
+		printf("----\n");
+		printTheInode(&u, 5, &f);
 	
-	printf("Listing inodes SHA:\n");
-	uint16_t count = 1;
-	do {
-            struct inode i;
-	    error = inode_read(&u, count, &i);
-	    if (error == 0) {
-                print_sha_inode(&u, i, count);
-	    };
-	    ++count;
-	} while (error == 0);
+		printf("Listing inodes SHA:\n");
+		uint16_t count = 1;
+		
+		struct inode i;
+		error = inode_read(&u, count, &i);
+		
+		while (error == 0) {		
+	    	print_sha_inode(&u, i, count);
+			++count;
+			error = inode_read(&u, count, &i);
+		}
     }
 
     if (error) {
+    	fprintf(stderr, "Error : ");
         puts(ERR_MESSAGES[error - ERR_FIRST]);
     }
     umountv6(&u);
