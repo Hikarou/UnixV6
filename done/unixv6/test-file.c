@@ -49,6 +49,7 @@ void printTheInode(const struct unix_filesystem *u, uint16_t inr, struct filev6 
         printf("Printing inode #%u:\n", inr);
         struct inode i;
 	error = inode_read(u, inr, &i);
+
 	inode_print(&i, inr);
 	if (i.i_mode & IFDIR) {
             printf("which is a directory.\n");
@@ -60,7 +61,7 @@ void printTheInode(const struct unix_filesystem *u, uint16_t inr, struct filev6 
 	    printf("%s\n", table);
 	}
     } else {
-        printf("filve6_open failed for inode #%u", inr);
+        printf("filve6_open failed for inode #%u\n", inr);
     }
 }
 
@@ -121,16 +122,17 @@ int main(int argc, char *argv[])
         printTheInode(&u, 3, &f);
 	printf("----\n");
 	printTheInode(&u, 5, &f);
+	
 	printf("Listing inodes SHA:\n");
-	//TODO
 	uint16_t count = 1;
 	do {
             struct inode i;
 	    error = inode_read(&u, count, &i);
-	    if (error > 0) {
+	    if (error == 0) {
                 print_sha_inode(&u, i, count);
 	    };
-	} while (error > 0);
+	    ++count;
+	} while (error == 0);
     }
 
     if (error) {
