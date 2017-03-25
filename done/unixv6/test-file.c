@@ -69,9 +69,9 @@ int main(int argc, char *argv[])
 {
     // Check the number of args but remove program's name
     check_args(argc - 1);
-
+	/*
     //TODO TEST AS ASKED
-    /*
+    
     struct unix_filesystem u = {0};
     int error = mountv6(argv[1], &u);
     if (error == 0) {
@@ -111,28 +111,32 @@ int main(int argc, char *argv[])
                    *
 
     return error;
-    // */
+     */
     struct filev6 f;
     memset(&f, 255, sizeof(f));
     struct unix_filesystem u = {0};
     int error = mountv6(argv[1], &u);
     if (error == 0) {
 		mountv6_print_superblock(&u);
-		test(&u);
-		    printTheInode(&u, 3, &f);
+		printf("----\n");
+		printTheInode(&u, 3, &f);
 		printf("----\n");
 		printTheInode(&u, 5, &f);
-	
 		printf("Listing inodes SHA:\n");
+		
 		uint16_t count = 1;
 		
 		struct inode i;
 		error = inode_read(&u, count, &i);
 		
-		while (error == 0) {		
+		while (error == 0 || (u.s.s_isize)*INODES_PER_SECTOR < count) {		
 	    	print_sha_inode(&u, i, count);
 			++count;
 			error = inode_read(&u, count, &i);
+		}
+		if (error == ERR_UNALLOCATED_INODE && count >1){ /* puisque le signal d'arrêt est 
+		une erreur, on remet à zero l'errueur car dans ce cas ce n'en est pas une */
+			error = 0;
 		}
     }
 
