@@ -49,7 +49,7 @@ int inode_scan_print(const struct unix_filesystem *u)
 void inode_print(const struct inode* inode, uint16_t inr)
 {
     FILE* output = stdout;
-    fprintf(output,"**********FS INODE START**********\n",inr);
+    fprintf(output,"**********FS INODE START**********\n");
 
     if (inode == NULL) {
         fprintf(output,"NULL ptr\n");
@@ -102,7 +102,6 @@ int inode_read(const struct unix_filesystem *u, uint16_t inr, struct inode *inod
     } else {
         return err;
     }
-
     return 0;
 }
 
@@ -143,6 +142,4 @@ int inode_findsector(const struct unix_filesystem *u, const struct inode *i, int
     } else {
         return ERR_UNALLOCATED_INODE;
     }
-
-
 }
