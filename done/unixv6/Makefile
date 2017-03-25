@@ -20,7 +20,7 @@ test-inodes: test-inodes.o test-core.o error.o mount.o sector.o inode.o
 
 test-file.o: test-file.c test-inodes.o filev6.o error.o mount.o sector.o inode.o
 
-test-file : test-file.o test-inodes.o filev6.o error.o mount.o sector.o inode.o
+test-file : test-file.o test-inodes.o filev6.o error.o mount.o sector.o inode.o sha.o
 	gcc -o $@ $^
 
 sector.o: sector.c error.o
@@ -29,7 +29,7 @@ mount.o: mount.c error.o
 
 filev6.o: filev6.c mount.o error.o
 
-sha.o: sha.c inode.o mount.o filev6.o
+sha.o: sha.c sha.h inode.o mount.o filev6.o
 
 clean:
 	rm -f *.o

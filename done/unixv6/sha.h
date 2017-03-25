@@ -8,6 +8,7 @@
  * @date 11 Oct 2016
  */
 
+#include <openssl/sha.h>
 #include "mount.h"
 #include "unixv6fs.h"
 

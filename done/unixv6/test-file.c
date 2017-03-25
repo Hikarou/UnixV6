@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
             printf("\n %d caractères trouvés dans le fichier.\n", fichier.offset);
             error = 0;
         } else {
-           printf("filev6_open failed %lu");
+           printf("filev6_open failed %lu\n");
 	}
     }
 
@@ -123,6 +123,14 @@ int main(int argc, char *argv[])
 	printTheInode(&u, 5, &f);
 	printf("Listing inodes SHA:\n");
 	//TODO
+	uint16_t count = 1;
+	do {
+            struct inode i;
+	    error = inode_read(&u, count, &i);
+	    if (error > 0) {
+                print_sha_inode(&u, i, count);
+	    };
+	} while (error > 0);
     }
 
     if (error) {
