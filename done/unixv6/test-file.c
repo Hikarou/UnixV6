@@ -52,7 +52,7 @@ void printTheInode(const struct unix_filesystem *u, uint16_t inr, struct filev6 
 
         inode_print(&i, inr);
         if (i.i_mode & IFDIR) {
-            printf("which is a directory.\n");
+            printf("which is a directory.\n\n");
         } else {
             uint8_t table[SECTOR_SIZE+1];
             printf("The first sector of data of which contains:\n");
@@ -78,7 +78,6 @@ int main(int argc, char *argv[])
         mountv6_print_superblock(&u);
         printf("\n");
         printTheInode(&u, 3, &f);
-        printf("\n");
         printTheInode(&u, 5, &f);
         printf("----\n\nListing inodes SHA:\n");
 
