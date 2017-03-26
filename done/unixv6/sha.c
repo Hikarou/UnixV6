@@ -24,7 +24,7 @@
  */
 static void sha_to_string(const unsigned char *SHA, char *sha_string)
 {
-    if ((SHA == NULL) || (sha_string == NULL)) {   	
+    if ((SHA == NULL) || (sha_string == NULL)) {
         return;
     }
 
