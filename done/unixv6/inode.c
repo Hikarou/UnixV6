@@ -5,16 +5,14 @@
 #include "error.h"
 #include "sector.h"
 
-
+/**
+ * @brief read all inodes from disk and print out their content to
+ *        stdout according to the assignment
+ * @param u the filesystem
+ * @return 0 on success; < 0 on error.
+ */
 int inode_scan_print(const struct unix_filesystem *u)
 {
-    /**
-     * @brief read the content of an inode from disk
-     * @param u the filesystem (IN)
-     * @param inr the inode number of the inode to read (IN)
-     * @param inode the inodePourTestinode structure, read from disk (OUT)
-     * @return 0 on success; <0 on error
-     */
     uint8_t data[SECTOR_SIZE];
     int err = 0;
     FILE * output = stdout;
@@ -45,7 +43,11 @@ int inode_scan_print(const struct unix_filesystem *u)
     return err;
 }
 
-
+/**
+ * @brief prints the content of an inode structure
+ * @param inode the inode structure to be displayed
+ * @param inode number
+ */
 void inode_print(const struct inode* inode, uint16_t inr)
 {
     FILE* output = stdout;
@@ -65,7 +67,13 @@ void inode_print(const struct inode* inode, uint16_t inr)
     fprintf(output,"***********FS INODE END***********\n");
 }
 
-
+/**
+ * @brief read the content of an inode from disk
+ * @param u the filesystem (IN)
+ * @param inr the inode number of the inode to read (IN)
+ * @param inode the inodePourTestinode structure, read from disk (OUT)
+ * @return 0 on success; <0 on error
+ */
 int inode_read(const struct unix_filesystem *u, uint16_t inr, struct inode *inode)
 {
     int err = 0;
@@ -105,7 +113,13 @@ int inode_read(const struct unix_filesystem *u, uint16_t inr, struct inode *inod
     return 0;
 }
 
-
+/**
+ * @brief identify the sector that corresponds to a given portion of a file
+ * @param u the filesystem (IN)
+ * @param inode the inode (IN)
+ * @param file_sec_off the offset within the file (in sector-size units)
+ * @return >0: the sector on disk; <0 error
+ */
 int inode_findsector(const struct unix_filesystem *u, const struct inode *i, int32_t file_sec_off)
 {
     int nbSector = 0;
