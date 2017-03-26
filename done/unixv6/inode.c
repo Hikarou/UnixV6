@@ -28,11 +28,13 @@ int inode_scan_print(const struct unix_filesystem *u)
                 inode.i_size1 = (data[k*32+7] << 8) + data[k*32+6];
                 if (inode.i_mode & IALLOC) {
                     ++count;
+                    fprintf(output, "Inode %3d (", count);
                     if (inode.i_mode & IFDIR) {
-                        fprintf(output, "Inode %3d (%s) len %6d\n", count, SHORT_DIR_NAME, inode_getsize(&inode));
+                        fprintf(output, "%s", SHORT_DIR_NAME);
                     } else {
-                        fprintf(output, "Inode %3d (%s) len %6d\n", count, SHORT_FIL_NAME, inode_getsize(&inode));
+                        fprintf(output, "%s", SHORT_FIL_NAME);
                     }
+                    fprintf(output, ") len %6d\n", inode_getsize(&inode));
                 }
             }
         } else {
