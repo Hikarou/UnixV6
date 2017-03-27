@@ -1,0 +1,6 @@
+Submission Failed
+
+preflight check script submit.sh returned error code 2
+stdout: b''
+---
+stderr: b'make: *** No targets specified and no makefile found.  Stop.\n'
