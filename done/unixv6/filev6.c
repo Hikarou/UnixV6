@@ -85,7 +85,7 @@ int filev6_readblock(struct filev6 *fv6, void *buf)
     int diff = inodeSize - fv6 -> offset;
     if (diff <= SECTOR_SIZE) {
         fv6 -> offset = inodeSize;
-        return diff;
+        return 0;
     } else {
         fv6 -> offset += SECTOR_SIZE;
         return SECTOR_SIZE;

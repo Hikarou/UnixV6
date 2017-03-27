@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
             error = inode_read(&u, count, &i);
         }
         if (error == ERR_UNALLOCATED_INODE && count >1) {
-            /* puisque le signal d'arrêt est
+           /*  puisque le signal d'arrêt est
             une erreur, on remet à zero l'errueur car dans ce cas ce n'en est pas une */
             error = 0;
         }
