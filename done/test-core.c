@@ -10,11 +10,12 @@
 #include <stdio.h>
 #include "mount.h"
 #include "error.h"
-#include "test-inodes.h"
 
 #define MIN_ARGS 1
 #define MAX_ARGS 1
 #define USAGE    "test <diskname>"
+
+int test(struct unix_filesystem *u);
 
 void error(const char* message)
 {
