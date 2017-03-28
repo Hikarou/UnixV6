@@ -6,7 +6,7 @@ inode.o: inode.c error.o
 
 error.o: error.c
 
-test-core.o: test-core.c error.o
+test-core.o: test-core.c error.o mount.o test-inodes.o sector.o
 
 test-machin.o: test-machin.c error.o
 
