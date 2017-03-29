@@ -1,6 +1,86 @@
-Submission Failed
+Submission accepted
 
-preflight check script submit.sh returned error code 2
-stdout: 
+stdout: cc -std=c99 -Wall -pedantic   -c -o error.o error.c
+cc -std=c99 -Wall -pedantic   -c -o mount.o mount.c
+cc -std=c99 -Wall -pedantic   -c -o sector.o sector.c
+cc -std=c99 -Wall -pedantic   -c -o test-core.o test-core.c
+cc -std=c99 -Wall -pedantic   -c -o test-inodes.o test-inodes.c
+cc -std=c99 -Wall -pedantic   -c -o inode.o inode.c
+gcc -o test-inodes test-inodes.o test-core.o error.o mount.o sector.o inode.o
+simple test
+*********FS SUPERBLOCK START**********
+s_isize       : 32
+s_fsize       : 1024
+s_fbmsize     : 0
+s_ibmsize     : 0
+s_inode_start : 2
+s_block_start : 34
+s_fbm_start   : 0
+s_ibm_start   : 0
+s_flock       : 0
+s_ilock       : 0
+s_fmod        : 0
+s_ronly       : 0
+s_time        : [0] 0
+*********FS SUPERBLOCK END**********
+
+******INODE SCAN PRINT******
+Inode   1 (DIR) len     16
+Inode   2 (DIR) len     16
+Inode   3 (FIL) len     18
+
+TESTS_BEGINNING
+TESTS_END
+-----
+diff from master
+1,23c1,18
+< *********FS SUPERBLOCK START**********
+< s_isize       : 32
+< s_fsize       : 1024
+< s_fbmsize     : 0
+< s_ibmsize     : 0
+< s_inode_start : 2
+< s_block_start : 34
+< s_fbm_start   : 0
+< s_ibm_start   : 0
+< s_flock       : 0
+< s_ilock       : 0
+< s_fmod        : 0
+< s_ronly       : 0
+< s_time        : [0] 0
+< *********FS SUPERBLOCK END**********
+< 
+< ******INODE SCAN PRINT******
+< Inode   1 (DIR) len     16
+< Inode   2 (DIR) len     16
+< Inode   3 (FIL) len     18
+< 
+< TESTS_BEGINNING
+< TESTS_END
 ---
-stderr: make: *** No targets specified and no makefile found.  Stop.
+> **********FS SUPERBLOCK START**********
+> s_isize             : 32
+> s_fsize             : 1024
+> s_fbmsize           : 0
+> s_ibmsize           : 0
+> s_inode_start       : 2
+> s_block_start       : 34
+> s_fbm_start         : 0
+> s_ibm_start         : 0
+> s_flock             : 0
+> s_ilock             : 0
+> s_fmod              : 0
+> s_ronly             : 0
+> s_time              : [0] 0
+> **********FS SUPERBLOCK END**********
+> inode   1 (DIR) len   16
+> inode   2 (DIR) len   16
+> inode   3 (FIL) len   18
+
+stderr: mount.c:1:9: warning: #pragma once in main file
+ #pragma once
+         ^
+make: Circular test-core.o <- test-inodes.o dependency dropped.
+sector.c:1:9: warning: #pragma once in main file
+ #pragma once
+         ^
