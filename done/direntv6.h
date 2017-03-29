@@ -18,6 +18,10 @@ extern "C" {
 #endif
 
 struct directory_reader {
+   struct filev6 fv6;
+   struct direntv6 dirs[DIRENTRIES_PER_SECTOR]; 
+   int cur ;
+   int last;
     /* TODO WEEK 06:
      * définir cette structure.
      */
