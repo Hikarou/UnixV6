@@ -247,7 +247,7 @@ struct inode {
 #define DIRENT_MAXLEN 14
 
 struct direntv6 {
-    uint16_t d_inumber;
+    uint16_t d_inumber;               //Contains the number of correponding inode
     char   d_name[DIRENT_MAXLEN];     /* NOT null terminated when
                                        * length(filename) == DIRENT_MAXLEN  */
 };

@@ -1,4 +1,4 @@
-CFLAGS = -std=c99 -Wall -pedantic
+CFLAGS = -std=c99 -Wall -pedantic -Wextra -Wfloat-equal -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wconversion -Wunreachable-code
 
 all: test-inodes test-file
 
@@ -38,3 +38,6 @@ sha.o: sha.c sha.h inode.o mount.o filev6.o
 
 clean:
 	rm -f *.o
+
+erase:
+	rm -f test-machin test-inodes test-file test-dirent
