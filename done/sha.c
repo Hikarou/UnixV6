@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <openssl/sha.h>
+#include <string.h>
 #include "mount.h"
 #include "unixv6fs.h"
 #include "sha.h"
@@ -65,7 +66,7 @@ void print_sha_inode(struct unix_filesystem *u, struct inode inode, int inr)
     if (inode.i_mode & IFDIR) {
         printf("no SHA for directories.");
     } else {
-        uint8_t content[inode_getsize(&inode)*+1];
+        uint8_t content[inode_getsize(&inode)+1];
         uint8_t subcontent[SECTOR_SIZE+1];
         int length = 0;
         struct filev6 f;
@@ -77,6 +78,7 @@ void print_sha_inode(struct unix_filesystem *u, struct inode inode, int inr)
                 content[length + i] = subcontent[i];
             }
             length += error;
+            content[length] = 0;
         } while(error> 0);
         print_sha_from_content(content, length);
     }
