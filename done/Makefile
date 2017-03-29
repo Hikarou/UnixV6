@@ -23,6 +23,11 @@ test-file.o: test-file.c test-core.o filev6.o error.o mount.o sector.o inode.o
 test-file : test-file.o test-core.o filev6.o error.o mount.o sector.o inode.o sha.o
 	gcc -o $@ $^ -lcrypto
 
+test-dirent.o: test-dirent.c test-core.o filev6.o unixv6fs.o mount.o
+
+test-dirent: test-dirent.c test-core.o filev6.o unixv6fs.o mount.o
+	gcc -o $@ $^
+
 sector.o: sector.c error.o
 
 mount.o: mount.c error.o
