@@ -13,18 +13,17 @@ int test(struct unix_filesystem *u)
     printf("\nEntrez le numero de l'inode: ");
     scanf("%d", &numeroInode);
     err = inode_read(u, numeroInode, &inodePourTest);
-    if (!err){
-    	inode_print(&inodePourTest,numeroInode);
-    	    printf("\nEntrez l'offset: ");
-    		scanf("%d", &offset);
-    	numeroSecteur = inode_findsector(u,&inodePourTest,offset);
-    	if (numeroSecteur >=0){
-    		printf("\nNumero de secteur: %d.\n", numeroSecteur);
-    	}
-    	else{
-    		printf("Problème, erreur = %d", numeroSecteur);
-    		err = numeroSecteur;
-    	}
+    if (!err) {
+        inode_print(&inodePourTest,numeroInode);
+        printf("\nEntrez l'offset: ");
+        scanf("%d", &offset);
+        numeroSecteur = inode_findsector(u,&inodePourTest,offset);
+        if (numeroSecteur >=0) {
+            printf("\nNumero de secteur: %d.\n", numeroSecteur);
+        } else {
+            printf("Problème, erreur = %d", numeroSecteur);
+            err = numeroSecteur;
+        }
     }
 
     return err;
