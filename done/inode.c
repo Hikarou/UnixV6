@@ -18,7 +18,7 @@ int inode_scan_print(const struct unix_filesystem *u)
     FILE * output = stdout;
     int count = 0;
     struct inode inode;
-    fprintf(output,"\n******INODE SCAN PRINT******\n");
+    //fprintf(output,"\n******INODE SCAN PRINT******\n");
     for (int i = 0; i < u -> s.s_isize; ++i) {
         err = sector_read(u -> f, u -> s.s_inode_start + i, data);
         if (!err) {

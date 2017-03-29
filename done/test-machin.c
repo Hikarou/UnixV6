@@ -1,58 +1,31 @@
-/**
- * @file test-core.c
- * @brief main program to perform tests on disks (mainly for weeks 04 to 06)
- *
- * @author Aurélien Soccard & Jean-Cédric Chappelier
- * @date 15 Oct 2016
- */
-
-#include <stdlib.h>
-#include <stdio.h>
 #include "mount.h"
-#include "error.h"
-#include "test-inodes.h"
+#include "inode.h"
+#include "unixv6fs.h"
 
-#define MIN_ARGS 1
-#define MAX_ARGS 1
-#define USAGE    "test <diskname>"
-
-void error(const char* message)
+int test(struct unix_filesystem *u)
 {
-    fputs(message, stderr);
-    putc('\n', stderr);
-    fputs("Usage: " USAGE, stderr);
-    putc('\n', stderr);
-    exit(1);
-}
+    int err = 0;
+    int numeroInode = 0;
+    int numeroSecteur = 0;
+    int offset = 0;
 
-void check_args(int argc)
-{
-    if (argc < MIN_ARGS) {
-        error("too few arguments:");
+    struct inode inodePourTest;
+    printf("\nEntrez le numero de l'inode: ");
+    scanf("%d", &numeroInode);
+    err = inode_read(u, numeroInode, &inodePourTest);
+    if (!err){
+    	inode_print(&inodePourTest,numeroInode);
+    	    printf("\nEntrez l'offset: ");
+    		scanf("%d", &offset);
+    	numeroSecteur = inode_findsector(u,&inodePourTest,offset);
+    	if (numeroSecteur >=0){
+    		printf("\nNumero de secteur: %d.\n", numeroSecteur);
+    	}
+    	else{
+    		printf("Problème, erreur = %d", numeroSecteur);
+    		err = numeroSecteur;
+    	}
     }
-    if (argc > MAX_ARGS) {
-        error("too many arguments:");
-    }
-}
 
-int main(int argc, char *argv[])
-{
-    // Check the number of args but remove program's name
-    check_args(argc - 1);
-
-    struct unix_filesystem u = {0};
-    int error = mountv6(argv[1], &u);
-    if (error == 0) {
-        mountv6_print_superblock(&u);
-        error = test(&u);
-    }
-    if (error) {
-        puts(ERR_MESSAGES[error - ERR_FIRST]);
-    }
-    umountv6(&u); /* shall umount even if mount failed,
-                   * for instance fopen could have succeeded
-                   * in mount (thus fclose required).
-                   */
-
-    return error;
+    return err;
 }

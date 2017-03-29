@@ -85,7 +85,7 @@ void mountv6_print_superblock(const struct unix_filesystem *u)
 {
     FILE* output = stdout;
 
-    fprintf(output, "*********FS SUPERBLOCK START**********\n");
+    fprintf(output, "**********FS SUPERBLOCK START**********\n");
     fprintf(output, "s_isize       : %" PRIu16 "\n", u -> s.s_isize);
     fprintf(output, "s_fsize       : %" PRIu16 "\n", u -> s.s_fsize);
     fprintf(output, "s_fbmsize     : %" PRIu16 "\n", u -> s.s_fbmsize);
@@ -102,8 +102,8 @@ void mountv6_print_superblock(const struct unix_filesystem *u)
     /* pour la dernière ligne, je ne suis pas sûr s'il veut qu'on affiche entre [] la taille du
      tableau ou simplement les deux cases du tableau (dont la première entre crochet)*/
     //Il faudra faire la vérif dès qu'on a des valeurs qui sont sencées être différentes de 0
-    //ou demander mardi prochain aux assistants
-    fprintf(output, "*********FS SUPERBLOCK END**********\n");
+    //ou demander mardi prochain aux assistants 
+    fprintf(output, "**********FS SUPERBLOCK END**********\n");
 
 }
 
