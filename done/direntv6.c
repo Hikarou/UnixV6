@@ -14,6 +14,8 @@
 #include "filev6.h"
 #include "mount.h"
 
+#define MAXPATHLEN_UV6 ((uint16_t)1024)
+
 /**
  * @brief opens a directory reader for the specified inode 'inr'
  * @param u the mounted filesystem
@@ -85,6 +87,7 @@ int direntv6_readdir(struct directory_reader *d, char *name, uint16_t *child_inr
 
     // tant que readblock ne renvoie pas zero il faut encore lire des secteurs
 
+
     // lire le dir qui  à la position cur, prendre son nom et son nom dans la structure direntv6
 
     if (d -> cur == d -> last) {
@@ -97,6 +100,13 @@ int direntv6_readdir(struct directory_reader *d, char *name, uint16_t *child_inr
 	d -> last = err/sizeof(struct direntv6);
 	for (int i = 0; i < d -> last; ++i) {
             //TODO A finir
+	    //Je ne sais pas du tout si c'est correct cette partie
+	    
+            for (int j = 0; j < DIRENT_MAXLEN; ++j) {
+                f -> dirs[i] -> d_name[j] = data[i * DIRENT_MAXLEN + j];
+	    }
+	    //Pour tester et voir ce qu'il se trouve ici
+	    printf("%s", *(f -> dirs[i] -> d_name));
 	}
     }
 
@@ -104,3 +114,27 @@ int direntv6_readdir(struct directory_reader *d, char *name, uint16_t *child_inr
     return 1;
 }
 
+/**
+ * @brief debugging routine; print the a subtree (note: recursive)
+ * @param u a mounted filesystem
+ * @param inr the root of the subtree
+ * @param prefix the prefix to the subtree
+ * @return 0 on success; <0 on error
+ */
+int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const char *prefix) {
+    M_REQUIRE_NON_NULL(u);
+    M_REQUIRE_NON_NULL(u);
+
+    struct directory_reader d;
+
+    int err = 0;
+
+    err = direntv6_opendir(u, inr, &d);
+    if (err < 0) {
+        return err;
+    }
+    char name [DIRENT_MAXLEN + 1];
+    memset(name, '\0', v, DIRENT_MAXLEN);
+    uint16_t child_inr = 0;
+    err = direntv6_readdir(&d, &name, &child_inr);
+}
