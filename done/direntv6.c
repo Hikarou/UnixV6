@@ -38,10 +38,6 @@ int direntv6_opendir(const struct unix_filesystem *u, uint16_t inr, struct direc
         return err;
     }
 
-    //C'est pas plutôt un && au lieu du || ?
-    //Du coup, j'ai remplacé
-    //if ((fv6.i_node.imode & IALLOC) || !(fv6.i_node.imode & IFDIR)) {
-    //par
     if(!(fiv6.i_node.i_mode & IALLOC) || !(fiv6.i_node.i_mode & IFDIR)) {
         return ERR_INVALID_DIRECTORY_INODE;
     }
@@ -67,12 +63,6 @@ int direntv6_readdir(struct directory_reader *d, char *name, uint16_t *child_inr
 
     M_REQUIRE_NON_NULL(d);
     M_REQUIRE_NON_NULL(name);
-
-    /*if (strlen(name) <= DIRENT_MAXLEN)
-    {
-        return ERR_BAD_PARAMETER;
-    }*/
-
     M_REQUIRE_NON_NULL(child_inr);
 
     int err = 0;
@@ -81,14 +71,16 @@ int direntv6_readdir(struct directory_reader *d, char *name, uint16_t *child_inr
         uint8_t data[SECTOR_SIZE];
         err = filev6_readblock(&(d -> fv6), data);
         if (err <= 0) {
-            return err; // si il n'y a pas de suite, on renvoie 0
+            return err; // s'il n'y a pas de suite, => C'est la fin du fichier donc on renvoie 0
         }
-        // si il y a une suite, on regarde combien de fichiers il y a dans le dossier, et on remplit dirs
+        // s'il y a une suite, on regarde combien de fichiers il y a dans le dossier, et on remplit dirs
         d -> last = err/sizeof(struct direntv6);
         for (d -> cur = 0; (d -> cur) < (d -> last); ++(d -> cur)) {
             // remplir les deux champs de direntv6
-            (d -> dirs[d -> cur]).d_inumber = (data[(d -> cur)*sizeof(struct direntv6) +1] << 8) +  data[(d -> cur)*sizeof(struct direntv6)];
-            strncpy((d -> dirs[d -> cur]).d_name, data + 2 + (d -> cur)*sizeof(struct direntv6), DIRENT_MAXLEN);
+            (d -> dirs[d -> cur]).d_inumber = (data[(d -> cur) * sizeof(struct direntv6) +1] << 8) +
+                                              data[(d -> cur) * sizeof(struct direntv6)];
+            strncpy((d -> dirs[d -> cur]).d_name, data + 2 + (d -> cur) * sizeof(struct direntv6),
+                    DIRENT_MAXLEN);
         }
         d -> cur = 0;
     }
@@ -104,6 +96,13 @@ int direntv6_readdir(struct directory_reader *d, char *name, uint16_t *child_inr
     return 1;
 }
 
+/**
+ * @brief debugging routine; print the a subtree (note: recursive)
+ * @param u a mounted filesystem
+ * @param inr the root of the subtree
+ * @param prefix the prefix to the subtree
+ * @return 0 on success; <0 on error
+ */
 int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const char *prefix)
 {
 
@@ -125,25 +124,24 @@ int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const cha
     if (err != 0) {
         return err;
     }
-    fprintf(output, "\n%s %s/",SHORT_DIR_NAME, prefix);
+    fprintf(output, "\n%s %s/", SHORT_DIR_NAME, prefix);
     do {
         err = direntv6_readdir(&d, name, &nextInode);
         if (err > 0) {
-            errFake = direntv6_opendir(u, nextInode,&dTest);
+            errFake = direntv6_opendir(u, nextInode, &dTest);
             if (errFake == 0) {
 
                 // faire un calloc si nécessaire
-                memCal = strlen(prefix)+ 2 + strlen(name)-MAXPATHLEN_UV6;
+                memCal = strlen(prefix) + 2 + strlen(name) - MAXPATHLEN_UV6;
                 if (memCal > 0) {
                     //realloc du pointeur prefix
-                    prefix = realloc(prefix,MAXPATHLEN_UV6+memCal);
+                    prefix = realloc(prefix, MAXPATHLEN_UV6 + memCal);
                     if (prefix == NULL) {
                         return -40;
                     }
-
                 }
                 // écrire le nom de plus
-                strcat(strcat(prefix, "/"),name);
+                strcat(strcat(prefix, "/"), name);
 
                 err = direntv6_print_tree(u, nextInode, prefix);
 
@@ -154,8 +152,8 @@ int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const cha
                 }
                 // enlever le nom
 
-                size = strlen(prefix)-strlen(name)-2;
-                memset(prefix+size, '\0',1);
+                size = strlen(prefix) - strlen(name) - 2;
+                memset(prefix + size, '\0', 1);
 
                 // si un realloc a été fait: faire un free
                 if (memCal >= 0) {
@@ -165,12 +163,12 @@ int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const cha
                         prefix = NULL;
                         return -40;
                     }
-                    memset(tmp,0,strlen(prefix));
+                    memset(tmp, 0, strlen(prefix));
                     strcpy(tmp, prefix);
 
                     free(prefix);
-                    memset(prefix,0,strlen(tmp));
-                    if (strlen(tmp)+1<MAXPATHLEN_UV6) {
+                    memset(prefix, 0, strlen(tmp));
+                    if (strlen(tmp) + 1 < MAXPATHLEN_UV6) {
                         prefix = malloc(MAXPATHLEN_UV6);
                     } else {
                         prefix = malloc(strlen(tmp));
@@ -180,7 +178,7 @@ int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const cha
                         tmp = NULL;
                         return -40;
                     }
-                    strcpy(prefix,tmp);
+                    strcpy(prefix, tmp);
                     free(tmp);
                     tmp = NULL;
                 }
@@ -194,7 +192,6 @@ int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const cha
         }
 
     } while (err>0);
-
 
     return err;
 }
