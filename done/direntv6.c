@@ -122,10 +122,11 @@ int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const cha
 	
 	err = direntv6_opendir(u, inr, &d);
 	
+	
 	if (err != 0){
 		return err;
 	}
-	
+	fprintf(output, "\n%s %s/",SHORT_DIR_NAME, prefix);
 	do{
 		err = direntv6_readdir(&d, name, &nextInode);  
 		if (err > 0){
@@ -144,10 +145,11 @@ int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const cha
 				}
 				// écrire le nom de plus
 				strcat(strcat(prefix, "/"),name);
-				fprintf(output, "\n%s %s/",SHORT_DIR_NAME, prefix);
+				
 				err = direntv6_print_tree(u, nextInode, prefix);
-				if (err == 1){
-					err = 0;
+				
+				if (err == 0){
+					err = 1;
 				}
 				else{
 					return err;
