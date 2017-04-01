@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int TestDir(struct unix_filesystem *u)
+int test(struct unix_filesystem *u)
 {
     int err = 0;
     

@@ -3,4 +3,4 @@
 #include "direntv6.h"
 
 
-int TestDir(struct unix_filesystem *u);
+int test(struct unix_filesystem *u);

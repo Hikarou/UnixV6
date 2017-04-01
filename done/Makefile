@@ -9,7 +9,7 @@ inode.o: inode.c inode.h sector.o error.o
 
 error.o: error.c error.h
 
-test-core.o: test-core.c error.o test-dirent.o test-inodes.o mount.o 
+test-core.o: test-core.c error.o test-dirent.o mount.o 
 
 test-machin.o: test-machin.c error.o
 
@@ -21,25 +21,25 @@ test-inodes.o: test-inodes.c test-inodes.h mount.o error.o
 test-inodes: test-inodes.o test-core.o error.o mount.o sector.o inode.o
 	gcc -o $@ $^
 
-test-file.o: test-file.c test-file.h test-core.o filev6.o error.o mount.o sector.o inode.o
+test-file.o: test-file.c test-core.o filev6.o error.o mount.o sector.o inode.o
 
 test-file : test-file.o test-core.o filev6.o error.o mount.o sector.o inode.o sha.o
 	gcc -o $@ $^ -lcrypto
 
-test-dirent.o: test-dirent.c test-dirent.h direntv6.o mount.o error.o sector.o
+test-dirent.o: test-dirent.c direntv6.o mount.o error.o sector.o
 
-test-dirent: test-core.o mount.o test-inodes.o test-dirent.o error.o
+test-dirent: test-dirent.o test-core.o mount.o error.o
 	gcc -o $@ $^
 
-direntv6.o: direntv6.c direntv6.h filev6.o error.o
+direntv6.o: direntv6.c filev6.o error.o
 
-sector.o: sector.c sector.h error.o
+sector.o: sector.c error.o
 
-mount.o: mount.c mount.h sector.o inode.o error.o
+mount.o: mount.c sector.o inode.o error.o
 
-filev6.o: filev6.c filev6.h mount.o inode.o error.o
+filev6.o: filev6.c mount.o inode.o error.o
 
-sha.o: sha.c sha.h inode.o mount.o filev6.o
+sha.o: sha.c inode.o mount.o filev6.o
 
 clean:
 	rm -f *.o
