@@ -69,10 +69,10 @@ int direntv6_readdir(struct directory_reader *d, char *name, uint16_t *child_inr
     M_REQUIRE_NON_NULL(d);
     M_REQUIRE_NON_NULL(name);
 
-    if (strlen(name) <= DIRENT_MAXLEN)
+    /*if (strlen(name) <= DIRENT_MAXLEN)
     {
         return ERR_BAD_PARAMETER;
-    }
+    }*/
 
     M_REQUIRE_NON_NULL(child_inr);
 	
@@ -86,7 +86,6 @@ int direntv6_readdir(struct directory_reader *d, char *name, uint16_t *child_inr
 		}
  		// si il y a une suite, on regarde combien de fichiers il y a dans le dossier, et on remplit dirs
 		d -> last = err/sizeof(struct direntv6);
-		
 		for (d -> cur = 0; (d -> cur) < (d -> last); ++(d -> cur)) {
 			// remplir les deux champs de direntv6
 		    (d -> dirs[d -> cur]).d_inumber = (data[(d -> cur)*sizeof(struct direntv6) +1] << 8) +  data[(d -> cur)*sizeof(struct direntv6)];
@@ -129,65 +128,73 @@ int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const cha
 	
 	do{
 		err = direntv6_readdir(&d, name, &nextInode);  
-		errFake = direntv6_opendir(u, nextInode,&dTest);
-		if (errFake == 0){
+		if (err > 0){
+			errFake = direntv6_opendir(u, nextInode,&dTest);
+			if (errFake == 0){
+		
+				// faire un calloc si nécessaire
+				memCal = strlen(prefix)+ 2 + strlen(name)-MAXPATHLEN_UV6;
+				if (memCal > 0){
+					//realloc du pointeur prefix 
+					prefix = realloc(prefix,MAXPATHLEN_UV6+memCal);
+					if (prefix == NULL){
+						return -40;
+					}
 			
-			// faire un calloc si nécessaire
-			memCal = strlen(prefix)+ 2 + strlen(name)-MAXPATHLEN_UV6;
-			if (memCal > 0){
-				//realloc du pointeur prefix 
-				prefix = realloc(prefix,MAXPATHLEN_UV6+memCal);
-				if (prefix == NULL){
-					return -40;
 				}
-				
-			}
-			// écrire le nom de plus
-			strcat(strcat(prefix, "/"),name);
-			fprintf(output, "\nSHORT_DIR_NAME %s/%s/", prefix, name);
-			err = direntv6_print_tree(u, nextInode, prefix);
-			 // enlever le nom
-			size = strlen(prefix)-strlen(name)-2;
-			memset(prefix+size, '\0',1);
-			
-			// si un realloc a été fait: faire un free
-			if (memCal >= 0){
-				tmp = malloc(strlen(prefix));
-				if (tmp == NULL){
-					free(prefix);
-					prefix = NULL;
-					return -40;
-				}
-				memset(tmp,0,strlen(prefix));
-				strcpy(tmp, prefix);
-				
-				free(prefix);
-				memset(prefix,0,strlen(tmp));
-				if (strlen(tmp)+1<MAXPATHLEN_UV6){
-					prefix = malloc(MAXPATHLEN_UV6);
+				// écrire le nom de plus
+				strcat(strcat(prefix, "/"),name);
+				fprintf(output, "\n%s %s/",SHORT_DIR_NAME, prefix);
+				err = direntv6_print_tree(u, nextInode, prefix);
+				if (err == 1){
+					err = 0;
 				}
 				else{
-					prefix = malloc(strlen(tmp));
-				}
-				if (prefix == NULL){
+					return err;
+				} 
+				 // enlever le nom
+				 
+				size = strlen(prefix)-strlen(name)-2;
+				memset(prefix+size, '\0',1);
+		
+				// si un realloc a été fait: faire un free
+				if (memCal >= 0){
+					tmp = malloc(strlen(prefix));
+					if (tmp == NULL){
+						free(prefix);
+						prefix = NULL;
+						return -40;
+					}
+					memset(tmp,0,strlen(prefix));
+					strcpy(tmp, prefix);
+			
+					free(prefix);
+					memset(prefix,0,strlen(tmp));
+					if (strlen(tmp)+1<MAXPATHLEN_UV6){
+						prefix = malloc(MAXPATHLEN_UV6);
+					}
+					else{
+						prefix = malloc(strlen(tmp));
+					}
+					if (prefix == NULL){
+						free(tmp);
+						tmp = NULL;
+						return -40;
+					}
+					strcpy(prefix,tmp);
 					free(tmp);
 					tmp = NULL;
-					return -40;
 				}
-				strcpy(prefix,tmp);
-				free(tmp);
-				tmp = NULL;
+		
+				nextInode = 0;
 			}
-			
-			nextInode = 0;
-		}
-		else if (errFake == ERR_INVALID_DIRECTORY_INODE){
-			fprintf(output, "\nSHORT_FIL_NAME %s/%s", prefix, name);
-		}
-		else{
-			err = errFake;
-		}
-			
+			else if (errFake == ERR_INVALID_DIRECTORY_INODE){
+				fprintf(output, "\n%s %s/%s", SHORT_FIL_NAME, prefix, name);
+			}
+			else{
+				err = errFake;
+			}
+	}			
 		
 	} while (err>0);
 	

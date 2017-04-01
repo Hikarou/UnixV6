@@ -16,9 +16,10 @@ int test(struct unix_filesystem *u)
     }
     else{
     	memset(chaine, 0, MAXPATHLEN_UV6);
-    	memset(chaine, '/',1);
-    	memset(chaine + 1, '\0',1);
+    	memset(chaine, '\0',1);
+ 
     	err = direntv6_print_tree(u,ROOT_INUMBER,chaine);
+    	printf("\n\n");
     	free(chaine);
     }
     

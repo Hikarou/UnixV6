@@ -9,7 +9,7 @@ inode.o: inode.c inode.h sector.o error.o
 
 error.o: error.c error.h
 
-test-core.o: test-core.c error.o test-dirent.o mount.o 
+test-core.o: test-core.c error.o mount.o 
 
 test-machin.o: test-machin.c error.o
 
@@ -28,7 +28,7 @@ test-file : test-file.o test-core.o filev6.o error.o mount.o sector.o inode.o sh
 
 test-dirent.o: test-dirent.c direntv6.o mount.o error.o sector.o
 
-test-dirent: test-dirent.o test-core.o mount.o error.o
+test-dirent: test-dirent.o test-core.o mount.o error.o direntv6.o sector.o filev6.o inode.o
 	gcc -o $@ $^
 
 direntv6.o: direntv6.c filev6.o error.o
