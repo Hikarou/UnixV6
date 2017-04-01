@@ -10,6 +10,7 @@
 
 #include "unixv6fs.h"
 #include "mount.h"
+#include "inode.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -10,12 +10,13 @@
 #include <stdio.h>
 #include "mount.h"
 #include "error.h"
+#include "test-inodes.h"
+#include "test-dirent.h"
 
 #define MIN_ARGS 1
 #define MAX_ARGS 1
 #define USAGE    "test <diskname>"
 
-int test(struct unix_filesystem *u);
 
 void error(const char* message)
 {
@@ -45,7 +46,8 @@ int main(int argc, char *argv[])
     int error = mountv6(argv[1], &u);
     if (error == 0) {
         mountv6_print_superblock(&u);
-        error = test(&u);
+        error = testI(&u);
+        error = TestDir(&u);
     }
     if (error) {
         puts(ERR_MESSAGES[error - ERR_FIRST]);

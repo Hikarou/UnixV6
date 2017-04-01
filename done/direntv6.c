@@ -13,6 +13,10 @@
 #include "unixv6fs.h"
 #include "filev6.h"
 #include "mount.h"
+#include <stdlib.h>
+#include "error.h"
+#include <string.h>
+#include "direntv6.h"
 
 /**
  * @brief opens a directory reader for the specified inode 'inr'
@@ -26,10 +30,10 @@ int direntv6_opendir(const struct unix_filesystem *u, uint16_t inr, struct direc
     M_REQUIRE_NON_NULL(u);
     M_REQUIRE_NON_NULL(d);
 	
-    struct filev6 fv6;
+    struct filev6 fiv6;
     int err = 0;
 
-    err = filev6_open(u, inr, &fv6);
+    err = filev6_open(u, inr, &fiv6);
     if (err!=0) {
         return err;
     }
@@ -38,12 +42,12 @@ int direntv6_opendir(const struct unix_filesystem *u, uint16_t inr, struct direc
     //Du coup, j'ai remplacé
     //if ((fv6.i_node.imode & IALLOC) || !(fv6.i_node.imode & IFDIR)) {
     //par
-    if(!(fv6.i_node.imode & IFDIR))
+    if(!(fiv6.i_node.i_mode & IALLOC) || !(fiv6.i_node.i_mode & IFDIR))
     {
         return ERR_INVALID_DIRECTORY_INODE;
     }
 
-    d -> fv6 = fv6;
+    d -> fv6 = fiv6;
     d -> cur = 0;
     d -> last = 0;
 
@@ -61,9 +65,6 @@ int direntv6_opendir(const struct unix_filesystem *u, uint16_t inr, struct direc
  */
 int direntv6_readdir(struct directory_reader *d, char *name, uint16_t *child_inr)
 {
-    //Dans l'énoncé, il est dit de name que ce nom devrait être correct donc toujours terminer par 
-    //le charactère nul. Est-ce que ça veut dire qu'il faut partir du principe que ce sera toujours
-    //le cas où pas ?
 
     M_REQUIRE_NON_NULL(d);
     M_REQUIRE_NON_NULL(name);
@@ -74,33 +75,123 @@ int direntv6_readdir(struct directory_reader *d, char *name, uint16_t *child_inr
     }
 
     M_REQUIRE_NON_NULL(child_inr);
-
+	
     int err = 0;
-
-    // lire le secteur _: directory_reader -> filev6 -> inode: rad block
-    // slocker le readblock dans dirs
-    // last combien de sous fichier dans le secteur
-    // cur doit valoir 0.
-
-
-    // tant que readblock ne renvoie pas zero il faut encore lire des secteurs
-
-    // lire le dir qui  à la position cur, prendre son nom et son nom dans la structure direntv6
-
-    if (d -> cur == d -> last) {
-	uint8_t data[SECTOR_SIZE];
+	// si on est à la fin du block, on essaie de lire la suite
+    if (d -> cur >= d -> last) {
+		uint8_t data[SECTOR_SIZE];
         err = filev6_readblock(&(d -> fv6), data);
-	if (err <= 0) {
-            return err;
+		if (err <= 0) {
+	       return err; // si il n'y a pas de suite, on renvoie 0
+		}
+ 		// si il y a une suite, on regarde combien de fichiers il y a dans le dossier, et on remplit dirs
+		d -> last = err/sizeof(struct direntv6);
+		
+		for (d -> cur = 0; (d -> cur) < (d -> last); ++(d -> cur)) {
+			// remplir les deux champs de direntv6
+		    (d -> dirs[d -> cur]).d_inumber = (data[(d -> cur)*sizeof(struct direntv6) +1] << 8) +  data[(d -> cur)*sizeof(struct direntv6)];
+		    strncpy((d -> dirs[d -> cur]).d_name, data + 2 + (d -> cur)*sizeof(struct direntv6), DIRENT_MAXLEN);
+		}
+		 d -> cur = 0;
 	}
-        d -> cur = 0;
-	d -> last = err/sizeof(struct direntv6);
-	for (int i = 0; i < d -> last; ++i) {
-            //TODO A finir
-	}
-    }
+	
+	// si on est pas à la fin du block, on lit juste le répertoire suivant
 
+	*child_inr = (d -> dirs[d -> cur]).d_inumber;
+	strncpy(name, (d -> dirs[d -> cur]).d_name, DIRENT_MAXLEN);
+	name[DIRENT_MAXLEN+1] = '\0';	
+
+	++(d -> cur);
 
     return 1;
+}
+
+int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const char *prefix)
+{
+	
+	int err = 0;
+	char name[DIRENT_MAXLEN+1];
+	int nextInode = 0;
+	int errFake = 0;
+	int size = 0;
+	struct directory_reader d;
+	struct directory_reader dTest;
+	
+	int memCal = 0;
+	FILE* output = stdout;
+	char* tmp = NULL;
+	
+	err = direntv6_opendir(u, inr, &d);
+	
+	if (err != 0){
+		return err;
+	}
+	
+	do{
+		err = direntv6_readdir(&d, name, &nextInode);  
+		errFake = direntv6_opendir(u, nextInode,&dTest);
+		if (errFake == 0){
+			
+			// faire un calloc si nécessaire
+			memCal = strlen(prefix)+ 2 + strlen(name)-MAXPATHLEN_UV6;
+			if (memCal > 0){
+				//realloc du pointeur prefix 
+				prefix = realloc(prefix,MAXPATHLEN_UV6+memCal);
+				if (prefix == NULL){
+					return -40;
+				}
+				
+			}
+			// écrire le nom de plus
+			strcat(strcat(prefix, "/"),name);
+			fprintf(output, "\nSHORT_DIR_NAME %s/%s/", prefix, name);
+			err = direntv6_print_tree(u, nextInode, prefix);
+			 // enlever le nom
+			size = strlen(prefix)-strlen(name)-2;
+			memset(prefix+size, '\0',1);
+			
+			// si un realloc a été fait: faire un free
+			if (memCal >= 0){
+				tmp = malloc(strlen(prefix));
+				if (tmp == NULL){
+					free(prefix);
+					prefix = NULL;
+					return -40;
+				}
+				memset(tmp,0,strlen(prefix));
+				strcpy(tmp, prefix);
+				
+				free(prefix);
+				memset(prefix,0,strlen(tmp));
+				if (strlen(tmp)+1<MAXPATHLEN_UV6){
+					prefix = malloc(MAXPATHLEN_UV6);
+				}
+				else{
+					prefix = malloc(strlen(tmp));
+				}
+				if (prefix == NULL){
+					free(tmp);
+					tmp = NULL;
+					return -40;
+				}
+				strcpy(prefix,tmp);
+				free(tmp);
+				tmp = NULL;
+			}
+			
+			nextInode = 0;
+		}
+		else if (errFake == ERR_INVALID_DIRECTORY_INODE){
+			fprintf(output, "\nSHORT_FIL_NAME %s/%s", prefix, name);
+		}
+		else{
+			err = errFake;
+		}
+			
+		
+	} while (err>0);
+	
+
+	return err;
 }
 

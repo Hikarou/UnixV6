@@ -7,7 +7,7 @@
  * @author Edouard Bugnion
  * @date summer 2016
  */
-
+ 
 #include <stdint.h>
 #include "unixv6fs.h"
 #include "filev6.h"
@@ -27,6 +27,8 @@ struct directory_reader {
      */
     int unused; // so that it can compile before WEEK 6
 };
+
+#define MAXPATHLEN_UV6 56
 
 /**
  * @brief opens a directory reader for the specified inode 'inr'
