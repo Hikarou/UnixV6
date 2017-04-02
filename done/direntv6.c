@@ -137,7 +137,7 @@ int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const cha
                     //realloc du pointeur prefix
                     prefix = realloc(prefix, MAXPATHLEN_UV6 + memCal);
                     if (prefix == NULL) {
-                        return -40;
+                        return ERR_NOMEM;
                     }
                 }
                 // écrire le nom de plus
@@ -161,7 +161,7 @@ int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const cha
                     if (tmp == NULL) {
                         free(prefix);
                         prefix = NULL;
-                        return -40;
+                        return ERR_NOMEM;
                     }
                     memset(tmp, 0, strlen(prefix));
                     strcpy(tmp, prefix);
@@ -176,7 +176,7 @@ int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const cha
                     if (prefix == NULL) {
                         free(tmp);
                         tmp = NULL;
-                        return -40;
+                        return ERR_NOMEM;
                     }
                     strcpy(prefix, tmp);
                     free(tmp);
