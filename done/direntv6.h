@@ -28,7 +28,7 @@ struct directory_reader {
     int unused; // so that it can compile before WEEK 6
 };
 
-#define MAXPATHLEN_UV6 56
+#define MAXPATHLEN_UV6 10
 
 /**
  * @brief opens a directory reader for the specified inode 'inr'

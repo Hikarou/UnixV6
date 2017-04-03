@@ -31,7 +31,7 @@ test-dirent.o: test-dirent.c direntv6.o mount.o error.o sector.o
 test-dirent: test-dirent.o test-core.o mount.o error.o direntv6.o sector.o filev6.o inode.o
 	gcc -o $@ $^
 
-direntv6.o: direntv6.c filev6.o error.o
+direntv6.o: direntv6.c direntv6.h filev6.o error.o
 
 sector.o: sector.c error.o
 
