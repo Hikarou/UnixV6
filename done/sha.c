@@ -1,5 +1,3 @@
-#pragma once
-
 /**
  * @file sha.c
  * @brief helpers for the project -- SHA-related part

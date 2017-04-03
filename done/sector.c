@@ -1,5 +1,3 @@
-#pragma once
-
 /**
  * @file  sector.c
  * @brief block-level accessor function.

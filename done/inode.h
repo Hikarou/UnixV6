@@ -10,8 +10,6 @@
 
 #include "unixv6fs.h"
 #include "mount.h"
-#include "error.h"
-//#define INODES_PER_SECTOR 16
 
 #ifdef __cplusplus
 extern "C" {
@@ -64,9 +62,8 @@ int inode_setsize(struct inode *inode, int new_size);
 /**
  * @brief prints the content of an inode structure
  * @param inode the inode structure to be displayed
- * @param inode number
  */
-void inode_print(const struct inode *inode, uint16_t inr);
+void inode_print(const struct inode *inode);
 
 /**
  * @brief read all inodes from disk and print out their content to
@@ -90,7 +87,7 @@ int inode_read(const struct unix_filesystem *u, uint16_t inr, struct inode *inod
  * @param u the filesystem (IN)
  * @param inode the inode (IN)
  * @param file_sec_off the offset within the file (in sector-size units)
- * @return >0: the sector on disk; <0 error
+ * @return >0: the sector on disk;  0: unallocated;  <0 error
  */
 int inode_findsector(const struct unix_filesystem *u, const struct inode *i, int32_t file_sec_off);
 
@@ -109,7 +106,6 @@ int inode_alloc(struct unix_filesystem *u);
  * @return 0 on success; <0 on error
  */
 int inode_write(struct unix_filesystem *u, uint16_t inr, struct inode *inode);
-
 
 #ifdef __cplusplus
 }

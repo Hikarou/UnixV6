@@ -1,5 +1,3 @@
-#pragma once
-
 /**
  * @file filev6.c
  * @brief accessing the UNIX v6 filesystem -- file part of inode/file layer

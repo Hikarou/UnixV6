@@ -6,7 +6,7 @@ int test(struct unix_filesystem *u)
 {
     int err = 0;
 
-    mountv6_print_superblock(u);
+    err = inode_scan_print(u);
 
     return err;
 }

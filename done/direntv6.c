@@ -1,5 +1,3 @@
-#pragma once
-
 /**
  * @file direntv6.c
  * @brief accessing the UNIX v6 filesystem -- directory layer
@@ -77,14 +75,14 @@ int direntv6_readdir(struct directory_reader *d, char *name, uint16_t *child_inr
         d -> last = err/sizeof(struct direntv6);
         for (d -> cur = 0; (d -> cur) < (d -> last); ++(d -> cur)) {
             // remplir les deux champs de direntv6
-            (d -> dirs[d -> cur]).d_inumber = (data[(d -> cur) * sizeof(struct direntv6) +1] << 8) +
-                                              data[(d -> cur) * sizeof(struct direntv6)];
-            strncpy((d -> dirs[d -> cur]).d_name, data + 2 + (d -> cur) * sizeof(struct direntv6),
-                    DIRENT_MAXLEN);
+            int cur = d -> cur;
+            //struct direntv6 curDir = d -> dirs[cur]; Cette simplification ne marche pas... Pourquoi? TODO
+            int curEntry = cur * sizeof(struct direntv6);
+            (d -> dirs[cur]).d_inumber = (data[curEntry +1] << 8) + data[curEntry];
+            strncpy((d -> dirs[cur]).d_name, (char*)(data + 2 + curEntry), DIRENT_MAXLEN);
         }
         d -> cur = 0;
     }
-   
 
     // si on est pas à la fin du block, on lit juste le répertoire suivant
 
@@ -109,16 +107,12 @@ int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const cha
 
     int err = 0;
     char name[DIRENT_MAXLEN+1];
-    int nextInode = 0;
+    uint16_t nextInode = 0;
     int errFake = 0;
-    int size = 0;
-    int sizePrefix = 0;
     struct directory_reader d;
     struct directory_reader dTest;
 
-    int memCal = 0;
     FILE* output = stdout;
-    //char* tmp = NULL;
     char* autre = NULL;
 
     err = direntv6_opendir(u, inr, &d);
@@ -130,41 +124,33 @@ int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const cha
     fprintf(output, "\n%s %s/", SHORT_DIR_NAME, prefix);
     do {
         err = direntv6_readdir(&d, name, &nextInode);
-       
+
         if (err > 0) {
-        	
+
             errFake = direntv6_opendir(u, nextInode, &dTest);
             if (errFake == 0) {
                 // écrire le nom de plus
                 autre = malloc(strlen(prefix) + 2 + strlen(name));
-                if(autre == NULL){
-                	return ERR_NOMEM;
-                 }
+                if(autre == NULL) {
+                    return ERR_NOMEM;
+                }
                 strcpy(autre, prefix);
                 strcat(strcat(autre, "/"), name);
-				
+
                 err = direntv6_print_tree(u, nextInode, autre);
-				 
-                if (err == 0){
+
+                if (err == 0) {
                     err = 1;
                 } else {
                     return err;
                 }
-                // enlever le nom
-			    size = strlen(prefix) - strlen(name)-1;
-                sizePrefix = strlen(prefix);
-                memset(prefix + size, '\0', 1);
-
                 free(autre);
 
                 nextInode = 0;
-            } 
-            else if (errFake == ERR_INVALID_DIRECTORY_INODE) {
-            	//printf("\n%s %s/%s", SHORT_FIL_NAME, prefix, name);
-               fprintf(output, "\n%s %s/%s", SHORT_FIL_NAME, prefix, name);
-            	
-            } 
-            else {
+            } else if (errFake == ERR_INVALID_DIRECTORY_INODE) {
+                fprintf(output, "\n%s %s/%s", SHORT_FIL_NAME, prefix, name);
+
+            } else {
                 err = errFake;
             }
         }

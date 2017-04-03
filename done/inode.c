@@ -18,14 +18,13 @@ int inode_scan_print(const struct unix_filesystem *u)
     FILE * output = stdout;
     int count = 0;
     struct inode inode;
-    //fprintf(output,"\n******INODE SCAN PRINT******\n");
-    for (int i = 0; i < u -> s.s_isize; ++i) {
+    for (uint32_t i = 0; i < u -> s.s_isize; ++i) {
         err = sector_read(u -> f, u -> s.s_inode_start + i, data);
         if (!err) {
-            for (int k = 0; k < INODES_PER_SECTOR; ++k) {
-                inode.i_mode = (data[k*32+1] << 8) + data[k*32];
-                inode.i_size0 = data[k*32+5];
-                inode.i_size1 = (data[k*32+7] << 8) + data[k*32+6];
+            for (uint16_t k = 0; k < INODES_PER_SECTOR; ++k) {
+                inode.i_mode = (uint16_t)((data[k * 32 + 1] << 8) + data[k * 32]);
+                inode.i_size0 = data[k * 32 + 5];
+                inode.i_size1 = (uint16_t)((data[k * 32 + 7] << 8) + data[k * 32 + 6]);
                 if (inode.i_mode & IALLOC) {
                     ++count;
                     fprintf(output, "Inode %3d (", count);
@@ -48,9 +47,8 @@ int inode_scan_print(const struct unix_filesystem *u)
 /**
  * @brief prints the content of an inode structure
  * @param inode the inode structure to be displayed
- * @param inode number
  */
-void inode_print(const struct inode* inode, uint16_t inr)
+void inode_print(const struct inode* inode)
 {
     FILE* output = stdout;
     fprintf(output,"**********FS INODE START**********\n");
@@ -82,28 +80,31 @@ int inode_read(const struct unix_filesystem *u, uint16_t inr, struct inode *inod
     uint8_t data[SECTOR_SIZE];
     size_t nbrInodeSec = 0;
 
-    // regarde de ou à ou commencent les inode
+    // regarde de ou à ou commencent les inodes
     if ((u -> s.s_isize)*INODES_PER_SECTOR < inr) {
         err = ERR_INODE_OUTOF_RANGE;
         return err;
     }
     // Lire le secteur
-    err = sector_read(u -> f, u -> s.s_inode_start + inr/INODES_PER_SECTOR, data);
+    err = sector_read(u -> f, (uint32_t) (u -> s.s_inode_start + inr / INODES_PER_SECTOR), data);
     if (!err) {
         nbrInodeSec = inr%INODES_PER_SECTOR;
-        inode -> i_mode = (data[nbrInodeSec*32+1] << 8) + data[nbrInodeSec*32];
+        inode -> i_mode = (uint16_t)((data[nbrInodeSec*32+1] << 8) + data[nbrInodeSec*32]);
         if (inode -> i_mode & IALLOC) {
             inode -> i_nlink = data[nbrInodeSec*32+2];
             inode -> i_uid = data[nbrInodeSec*32+3];
             inode -> i_gid = data[nbrInodeSec*32+4];
             inode -> i_size0 = data[nbrInodeSec*32+5];
-            inode -> i_size1 = (data[nbrInodeSec*32+7] << 8) + data[nbrInodeSec*32+6];
-            for (int i = 0; i<ADDR_SMALL_LENGTH; ++i) {
-                inode -> i_addr[i] = (data[nbrInodeSec*32+9+2*i] << 8) + data[nbrInodeSec*32+8+2*i];
+            inode -> i_size1 = (uint16_t)((data[nbrInodeSec*32+7] << 8) + data[nbrInodeSec*32+6]);
+            for (size_t i = 0; i<ADDR_SMALL_LENGTH; ++i) {
+                inode -> i_addr[i] = (uint16_t)((data[nbrInodeSec*32+9+2*i] << 8) +
+                                                data[nbrInodeSec*32+8+2*i]);
             }
-            for (int i = 0; i<2; ++i) {
-                inode -> atime[i] = (data[nbrInodeSec*32+25+2*i] << 8) + data[nbrInodeSec*32+24 +2*i];
-                inode -> mtime[i] = (data[nbrInodeSec*32+29+2*i] << 8) + data[nbrInodeSec*32+28 +2*i];
+            for (size_t i = 0; i<2; ++i) {
+                inode -> atime[i] = (uint16_t)((data[nbrInodeSec*32+25+2*i] << 8) +
+                                               data[nbrInodeSec*32+24 +2*i]);
+                inode -> mtime[i] = (uint16_t)((data[nbrInodeSec*32+29+2*i] << 8) +
+                                               data[nbrInodeSec*32+28 +2*i]);
             }
         } else {
             inode = NULL;

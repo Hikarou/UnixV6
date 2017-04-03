@@ -7,7 +7,7 @@
  * @author Edouard Bugnion
  * @date summer 2016
  */
- 
+
 #include <stdint.h>
 #include "unixv6fs.h"
 #include "filev6.h"
@@ -22,7 +22,7 @@ struct directory_reader {
     struct direntv6 dirs[DIRENTRIES_PER_SECTOR];
     int cur ;
     int last;
-    /* 
+    /*
      * TODO : Demander s'il faut enlever le champ unused
      */
     int unused; // so that it can compile before WEEK 6

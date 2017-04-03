@@ -1,5 +1,3 @@
-#pragma once
-
 /**
  * @file mount.h
  * @brief accessing the UNIX v6 filesystem -- core of the first set of assignments
@@ -103,7 +101,7 @@ void mountv6_print_superblock(const struct unix_filesystem *u)
     /* pour la dernière ligne, je ne suis pas sûr s'il veut qu'on affiche entre [] la taille du
      tableau ou simplement les deux cases du tableau (dont la première entre crochet)*/
     //Il faudra faire la vérif dès qu'on a des valeurs qui sont sencées être différentes de 0
-    //ou demander mardi prochain aux assistants
+    //ou demander mardi prochain aux assistants TODO
     fprintf(output, "**********FS SUPERBLOCK END**********\n");
 
 }

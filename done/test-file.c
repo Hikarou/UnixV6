@@ -24,7 +24,7 @@ void printTheInode(const struct unix_filesystem *u, uint16_t inr, struct filev6 
         struct inode i;
         error = inode_read(u, inr, &i);
 
-        inode_print(&i, inr);
+        inode_print(&i);
         if (i.i_mode & IFDIR) {
             printf("which is a directory.\n\n");
         } else {
