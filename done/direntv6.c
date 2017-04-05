@@ -76,10 +76,10 @@ int direntv6_readdir(struct directory_reader *d, char *name, uint16_t *child_inr
         for (d -> cur = 0; (d -> cur) < (d -> last); ++(d -> cur)) {
             // remplir les deux champs de direntv6
             int cur = d -> cur;
-            //struct direntv6 curDir = d -> dirs[cur]; Cette simplification ne marche pas... Pourquoi? TODO
+            struct direntv6 * curDir = &(d -> dirs[cur]);
             int curEntry = cur * sizeof(struct direntv6);
-            (d -> dirs[cur]).d_inumber = (data[curEntry +1] << 8) + data[curEntry];
-            strncpy((d -> dirs[cur]).d_name, (char*)(data + 2 + curEntry), DIRENT_MAXLEN);
+            curDir -> d_inumber = (data[curEntry +1] << 8) + data[curEntry];
+            strncpy(curDir -> d_name, (char*)(data + 2 + curEntry), DIRENT_MAXLEN);
         }
         d -> cur = 0;
     }
