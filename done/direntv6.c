@@ -226,7 +226,7 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
 	if (k != 0){
 		free(name_ref);
 		fprintf(stdout, "\nImpossible to find file: %s", entry);
-		return ERR_BAD_PARAMETER;
+		return ERR_INODE_OUTOF_RANGE;
 	}
 	
 
