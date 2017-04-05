@@ -24,7 +24,7 @@ struct directory_reader {
     int last;
 };
 
-#define MAXPATHLEN_UV6 10
+
 
 /**
  * @brief opens a directory reader for the specified inode 'inr'

@@ -16,6 +16,8 @@
 #include <string.h>
 #include "direntv6.h"
 
+#define MAXPATHLEN_UV6 10
+
 /**
  * @brief opens a directory reader for the specified inode 'inr'
  * @param u the mounted filesystem
@@ -160,4 +162,7 @@ int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const cha
 
     return err;
 }
+
+
+
 
