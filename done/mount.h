@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 #include "unixv6fs.h"
-//#include "bmblock.h"
+#include "bmblock.h"
 
 #ifdef __cplusplus
 extern "C" {
