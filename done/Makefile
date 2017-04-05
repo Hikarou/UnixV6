@@ -1,7 +1,7 @@
 CFLAGS += -std=c99 -Wall -pedantic 
 #Flags given by the teacher to use for testing purpuses (There is actually some output with them)
-CFLAGS += -Wextra -Wfloat-equal -Wshadow -Wpointer-arith -Wbad-function-cast 
-CFLAGS += -Wcast-qual -Wcast-align -Wwrite-strings -Wconversion -Wunreachable-code
+#CFLAGS += -Wextra -Wfloat-equal -Wshadow -Wpointer-arith -Wbad-function-cast 
+#CFLAGS += -Wcast-qual -Wcast-align -Wwrite-strings -Wconversion -Wunreachable-code
 
 all: test-inodes test-file test-dirent
 
@@ -30,6 +30,11 @@ test-dirent.o: test-dirent.c direntv6.o mount.o error.o sector.o
 
 test-dirent: test-dirent.o test-core.o mount.o error.o direntv6.o sector.o filev6.o inode.o
 	gcc -o $@ $^
+	
+test-direntlookup.o: test-direntlookup.c direntv6.o mount.o error.o sector.o
+
+test-direntlookup: test-direntlookup.o test-core.o mount.o error.o direntv6.o sector.o filev6.o inode.o
+	gcc -o $@ $^
 
 direntv6.o: direntv6.c direntv6.h filev6.o error.o
 
@@ -45,4 +50,4 @@ clean:
 	rm -f *.o
 
 erase:
-	rm -f test-machin test-inodes test-file test-dirent
+	rm -f test-machin test-inodes test-file test-dirent test-direntlookup

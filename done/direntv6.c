@@ -164,5 +164,84 @@ int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const cha
 }
 
 
+int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char *entry)
+{
+	int err = 0;
+	int tailleTot = strlen(entry);
+	int taille = 0;
+	int shiftTaille = 0;
+	int k = 0;
+	int inr_next = 0;
+	char* name_ref;
+	char* name_read[DIRENT_MAXLEN+1];
+	
+	// Nom du futur dossier:
+	do{
+		if (entry[k] == '/'){
+			if (taille > 0){
+				shiftTaille = k-taille;
+				k = tailleTot;
+				++taille; // taille contient déjà le \0
+			}	
+		}
+		else{
+			++taille;
+		}
+		++k;
+	} while (k<tailleTot);
+	
+	if (taille == 0){ // il n'y a que des /
+		return 0;
+	}
+	
+	name_ref = malloc(taille-1);
+	if (name_ref == NULL){
+		return ERR_NOMEM;
+	} 
+	for (int i = 0; i< taille-1; ++i){
+		name_ref[i] = entry[shiftTaille + i];
+	}
+	name_ref[taille-1] = '\0';
+	
+	// Recherche du futur dossier ou fichier
+	struct directory_reader d;
+	err = direntv6_opendir(u, inr, &d);
+	if (err){
+		free(name_ref);
+		return err;
+	} 
+	
+	
+	do{
+		err = direntv6_readdir(&d, name_read, &inr_next);
+		k = strncmp( name_ref, name_read, taille-1);
+	} while (err > 0 && k);
+	
+	if (err < 0){
+		free(name_ref);
+		return err;
+	}
+	
+	
+	if (k != 0){
+		free(name_ref);
+		fprintf(stdout, "\nImpossible to find file: %s", entry);
+		return ERR_BAD_PARAMETER;
+	}
+	
 
+	// Ouvrir le prochain dossier ou retourner l'inode number
+	if (tailleTot > shiftTaille + taille){ // il faut encore lire un dossier
+		err = direntv6_dirlookup(u, inr_next, entry+taille+shiftTaille);
+		if (err == 0){
+			err = inr_next;
+		}
+	}
+	else{ // on a le bon fichier
+		err = inr_next;
+	}
+	
+	free(name_ref);
+	return err;
+}
 

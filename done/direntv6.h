@@ -13,6 +13,8 @@
 #include "filev6.h"
 #include "mount.h"
 
+#define MAXPATHLEN_UV6 10 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
