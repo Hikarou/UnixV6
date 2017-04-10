@@ -1,0 +1,147 @@
+Submission accepted
+
+stdout: making (our) test-inodes: 
+cc -std=c99 -Wall -pedantic    -c -o error.o error.c
+cc -std=c99 -Wall -pedantic    -c -o sector.o sector.c
+cc -std=c99 -Wall -pedantic    -c -o inode.o inode.c
+cc -std=c99 -Wall -pedantic    -c -o mount.o mount.c
+cc -std=c99 -Wall -pedantic    -c -o test-inodes.o test-inodes.c
+cc -std=c99 -Wall -pedantic    -c -o test-core.o test-core.c
+gcc -o test-inodes test-inodes.o test-core.o error.o mount.o sector.o inode.o
+test-inodes done.
+making (our) test-file: 
+cc -std=c99 -Wall -pedantic    -c -o filev6.o filev6.c
+cc -std=c99 -Wall -pedantic    -c -o test-file.o test-file.c
+cc -std=c99 -Wall -pedantic    -c -o sha.o sha.c
+gcc -o test-file test-file.o test-core.o filev6.o error.o mount.o sector.o inode.o sha.o -lcrypto
+test-file done.
+making (our) test-dirent: 
+cc -std=c99 -Wall -pedantic    -c -o direntv6.o direntv6.c
+cc -std=c99 -Wall -pedantic    -c -o test-dirent.o test-dirent.c
+gcc -o test-dirent test-dirent.o test-core.o mount.o error.o direntv6.o sector.o filev6.o inode.o
+test-dirent done.
+=====
+testing our test-inodes on disk simple.uv6: done.
+diff from reference:
+16,19c16,18
+< Inode   1 (DIR) len     16
+< Inode   2 (DIR) len     16
+< Inode   3 (FIL) len     18
+< 
+---
+> inode   1 (DIR) len   16
+> inode   2 (DIR) len   16
+> inode   3 (FIL) len   18
+=====
+testing our test-inodes on disk aiw.uv6: done.
+diff from reference:
+16,37c16,36
+< Inode   1 (DIR) len     16
+< Inode   2 (DIR) len     16
+< Inode   3 (DIR) len     32
+< Inode   4 (DIR) len    240
+< Inode   5 (FIL) len  17385
+< Inode   6 (FIL) len    631
+< Inode   7 (FIL) len  11761
+< Inode   8 (FIL) len  11332
+< Inode   9 (FIL) len   9938
+< Inode  10 (FIL) len  14282
+< Inode  11 (FIL) len  12527
+< Inode  12 (FIL) len  14411
+< Inode  13 (FIL) len  13459
+< Inode  14 (FIL) len  14145
+< Inode  15 (FIL) len  13339
+< Inode  16 (FIL) len  12147
+< Inode  17 (FIL) len  10871
+< Inode  18 (FIL) len  12149
+< Inode  19 (FIL) len   1428
+< Inode  20 (DIR) len     16
+< Inode  21 (FIL) len 169856
+< 
+---
+> inode   1 (DIR) len   16
+> inode   2 (DIR) len   16
+> inode   3 (DIR) len   32
+> inode   4 (DIR) len  240
+> inode   5 (FIL) len 17385
+> inode   6 (FIL) len  631
+> inode   7 (FIL) len 11761
+> inode   8 (FIL) len 11332
+> inode   9 (FIL) len 9938
+> inode  10 (FIL) len 14282
+> inode  11 (FIL) len 12527
+> inode  12 (FIL) len 14411
+> inode  13 (FIL) len 13459
+> inode  14 (FIL) len 14145
+> inode  15 (FIL) len 13339
+> inode  16 (FIL) len 12147
+> inode  17 (FIL) len 10871
+> inode  18 (FIL) len 12149
+> inode  19 (FIL) len 1428
+> inode  20 (DIR) len   16
+> inode  21 (FIL) len 169856
+=====
+testing our test-file on disk simple.uv6: done.
+diff from reference:
+21c21
+< i_i_uid : 0
+---
+> i_uid: 0
+26c26
+< ***********FS INODE END***********
+---
+> **********FS INODE END**********
+=====
+testing our test-file on disk aiw.uv6: done.
+diff from reference:
+21c21
+< i_i_uid : 0
+---
+> i_uid: 0
+26c26
+< ***********FS INODE END***********
+---
+> **********FS INODE END**********
+33c33
+< i_i_uid : 0
+---
+> i_uid: 0
+38c38
+< ***********FS INODE END***********
+---
+> **********FS INODE END**********
+=====
+testing our test-dirent on disk simple.uv6: done.
+diff from reference:
+16d15
+< 
+=====
+testing our test-dirent on disk aiw.uv6: done.
+diff from reference:
+16d15
+< 
+
+stderr: sha.c: In function â€˜print_sha_from_contentâ€™:
+sha.c:48:12: warning: format not a string literal and no format arguments [-Wformat-security]
+     printf(sha_string);
+            ^
+direntv6.c: In function â€˜direntv6_dirlookupâ€™:
+direntv6.c:216:30: warning: passing argument 2 of â€˜direntv6_readdirâ€™ from incompatible pointer type [-Wincompatible-pointer-types]
+   err = direntv6_readdir(&d, name_read, &inr_next);
+                              ^
+direntv6.c:61:5: note: expected â€˜char *â€™ but argument is of type â€˜char **â€™
+ int direntv6_readdir(struct directory_reader *d, char *name, uint16_t *child_inr)
+     ^
+direntv6.c:216:41: warning: passing argument 3 of â€˜direntv6_readdirâ€™ from incompatible pointer type [-Wincompatible-pointer-types]
+   err = direntv6_readdir(&d, name_read, &inr_next);
+                                         ^
+direntv6.c:61:5: note: expected â€˜uint16_t * {aka short unsigned int *}â€™ but argument is of type â€˜int *â€™
+ int direntv6_readdir(struct directory_reader *d, char *name, uint16_t *child_inr)
+     ^
+direntv6.c:217:26: warning: passing argument 2 of â€˜strncmpâ€™ from incompatible pointer type [-Wincompatible-pointer-types]
+   k = strncmp( name_ref, name_read, taille-1);
+                          ^
+In file included from direntv6.c:16:0:
+/usr/include/string.h:143:12: note: expected â€˜const char *â€™ but argument is of type â€˜char **â€™
+ extern int strncmp (const char *__s1, const char *__s2, size_t __n)
+            ^
