@@ -45,7 +45,7 @@ void print_sha_from_content(const unsigned char *content, size_t length)
     SHA256(content, length, sha);
     char sha_string[2*SHA256_DIGEST_LENGTH+1];
     sha_to_string(sha, sha_string);
-    printf(sha_string);
+    printf("%s", sha_string);
 }
 
 /**

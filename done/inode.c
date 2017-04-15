@@ -58,13 +58,13 @@ void inode_print(const struct inode* inode)
     } else {
         fprintf(output,"i_mode  : %d\n", inode -> i_mode);
         fprintf(output,"i_nlink : %d\n", inode -> i_nlink);
-        fprintf(output,"i_i_uid : %d\n", inode -> i_uid);
+        fprintf(output,"i_uid   : %d\n", inode -> i_uid);
         fprintf(output,"i_gid   : %d\n", inode -> i_gid);
         fprintf(output,"i_size0 : %d\n", inode -> i_size0);
         fprintf(output,"i_size1 : %d\n", inode -> i_size1);
         fprintf(output,"size    : %d\n", inode_getsize(inode));
     }
-    fprintf(output,"***********FS INODE END***********\n");
+    fprintf(output,"**********FS INODE END**********\n");
 }
 
 /**
