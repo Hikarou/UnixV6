@@ -16,7 +16,7 @@
 #include <string.h>
 #include "direntv6.h"
 
-#define MAXPATHLEN_UV6 10
+#define MAXPATHLEN_UV6 1024
 
 /**
  * @brief opens a directory reader for the specified inode 'inr'

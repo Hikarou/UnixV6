@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAXPATHLEN_UV6 10
+#define MAXPATHLEN_UV6 1024
 
 int test(struct unix_filesystem *u)
 {
