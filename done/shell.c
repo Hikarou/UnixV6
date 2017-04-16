@@ -2,6 +2,8 @@
 #include "mount.h"
 #include "sector.h"
 
+#define MAX_READ = 255;
+
 struct unix_filesystem u;
 
 typedef int (*shell_fct)(char* fct);
@@ -110,7 +112,11 @@ int do_add(char* args){
 int main(void) {
     int quit = 0;
     while (!feof(stdin) && !ferror(stdin) && !quit) {
-
+        const char in[];
+	fgets(in, MAX_READ, stdin);
+	char* p;
+	if ((p = strnchr(buf, '\n'))) *p = '\0';
+	in[MAX_READ - 1] = '\0';
     }
 
     return 0;
