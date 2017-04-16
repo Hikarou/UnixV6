@@ -14,7 +14,7 @@ int test(struct unix_filesystem *u)
     scanf("%d", &numeroInode);
     err = inode_read(u, numeroInode, &inodePourTest);
     if (!err) {
-        inode_print(&inodePourTest,numeroInode);
+        inode_print(&inodePourTest);
         printf("\nEntrez l'offset: ");
         scanf("%d", &offset);
         numeroSecteur = inode_findsector(u,&inodePourTest,offset);

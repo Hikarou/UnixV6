@@ -3,7 +3,7 @@ CFLAGS += -std=c99 -Wall -pedantic
 #CFLAGS += -Wextra -Wfloat-equal -Wshadow -Wpointer-arith -Wbad-function-cast 
 #CFLAGS += -Wcast-qual -Wcast-align -Wwrite-strings -Wconversion -Wunreachable-code
 
-all: test-inodes test-file test-dirent
+all: test-inodes test-file test-dirent shell
 
 inode.o: inode.c inode.h sector.o error.o
 
@@ -36,6 +36,11 @@ test-direntlookup.o: test-direntlookup.c direntv6.o mount.o error.o sector.o
 test-direntlookup: test-direntlookup.o test-core.o mount.o error.o direntv6.o sector.o filev6.o inode.o
 	gcc -o $@ $^
 
+shell.o: shell.c mount.o sector.o
+
+shell: shell.o mount.o sector.o
+	gcc -o $@ $^
+
 direntv6.o: direntv6.c direntv6.h filev6.o error.o
 
 sector.o: sector.c error.o
@@ -50,4 +55,4 @@ clean:
 	rm -f *.o
 
 erase:
-	rm -f test-machin test-inodes test-file test-dirent test-direntlookup
+	rm -f test-machin test-inodes test-file test-dirent test-direntlookup shell
