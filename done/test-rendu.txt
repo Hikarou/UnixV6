@@ -1,0 +1,2 @@
+ mount simple.uv6
+ exit

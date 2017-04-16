@@ -39,6 +39,7 @@ int do_mkdir(char*);
 int do_add(char*);
 
 struct shell_map shell_cmds[] = {
+    {"help", do_help, "display this help.", 0, NULL},
     {"exit", do_exit, "exit shell.", 0, NULL},
     {"quit", do_exit, "exit shell.", 0, NULL},
     {"mkfs", do_mkfs, "create a new filesystem.", 3, "<diskname> <#inodes> <#blocks>"},
@@ -50,7 +51,7 @@ struct shell_map shell_cmds[] = {
     {"istat", do_istat, "display information about the provided inode.", 1, "<inode_nr>"},
     {"inode", do_inode, "display the inode number of a file.", 1, "<pathname>"},
     {"sha", do_sha, "display the SHA of a file.", 1, "<pathname>"},
-    {"psb", do_psb, "Print SuperBlock of the currently mounted filesystem.", 0, ""}
+    {"psb", do_psb, "Print SuperBlock of the currently mounted filesystem.", 0, NULL}
 };
 
 int tokenize_input (char* input, char ** parsed) {
