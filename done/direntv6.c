@@ -171,7 +171,7 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
 	int taille = 0;
 	int shiftTaille = 0;
 	int k = 0;
-	int inr_next = 0;
+	uint16_t inr_next = 0;
 	char* name_ref;
 	char name_read[DIRENT_MAXLEN+1]; // changé de char* name_read[DIRENT_MAXLEN+1]
 	
