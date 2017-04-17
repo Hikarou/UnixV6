@@ -1,12 +1,20 @@
 #include <stdio.h>
+#include <string.h>
 #include "mount.h"
 #include "sector.h"
+#include "direntv6.h"
 
-#define MAX_READ = 255;
+#define MAX_READ 255
+#define NB_CMDS 13
+#define ERR_OK 0
+#define EXIT 1
+#define ERR_ARGS 2
+#define ERR_NOT_MOUNTED 3
+#define NOT_IMPLEMENTED 4
 
 struct unix_filesystem u;
 
-typedef int (*shell_fct)(char* fct);
+typedef int (*shell_fct)(char** fct);
 
 struct shell_map {
     const char* name;    // nom de la commande
@@ -20,27 +28,27 @@ int do_exit();
 
 int do_help();
 
-int do_mount();
+int do_mount(char**);
 
 int do_lsall();
 
 int do_psb();
 
-int do_cat(char*);
+int do_cat(char**);
 
-int do_sha(char*);
+int do_sha(char**);
 
-int do_inode (char*);
+int do_inode (char**);
 
-int do_istat(char*);
+int do_istat(char**);
 
-int do_mkfs(char*);
+int do_mkfs(char**);
 
-int do_mkdir(char*);
+int do_mkdir(char**);
 
-int do_add(char*);
+int do_add(char**);
 
-struct shell_map shell_cmds[] = {
+struct shell_map shell_cmds[NB_CMDS] = {
     {"help", do_help, "display this help.", 0, NULL},
     {"exit", do_exit, "exit shell.", 0, NULL},
     {"quit", do_exit, "exit shell.", 0, NULL},
@@ -57,67 +65,89 @@ struct shell_map shell_cmds[] = {
 };
 
 int tokenize_input (char* input, char ** parsed) {
-    return 0;
+    if (input == NULL || parsed == NULL) {
+        return ERR_ARGS;
+    }
+    return ERR_OK;
 }
 
 int do_exit() {
-    return 1;
+    return EXIT;
 }
 
 int do_help() {
-    
-    return 0;
+    for (int i = 0; i < NB_CMDS; ++i) {
+        printf("- %s", shell_cmds[i].name);
+	if (shell_cmds[i].argc > 0) {
+            printf(" %s", shell_cmds[i].args);
+	}
+	printf(": %s\n", shell_cmds[i].help);
+    }
+    return ERR_OK;
 }
 
-int do_mount() {
-    return 0;
+int do_mount(char** args) {
+    if (args == NULL) {
+        return ERR_ARGS;
+    }
+    return mountv6(args[0], &u);
 }
 
 int do_lsall() {
-    return 0;
+    //Comment tester que u soit bien mounté?
+    //if (u == NULL) {
+    //    return ERR_NOT_MOUNTED;
+    //}
+    return direntv6_print_tree(&u, ROOT_INUMBER, "");
 }
 
 int do_psb() {
-    return 0;
+    //Même question que juste au dessus
+    //if (u == NULL) {
+    //    return ERR_NOT_MOUNTED;
+    //}
+    mountv6_print_superblock(&u);
+    return ERR_OK;
 }
 
-int do_cat(char* pathname) {
-    return 0;
+int do_cat(char** args) {
+    
+    return ERR_OK;
 }
 
-int do_sha(char* pathname) {
-    return 0;
+int do_sha(char** args) {
+    return ERR_OK;
 }
 
-int do_inode (char* pathname) {
-    return 0;
+int do_inode (char** args) {
+    return ERR_OK;
 }
 
-int do_istat(char* inr) {
-    return 0;
+int do_istat(char** args) {
+    return ERR_OK;
 }
 
-int do_mkfs(char* args){
-    return 0;
+int do_mkfs(char** args){
+    return ERR_OK;
 }
 
-int do_mkdir(char* dirname){
-    return 0;
+int do_mkdir(char** args){
+    return ERR_OK;
 }
 
-int do_add(char* args){
-    return 0;
+int do_add(char** args){
+    return ERR_OK;
 }
 
 int main(void) {
     int quit = 0;
     while (!feof(stdin) && !ferror(stdin) && !quit) {
-        const char in[];
+        char in[MAX_READ];
 	fgets(in, MAX_READ, stdin);
 	char* p;
-	if ((p = strnchr(buf, '\n'))) *p = '\0';
+	if ((p = strchr(in, '\n'))) *p = '\0';
 	in[MAX_READ - 1] = '\0';
     }
 
-    return 0;
+    return ERR_OK;
 }

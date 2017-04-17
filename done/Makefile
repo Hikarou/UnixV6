@@ -36,9 +36,9 @@ test-direntlookup.o: test-direntlookup.c direntv6.o mount.o error.o sector.o
 test-direntlookup: test-direntlookup.o test-core.o mount.o error.o direntv6.o sector.o filev6.o inode.o
 	gcc -o $@ $^
 
-shell.o: shell.c mount.o sector.o
+shell.o: shell.c mount.o sector.o direntv6.o filev6.o inode.o
 
-shell: shell.o mount.o sector.o
+shell: shell.o mount.o sector.o direntv6.o filev6.o inode.o
 	gcc -o $@ $^
 
 direntv6.o: direntv6.c direntv6.h filev6.o error.o
