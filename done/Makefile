@@ -39,7 +39,7 @@ test-direntlookup: test-direntlookup.o test-core.o mount.o error.o direntv6.o se
 shell.o: shell.c mount.o sector.o direntv6.o error.o inode.o sha.o filev6.o
 
 shell: shell.o mount.o sector.o direntv6.o error.o inode.o sha.o filev6.o
-	gcc -o $@ $^ -lcrypto
+	gcc -g -o $@ $^ -lcrypto
 
 direntv6.o: direntv6.c direntv6.h filev6.o error.o
 

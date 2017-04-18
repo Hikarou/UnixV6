@@ -15,7 +15,7 @@
 #define ERR_ARGS 2
 #define ERR_NOT_MOUNTED 3
 #define NOT_IMPLEMENTED 4
-#define NB_ARGS 10
+#define NB_ARGS 3
 
 struct unix_filesystem u;
 
@@ -80,65 +80,112 @@ int main()
     int k = 0;
     shell_fct function = NULL;
 
-    while (!feof(stdin) && !ferror(stdin) && err != 1) {
+    while ((!feof(stdin) && !ferror(stdin)) && err == 0) {
+    	size_parsed = 0;
+    	k = 0;
+    	err = 0; // si jamais on veut continuer malgré certaines erreur
         parsed = malloc(NB_ARGS*sizeof(void*));
         if (parsed != NULL) {
-            scanf("%s", input);
+            fgets(input, MAX_READ, stdin);
+            if (input[strlen(input)-1] == '\n'){
+            	input[strlen(input)-1] = '\0';
+            }
             err = tokenize_input(input, parsed, &size_parsed);
             if (err == 0) {
-                // faire une recherche dans les commandes que nous avons
-                // poser shell_fct à ...
-                while (k < 13 && err != 0) {
+                do {
                     err = strcmp(parsed[0], shell_cmds[k].name);
                     ++k;
-                }
+                } while (k < 13 && err != 0);
                 --k;
                 if (err == 0) {
                     function = shell_cmds[k].fct;
-                    if (shell_cmds[k].argc<= size_parsed-1) {
+                    
+                    if (shell_cmds[k].argc <= size_parsed) {	
                         err = function(parsed);
                     } else {
                         printf("Not enough arguements\n");
+                        err = ERR_ARGS;
                     }
                 }
+                else {
+                	printf("Unknow function\n");
+                	err = ERR_ARGS;
+                }
             }
+            
             free(parsed);
+            
         } else {
             err = ERR_NOMEM;
         }
+         
     }
-
-    puts(ERR_MESSAGES[err - ERR_FIRST]);
+	
+	if (u.f != NULL){
+		umountv6(&u);
+	}
+	
     return 0;
 }
 
 int tokenize_input (char* input, char ** parsed, int* size_parsed)
 {
     char* ptr = NULL;
-    int size = NB_ARGS;
+   int size = NB_ARGS;
+    
+  //  char* save;
+    int k = 1;
+    int i = 0;
+    int l = strlen(input);
+    
     *(size_parsed) = 0;
 
     if (input == NULL || parsed == NULL) {
         return ERR_ARGS;
     }
+	
+	if (l <= 0){
+		return ERR_ARGS;
+	}
+	
+	ptr = input;
+	do {
+		if (k == 0){ // si on est dans du texte
+			if (input[i] == ' '){
+				k = 1;
+				if (i > 0){
+					input[i] = '\0';
+					if (*size_parsed > size){
+						size = size + 1;
+						parsed = realloc(parsed, sizeof(void*) * size);	
+					}
+					parsed[*(size_parsed)] = ptr;
+					*(size_parsed) = *(size_parsed) + 1;
+				}
+			}
+			else{
+				k = 0;
+			}
+		}
+		else if (k == 1){ // si on est dans des espaces
+			if (input[i] == ' '){
+				k = 1;
+			}
+			else{
+				ptr = input + i;
+				k = 0;
+			}
+		}
+	++i;
+	} while (i < l);
 
-    if (strlen(input)>0) {
-        ptr = strtok(input, " ");
-        while (ptr != NULL) {
-            if (size <= *(size_parsed)) {
-                //Je ne comprends pas ce que tu veux faire ici?
-                //parsed = calloc(parsed,*(size_parsed) +1);
-                //ça ?
-                parsed = calloc(*(size_parsed) + 1, sizeof(parsed) / *(size_parsed));
-                size = *(size_parsed)+1;
-            }
-            parsed[*(size_parsed)] = ptr;
-            ++*(size_parsed);
-            ptr = strtok(NULL, " ");
-        }
-    } else {
-        return ERR_ARGS;
-    }
+	if (*size_parsed > size){
+		size = size + 1;
+		parsed = realloc(parsed, sizeof(void*) * size);
+	}
+	parsed[*(size_parsed)] = ptr;
+	*(size_parsed) = *(size_parsed) + 1;
+	
     return 0;
 }
 
@@ -162,10 +209,7 @@ int do_help()
 
 int do_mount(char** args)
 {
-    if (args == NULL) {
-        return ERR_ARGS;
-    }
-    return mountv6(args[0], &u);
+    return mountv6(args[1], &u);
 }
 
 int do_lsall()
@@ -207,7 +251,7 @@ int do_cat(char** args)
     struct filev6 file;
     char content[SECTOR_SIZE+1];
 
-    inode_nb = direntv6_dirlookup(&u, ROOT_INUMBER, *args);
+    inode_nb = direntv6_dirlookup(&u, ROOT_INUMBER, args[1]);
     if (inode_nb < 0) {
         return inode_nb;
     }
@@ -218,7 +262,7 @@ int do_cat(char** args)
     }
     // Allocation test already done in inode_read
     if (file.i_node.i_mode & IFDIR) {
-        printf("ERROR SHELL: car on a directory is not defined\n");
+        printf("ERROR SHELL: cat on a directory is not defined\n");
         return ERR_OK;
     }
 
@@ -245,7 +289,7 @@ int do_sha(char** args)
     int err = 0;
     struct filev6 file;
 
-    inode_nb = direntv6_dirlookup(&u, ROOT_INUMBER, *args);
+    inode_nb = direntv6_dirlookup(&u, ROOT_INUMBER, args[1]);
 
     if (inode_nb < 0) {
         return inode_nb;
@@ -258,9 +302,9 @@ int do_sha(char** args)
     // Allocation test already done in inode_read
     if (file.i_node.i_mode & IFDIR) {
         printf("SHA inode %d: no SHA for directories\n", inode_nb);
-        return ERR_ARGS;
+        return ERR_OK;
     }
-    printf("SHA inode %d: ", inode_nb);
+   // printf("SHA inode %d: ", inode_nb);
     print_sha_inode(&u, file.i_node, (int) inode_nb);
     printf("\n");
 
@@ -271,7 +315,7 @@ int do_inode (char** args)
 {
     uint16_t inode_nb = 0;
 
-    inode_nb = direntv6_dirlookup(&u, ROOT_INUMBER, *args);
+    inode_nb = direntv6_dirlookup(&u, ROOT_INUMBER, args[1]);
     if (inode_nb < 0) {
         return inode_nb;
     }
@@ -287,7 +331,7 @@ int do_istat(char** args)
     int inr = 0;
     struct inode i;
 
-    err = sscanf(*args, "%d", &inr);
+    err = sscanf(args[1], "%d", &inr);
     if (err<1 || inr < 0) {
         printf("ERROR FS_ inode out of range\n");
         return ERR_ARGS;
@@ -305,28 +349,16 @@ int do_istat(char** args)
 
 int do_mkfs(char** args)
 {
-    return ERR_OK;
+    return NOT_IMPLEMENTED;
 }
 
 int do_mkdir(char** args)
 {
-    return ERR_OK;
+    return NOT_IMPLEMENTED;
 }
 
 int do_add(char** args)
 {
-    return ERR_OK;
+    return NOT_IMPLEMENTED;
 }
 
-//int main(void) {
-//    int quit = 0;
-//    while (!feof(stdin) && !ferror(stdin) && !quit) {
-//        char in[MAX_READ];
-//	fgets(in, MAX_READ, stdin);
-//	char* p;
-//	if ((p = strchr(in, '\n'))) *p = '\0';
-//	in[MAX_READ - 1] = '\0';
-//    }
-//
-//    return ERR_OK;
-//}
