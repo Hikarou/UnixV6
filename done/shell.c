@@ -11,6 +11,7 @@
 #define ERR_ARGS 2
 #define ERR_NOT_MOUNTED 3
 #define NOT_IMPLEMENTED 4
+#define NB_ARGS 10
 
 struct unix_filesystem u;
 
@@ -64,12 +65,75 @@ struct shell_map shell_cmds[NB_CMDS] = {
     {"psb", do_psb, "Print SuperBlock of the currently mounted filesystem.", 0, NULL}
 };
 
-int tokenize_input (char* input, char ** parsed) {
-    if (input == NULL || parsed == NULL) {
+int main(){
+	char input[MAX_READ+1];
+	char** parsed = NULL;
+	int err = 0;
+	int size_parsed = 0;
+	int k = 0;
+	shell_fct fonction = NULL;
+
+	while (!feof(stdin) && !ferror(stdin) && err != 1){
+	parsed = malloc(NB_ARGS*sizeof(void*));
+		if (parsed != NULL){
+			scanf("%s", input);
+			err = tokenize_input(input, parsed, *size_parsed);
+			if (err == 0){
+				// faire une recherche dans les commandes que nous avons
+				// poser shell_fct à ...
+				while (k < 13 && err != 0){
+					err = strcmp(parsed[0], shell_cmds[k].name);
+					++k;
+				}
+				--k;
+				if (err == 0){
+					function = shell_cmds[k].fct;
+					if (shell_cmds[k].argc<= size_parsed-1){
+						err = function(parsed);
+					} 
+					else{
+						printf("Not enough arguements\n");
+					}
+				}
+			}
+			free(parsed);
+		}
+		else{
+			err = ERR_NOMEM;
+		}
+	}
+	
+	puts(ERR_MESSAGES[err - ERR_FIRST]);	
+	return 0;
+}
+
+int tokenize_input (char* input, char ** parsed, int* size_parsed) {
+   char* ptr = NULL;
+   int size = NB_ARGS;
+   &(size_parsed) = 0;
+   
+   if (input == NULL || parsed == NULL) {
         return ERR_ARGS;
     }
-    return ERR_OK;
+   
+   	if (strlen(input)>0){
+		ptr = strtok(input, " ");
+		while (ptr != NULL){
+			if (size <= &(size_parsed)){
+				parsed = calloc(parsed,&(size_parsed) +1);
+				size = &(size_parsed)+1
+			}
+			parsed[&(size_parsed)] = ptr;
+			++&(size_parsed);
+			ptr = strtok(NULL, " ");
+		}
+	}
+	else{
+		return ERR_ARGS;
+	}
+	return 0;
 }
+    
 
 int do_exit() {
     return EXIT;
@@ -78,10 +142,10 @@ int do_exit() {
 int do_help() {
     for (int i = 0; i < NB_CMDS; ++i) {
         printf("- %s", shell_cmds[i].name);
-	if (shell_cmds[i].argc > 0) {
-            printf(" %s", shell_cmds[i].args);
-	}
-	printf(": %s\n", shell_cmds[i].help);
+		if (shell_cmds[i].argc > 0) {
+			printf(" %s", shell_cmds[i].args);
+		}
+		printf(": %s\n", shell_cmds[i].help);
     }
     return ERR_OK;
 }
@@ -98,6 +162,12 @@ int do_lsall() {
     //if (u == NULL) {
     //    return ERR_NOT_MOUNTED;
     //}
+    
+    // A mon avis:
+    
+    if (u.f == NULL){
+    	return ERR_BAD_PARAMETER;
+    }
     return direntv6_print_tree(&u, ROOT_INUMBER, "");
 }
 
@@ -106,24 +176,116 @@ int do_psb() {
     //if (u == NULL) {
     //    return ERR_NOT_MOUNTED;
     //}
+    
+     // A mon avis:
+    
+    if (u.f == NULL){
+    	return ERR_BAD_PARAMETER;
+    }
+    
     mountv6_print_superblock(&u);
     return ERR_OK;
 }
 
 int do_cat(char** args) {
+    uint16_t inode_nb = 0;
+    int err = 0;
+    struct filev6 file;
+    char content[SECTOR_SIZE+1];
     
+    inode_nb = direntv6_dirlookup(*u, ROOT_NUMBER, &args);
+    if (inode_nb < 0){
+    	return inode_nb;
+    }
+    
+    err = inode_read(&u, inode_nb, *(file.i_node));
+    if (err != 0){
+    	return err;
+    }
+    // Allocation test already done in inode_read
+    if (file.i_node.i_mode & IFDIR){
+    	printf("ERROR SHELL: car on a directory is not defined\n");
+    	return ERR_OK; 
+    }
+    
+    err = filev6_open(*u, inode_nb, *file);
+    if (err != 0){
+    	return err;
+    }
+    
+    do {
+    	err = filev6_readblock(*file, char content);
+    	if (err > 0){
+    		printf("%s", content);
+    	}
+    	else {
+    		printf("\n");
+    	}
+    } while (err > 0);
+  
     return ERR_OK;
 }
 
 int do_sha(char** args) {
+	uint16_t inode_nb = 0;
+    int err = 0;
+    struct filev6 file;
+    
+    inode_nb = direntv6_dirlookup(*u, ROOT_NUMBER, &args);
+    
+    if (inode_nb < 0){
+    	return inode_nb;
+    }
+    err = inode_read(&u, inode_nb, *(file.i_node));
+    
+    if (err != 0){
+    	return err;
+    }
+    // Allocation test already done in inode_read
+    if (file.i_node.i_mode & IFDIR){
+    	printf("SHA inode %d: no SHA for directories\n", inode_nb);
+    	return ERR_ARGS; 
+    }
+    printf("SHA inode %d: ", inode_nb);
+    print_sha_inode(*u, file.i_node, (int) inode_nb);
+    printf("\n");
+    
     return ERR_OK;
 }
 
 int do_inode (char** args) {
+	uint16_t inode_nb = 0;
+    int err = 0;
+    struct filev6 file;
+    
+    inode_nb = direntv6_dirlookup(*u, ROOT_NUMBER, &args);
+    if (inode_nb < 0){
+    	return inode_nb;
+    }
+    
+    printf("inode: %d\n", inode_nb);
+
     return ERR_OK;
 }
 
 int do_istat(char** args) {
+	int err = 0;
+	int inr = 0;
+	struct inode i;
+	
+	err = sscanf(&args, "%d", &inr);
+	if (err<1 || inr < 0){
+		printf("ERROR FS_ inode out of range\n");
+		return ERR_ARGS;
+	}
+	
+	err = inode_read(&u, inr, *i);
+    if (err != 0){
+    	return err;
+    }
+    
+    inode_print(*i);
+	
     return ERR_OK;
 }
 
