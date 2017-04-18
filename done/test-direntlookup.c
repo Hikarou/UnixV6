@@ -22,11 +22,11 @@ int test(struct unix_filesystem *u)
         printf("\n\n");
         free(chaine);
     }
-     char* ch = "/tmp/coucou.txt";
-     
-     err =  direntv6_dirlookup(u, ROOT_INUMBER, ch);
-     if (err >0){
-     	printf("\n\Numero d'inode: %d\n", err);
-	}
+    char* ch = "/tmp/coucou.txt";
+
+    err =  direntv6_dirlookup(u, ROOT_INUMBER, ch);
+    if (err >0) {
+        printf("\n\Numero d'inode: %d\n", err);
+    }
     return 0;
 }
