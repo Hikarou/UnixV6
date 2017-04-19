@@ -6,7 +6,7 @@
  * @author Marc Favrod-Coune
  * @date mars 2017
  */
-
+#pragma once
 #include <stdint.h>
 #include "unixv6fs.h"
 #include "filev6.h"
@@ -16,7 +16,7 @@
 #include <string.h>
 #include "direntv6.h"
 
-#define MAXPATHLEN_UV6 1024
+//#define MAXPATHLEN_UV6 10
 
 /**
  * @brief opens a directory reader for the specified inode 'inr'
@@ -123,7 +123,7 @@ int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const cha
     if (err != 0) {
         return err;
     }
-    fprintf(output, "\n%s %s/", SHORT_DIR_NAME, prefix);
+    fprintf(output, "%s %s/\n", SHORT_DIR_NAME, prefix);
     do {
         err = direntv6_readdir(&d, name, &nextInode);
 
@@ -150,7 +150,7 @@ int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const cha
 
                 nextInode = 0;
             } else if (errFake == ERR_INVALID_DIRECTORY_INODE) {
-                fprintf(output, "\n%s %s/%s", SHORT_FIL_NAME, prefix, name);
+                fprintf(output, "%s %s/%s\n", SHORT_FIL_NAME, prefix, name);
 
             } else {
                 err = errFake;
@@ -192,11 +192,16 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
     if (taille == 0) { // il n'y a que des /
         return 0;
     }
-
-    name_ref = malloc(taille-1);
+	
+	if (taille + shiftTaille == tailleTot){
+		++taille;
+	}
+	
+    name_ref = malloc((taille)*sizeof(char));
     if (name_ref == NULL) {
         return ERR_NOMEM;
     }
+    
     for (int i = 0; i< taille-1; ++i) {
         name_ref[i] = entry[shiftTaille + i];
     }
@@ -205,41 +210,41 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
     // Recherche du futur dossier ou fichier
     struct directory_reader d;
     err = direntv6_opendir(u, inr, &d);
-    if (err) {
+    if (err<0) {
         free(name_ref);
         return err;
     }
 
-
     do {
         err = direntv6_readdir(&d, name_read, &inr_next);
-        k = strncmp( name_ref, name_read, taille-1);
+        k = strncmp(name_ref, name_read, taille-1);
     } while (err > 0 && k);
-
+	
     if (err < 0) {
         free(name_ref);
         return err;
     }
-
-
+	
     if (k != 0) {
         free(name_ref);
-        fprintf(stdout, "\nImpossible to find file: %s", entry);
-        return ERR_INODE_OUTOF_RANGE;
+        fprintf(stdout, "\nImpossible to find file: %s\n", entry);
+        return ERR_IO;
     }
 
-
+		
     // Ouvrir le prochain dossier ou retourner l'inode number
     if (tailleTot > shiftTaille + taille) { // il faut encore lire un dossier
         err = direntv6_dirlookup(u, inr_next, entry+taille+shiftTaille);
+
         if (err == 0) {
-            err = inr_next;
+            err = (int) inr_next;
         }
     } else { // on a le bon fichier
-        err = inr_next;
+        err = (int) inr_next;
     }
 
     free(name_ref);
+    
     return err;
 }
 

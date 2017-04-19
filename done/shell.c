@@ -83,7 +83,7 @@ int main()
     while ((!feof(stdin) && !ferror(stdin)) && err == 0) {
     	size_parsed = 0;
     	k = 0;
-    	err = 0; // si jamais on veut continuer malgré certaines erreur
+    	err = 0; 
         parsed = malloc(NB_ARGS*sizeof(void*));
         if (parsed != NULL) {
             fgets(input, MAX_READ, stdin);
@@ -91,7 +91,7 @@ int main()
             	input[strlen(input)-1] = '\0';
             }
             err = tokenize_input(input, parsed, &size_parsed);
-            if (err == 0) {
+            if (err == ERR_OK) {
                 do {
                     err = strcmp(parsed[0], shell_cmds[k].name);
                     ++k;
@@ -100,25 +100,30 @@ int main()
                 if (err == 0) {
                     function = shell_cmds[k].fct;
                     
-                    if (shell_cmds[k].argc <= size_parsed) {	
+                    if ((shell_cmds[k]).argc == size_parsed-1) {	
                         err = function(parsed);
                     } else {
-                        printf("Not enough arguements\n");
+                        printf("ERROR SHELL: wrong number of arguements\n");
                         err = ERR_ARGS;
                     }
                 }
                 else {
-                	printf("Unknow function\n");
+                	printf("ERROR SHELL: Invalid command\n");
                 	err = ERR_ARGS;
                 }
             }
-            
+           
             free(parsed);
             
         } else {
             err = ERR_NOMEM;
+            puts(ERR_MESSAGES[err - ERR_FIRST]);
+        	err =  EXIT;
         }
-         
+        
+        if (err != 0 && err != EXIT){
+        	err = ERR_OK;
+        }
     }
 	
 	if (u.f != NULL){
@@ -131,9 +136,8 @@ int main()
 int tokenize_input (char* input, char ** parsed, int* size_parsed)
 {
     char* ptr = NULL;
-   int size = NB_ARGS;
+    int size = NB_ARGS;
     
-  //  char* save;
     int k = 1;
     int i = 0;
     int l = strlen(input);
@@ -155,8 +159,8 @@ int tokenize_input (char* input, char ** parsed, int* size_parsed)
 				k = 1;
 				if (i > 0){
 					input[i] = '\0';
-					if (*size_parsed > size){
-						size = size + 1;
+					if (*size_parsed > size-1){
+						++size;
 						parsed = realloc(parsed, sizeof(void*) * size);	
 					}
 					parsed[*(size_parsed)] = ptr;
@@ -179,8 +183,9 @@ int tokenize_input (char* input, char ** parsed, int* size_parsed)
 	++i;
 	} while (i < l);
 
-	if (*size_parsed > size){
-		size = size + 1;
+	if (*size_parsed > size-1){
+		fprintf(stderr,"COUCOU\n");
+		++size;
 		parsed = realloc(parsed, sizeof(void*) * size);
 	}
 	parsed[*(size_parsed)] = ptr;
@@ -209,34 +214,38 @@ int do_help()
 
 int do_mount(char** args)
 {
-    return mountv6(args[1], &u);
+	int err = mountv6(args[1], &u);
+	
+	if (err != 0){
+		printf("ERROR FS: ");
+		puts(ERR_MESSAGES[err - ERR_FIRST]);
+        return EXIT;
+	}
+
+    return ERR_OK;
 }
 
 int do_lsall()
 {
-    //Comment tester que u soit bien mounté?
-    //if (u == NULL) {
-    //    return ERR_NOT_MOUNTED;
-    //}
-
-    // A mon avis:
-
     if (u.f == NULL) {
+    	printf("ERROR SHELL: mount the FS before operation\n");
         return ERR_NOT_MOUNTED;
     }
-    return direntv6_print_tree(&u, ROOT_INUMBER, "");
+    
+    int err = direntv6_print_tree(&u, ROOT_INUMBER, "");
+	
+	if (err != 0){
+		puts(ERR_MESSAGES[err - ERR_FIRST]);
+        return EXIT;
+	}
+
+    return ERR_OK;
 }
 
 int do_psb()
 {
-    //Même question que juste au dessus
-    //if (u == NULL) {
-    //    return ERR_NOT_MOUNTED;
-    //}
-
-    // A mon avis:
-
     if (u.f == NULL) {
+    	printf("ERROR SHELL: mount the FS before operation\n");
         return ERR_NOT_MOUNTED;
     }
 
@@ -245,30 +254,38 @@ int do_psb()
 }
 
 int do_cat(char** args)
-{
-    uint16_t inode_nb = 0;
+{    
+    int inode_nb = 0;
     int err = 0;
     struct filev6 file;
     char content[SECTOR_SIZE+1];
 
+	if (u.f == NULL) {
+    	printf("ERROR SHELL: mount the FS before operation\n");
+        return ERR_NOT_MOUNTED;
+    }
+
     inode_nb = direntv6_dirlookup(&u, ROOT_INUMBER, args[1]);
     if (inode_nb < 0) {
-        return inode_nb;
+    	puts(ERR_MESSAGES[inode_nb - ERR_FIRST]);
+        return EXIT;
     }
 
     err = inode_read(&u, inode_nb, &(file.i_node));
     if (err != 0) {
-        return err;
+    	puts(ERR_MESSAGES[err - ERR_FIRST]);
+        return EXIT;
     }
     // Allocation test already done in inode_read
     if (file.i_node.i_mode & IFDIR) {
         printf("ERROR SHELL: cat on a directory is not defined\n");
-        return ERR_OK;
+        return ERR_ARGS;
     }
 
     err = filev6_open(&u, inode_nb, &file);
     if (err != 0) {
-        return err;
+        puts(ERR_MESSAGES[err - ERR_FIRST]);
+        return EXIT;
     }
 
     do {
@@ -285,24 +302,36 @@ int do_cat(char** args)
 
 int do_sha(char** args)
 {
-    uint16_t inode_nb = 0;
+	
+    int inode_nb = 0;
     int err = 0;
     struct filev6 file;
-
+	
+	if (u.f == NULL) {
+    	printf("ERROR SHELL: mount the FS before operation\n");
+        return ERR_NOT_MOUNTED;
+    }	
+	
     inode_nb = direntv6_dirlookup(&u, ROOT_INUMBER, args[1]);
-
+	printf("err inode_nb = %d\n", inode_nb); 
     if (inode_nb < 0) {
-        return inode_nb;
+   		printf("ERROR FS: ");
+   		printf("COUCOU\n");
+        puts(ERR_MESSAGES[inode_nb - ERR_FIRST]);
+        return EXIT;
     }
+    
     err = inode_read(&u, inode_nb, &(file.i_node));
 
     if (err != 0) {
-        return err;
+    	printf("ERROR FS: ");
+        puts(ERR_MESSAGES[err - ERR_FIRST]);
+        return EXIT;
     }
     // Allocation test already done in inode_read
     if (file.i_node.i_mode & IFDIR) {
         printf("SHA inode %d: no SHA for directories\n", inode_nb);
-        return ERR_OK;
+        return ERR_ARGS;
     }
    // printf("SHA inode %d: ", inode_nb);
     print_sha_inode(&u, file.i_node, (int) inode_nb);
@@ -312,12 +341,19 @@ int do_sha(char** args)
 }
 
 int do_inode (char** args)
-{
-    uint16_t inode_nb = 0;
+{    
+    int inode_nb = 0;
 
+	if (u.f == NULL) {
+    	printf("ERROR SHELL: mount the FS before operation\n");
+        return ERR_NOT_MOUNTED;
+    }
+    
     inode_nb = direntv6_dirlookup(&u, ROOT_INUMBER, args[1]);
     if (inode_nb < 0) {
-        return inode_nb;
+    	printf("ERROR FS: ");
+        puts(ERR_MESSAGES[inode_nb - ERR_FIRST]);
+        return EXIT;
     }
 
     printf("inode: %d\n", inode_nb);
@@ -326,20 +362,27 @@ int do_inode (char** args)
 }
 
 int do_istat(char** args)
-{
+{    
     int err = 0;
     int inr = 0;
     struct inode i;
 
+	if (u.f == NULL) {
+    	printf("ERROR SHELL: mount the FS before operation\n");
+        return ERR_NOT_MOUNTED;
+    }
+
     err = sscanf(args[1], "%d", &inr);
     if (err<1 || inr < 0) {
-        printf("ERROR FS_ inode out of range\n");
+        printf("ERROR FS: inode out of range\n");
         return ERR_ARGS;
     }
 
     err = inode_read(&u, inr, &i);
     if (err != 0) {
-        return err;
+    	printf("ERROR FS: ");
+        puts(ERR_MESSAGES[err - ERR_FIRST]);
+        return EXIT;
     }
 
     inode_print(&i);
