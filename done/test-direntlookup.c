@@ -16,8 +16,9 @@ int test(struct unix_filesystem *u)
     err = direntv6_print_tree(u,ROOT_INUMBER,chaine);
     printf("\n\n");
 
-    char* ch = "/tmp/coucou.txt";
+    //char* ch = "/tmp/coucou.txt";
     //char* ch = "/tmp/coucoutxt";
+    char* ch = "///tmp/coucou.txt";
     //char* ch = "////tmp////coucou.txt";//TODO Vérifier ceci
     //char* ch = "/tmp/coucou.txt";
     //char* ch = "/hello/net/http/testdata/index.html";

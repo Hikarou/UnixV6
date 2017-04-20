@@ -166,6 +166,8 @@ int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const cha
 
 int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char *entry)
 {
+    M_REQUIRE_NON_NULL(u);
+    M_REQUIRE_NON_NULL(entry);
     int err = 0;
     int tailleTot = strlen(entry);
     int taille = 0;
@@ -173,7 +175,7 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
     int k = 0;
     uint16_t inr_next = 0;
     char* name_ref;
-    char name_read[DIRENT_MAXLEN+1]; // changé de char* name_read[DIRENT_MAXLEN+1]
+    char name_read[DIRENT_MAXLEN+1] = ""; // changé de char* name_read[DIRENT_MAXLEN+1]
 
     // Nom du futur dossier:
     do {
@@ -202,33 +204,10 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
         return ERR_NOMEM;
     }
 
-    //nettoyage des / en trop :
-    //int i = 0;
-    //while (i < taille - 1) {
-    //    printf("%c is / :", entry[shiftTaille + i]);
-    //    fflush(stdout);
-    //    if (entry[shiftTaille + i] == '/') {
-    //        printf("YES");
-    //        ++shiftTaille;
-    //        --taille;
-    //    } else {
-    //        printf("NO");
-    //        name_ref[i] = entry[shiftTaille + i];
-    //        ++i;
-    //    }
-    //    printf("\n");
-    //    fflush(stdout);
-    //};
-    //name_ref[taille-1] = '\0';
-    //printf("name_ref = %s\n", name_ref);
-    //fflush(stdout);
-
-    //* TODO A la place de ça :
     for (int i = 0; i< taille-1; ++i) {
         name_ref[i] = entry[shiftTaille + i];
     }
     name_ref[taille-1] = '\0';
-    // */
 
     // Recherche du futur dossier ou fichier
     struct directory_reader d;
