@@ -6,8 +6,8 @@
  * @author Marc Favrod-Coune
  * @date mars 2017
  */
-#pragma once
 #include <stdint.h>
+#include <stdio.h>
 #include "unixv6fs.h"
 #include "filev6.h"
 #include "mount.h"
@@ -192,25 +192,50 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
     if (taille == 0) { // il n'y a que des /
         return 0;
     }
-	
-	if (taille + shiftTaille == tailleTot){
-		++taille;
-	}
-	
+
+    if (taille + shiftTaille == tailleTot) {
+        ++taille;
+    }
+
     name_ref = malloc((taille)*sizeof(char));
     if (name_ref == NULL) {
         return ERR_NOMEM;
     }
-    
+
+    //nettoyage des / en trop :
+    int i = 0;
+    while (i < taille - 1) {
+        printf("%c is / :", entry[shiftTaille + i]);
+        fflush(stdout);
+        if (entry[shiftTaille + i] == '/') {
+            printf("YES");
+            ++shiftTaille;
+            --taille;
+        } else {
+            printf("NO");
+            name_ref[i] = entry[shiftTaille + i];
+            ++i;
+        }
+        printf("\n");
+        fflush(stdout);
+    };
+    name_ref[taille-1] = '\0';
+    printf("name_ref = %s\n", name_ref);
+    fflush(stdout);
+
+    /* TODO A la place de ça :
     for (int i = 0; i< taille-1; ++i) {
         name_ref[i] = entry[shiftTaille + i];
     }
     name_ref[taille-1] = '\0';
+    // */
 
     // Recherche du futur dossier ou fichier
     struct directory_reader d;
     err = direntv6_opendir(u, inr, &d);
     if (err<0) {
+        printf("plante ici\n");
+        fflush(stdout);
         free(name_ref);
         return err;
     }
@@ -219,19 +244,19 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
         err = direntv6_readdir(&d, name_read, &inr_next);
         k = strncmp(name_ref, name_read, taille-1);
     } while (err > 0 && k);
-	
+
     if (err < 0) {
         free(name_ref);
         return err;
     }
-	
+
     if (k != 0) {
         free(name_ref);
         fprintf(stdout, "\nImpossible to find file: %s\n", entry);
         return ERR_IO;
     }
 
-		
+
     // Ouvrir le prochain dossier ou retourner l'inode number
     if (tailleTot > shiftTaille + taille) { // il faut encore lire un dossier
         err = direntv6_dirlookup(u, inr_next, entry+taille+shiftTaille);
@@ -244,7 +269,7 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
     }
 
     free(name_ref);
-    
+
     return err;
 }
 
