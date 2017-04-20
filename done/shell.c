@@ -74,7 +74,7 @@ struct shell_map shell_cmds[NB_CMDS] = {
 
 int main()
 {
-    char input[MAX_READ+1];
+    char input[MAX_READ+1] = "";
     char** parsed = NULL;
     int err = 0;
     int size_parsed = 0;
@@ -85,12 +85,13 @@ int main()
         size_parsed = 0;
         k = 0;
         err = 0;
-        parsed = malloc(NB_ARGS*sizeof(void*));
+        parsed = calloc(NB_ARGS * MAX_READ, sizeof(char));
         if (parsed != NULL) {
             fgets(input, MAX_READ, stdin);
             if (input[strlen(input)-1] == '\n') {
                 input[strlen(input)-1] = '\0';
             }
+            input[MAX_READ] = '\0';
 
             err = tokenize_input(input, parsed, &size_parsed);
             if (err == ERR_OK) {
@@ -136,6 +137,7 @@ int main()
 
 int tokenize_input (char* input, char ** parsed, int* size_parsed)
 {
+    if (input == NULL) return EXIT; //Pour s'occuper du cas CTRL + D
     char* ptr = NULL;
     int size = NB_ARGS;
 
@@ -162,13 +164,12 @@ int tokenize_input (char* input, char ** parsed, int* size_parsed)
                     input[i] = '\0';
                     if (*size_parsed > size-1) {
                         ++size;
-                        parsed = realloc(parsed, sizeof(void*) * size);
+                        parsed = realloc(parsed, sizeof(char) * size * MAX_READ);
+                        if (parsed == NULL) return EXIT;
                     }
                     parsed[*(size_parsed)] = ptr;
                     *(size_parsed) = *(size_parsed) + 1;
                 }
-            } else {
-                k = 0;
             }
         } else if (k == 1) { // si on est dans des espaces
             if (input[i] == ' ') {
@@ -184,7 +185,8 @@ int tokenize_input (char* input, char ** parsed, int* size_parsed)
     if (*size_parsed > size-1) {
         fprintf(stderr,"COUCOU\n");
         ++size;
-        parsed = realloc(parsed, sizeof(void*) * size);
+        parsed = realloc(parsed, sizeof(char) * size * MAX_READ);
+        if (parsed == NULL) return EXIT;
     }
     parsed[*(size_parsed)] = ptr;
     *(size_parsed) = *(size_parsed) + 1;
@@ -257,7 +259,7 @@ int do_cat(char** args)
     int inode_nb = 0;
     int err = 0;
     struct filev6 file;
-    char content[SECTOR_SIZE+1];
+    char content[SECTOR_SIZE+1] = "";
 
     if (u.f == NULL) {
         printf("ERROR SHELL: mount the FS before operation\n");
@@ -315,10 +317,10 @@ int do_sha(char** args)
     }
 
     inode_nb = direntv6_dirlookup(&u, ROOT_INUMBER, args[1]);
-    printf("err inode_nb = %d\n", inode_nb);
+    //printf("err inode_nb = %d\n", inode_nb);
     if (inode_nb < 0) {
         printf("ERROR FS: ");
-        printf("COUCOU\n");
+        //printf("COUCOU\n");
         puts(ERR_MESSAGES[inode_nb - ERR_FIRST]);
         return ERR_FS;
     }

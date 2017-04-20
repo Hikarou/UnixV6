@@ -108,7 +108,7 @@ int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const cha
 {
 
     int err = 0;
-    char name[DIRENT_MAXLEN+1];
+    char name[DIRENT_MAXLEN+1] = "";
     uint16_t nextInode = 0;
     int errFake = 0;
     struct directory_reader d;
@@ -203,27 +203,27 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
     }
 
     //nettoyage des / en trop :
-    int i = 0;
-    while (i < taille - 1) {
-        printf("%c is / :", entry[shiftTaille + i]);
-        fflush(stdout);
-        if (entry[shiftTaille + i] == '/') {
-            printf("YES");
-            ++shiftTaille;
-            --taille;
-        } else {
-            printf("NO");
-            name_ref[i] = entry[shiftTaille + i];
-            ++i;
-        }
-        printf("\n");
-        fflush(stdout);
-    };
-    name_ref[taille-1] = '\0';
-    printf("name_ref = %s\n", name_ref);
-    fflush(stdout);
+    //int i = 0;
+    //while (i < taille - 1) {
+    //    printf("%c is / :", entry[shiftTaille + i]);
+    //    fflush(stdout);
+    //    if (entry[shiftTaille + i] == '/') {
+    //        printf("YES");
+    //        ++shiftTaille;
+    //        --taille;
+    //    } else {
+    //        printf("NO");
+    //        name_ref[i] = entry[shiftTaille + i];
+    //        ++i;
+    //    }
+    //    printf("\n");
+    //    fflush(stdout);
+    //};
+    //name_ref[taille-1] = '\0';
+    //printf("name_ref = %s\n", name_ref);
+    //fflush(stdout);
 
-    /* TODO A la place de ça :
+    //* TODO A la place de ça :
     for (int i = 0; i< taille-1; ++i) {
         name_ref[i] = entry[shiftTaille + i];
     }
