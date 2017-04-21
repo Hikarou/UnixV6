@@ -54,7 +54,7 @@ int do_mkdir(char**);
 
 int do_add(char**);
 
-int tokenize_input (char*, char**, int*);
+int tokenize_input (char*, char***, int*);
 
 struct shell_map shell_cmds[NB_CMDS] = {
     {"help", do_help, "display this help.", 0, NULL},
@@ -85,7 +85,7 @@ int main()
         size_parsed = 0;
         k = 0;
         err = 0;
-        parsed = calloc(NB_ARGS * MAX_READ, sizeof(char));
+        parsed = calloc(NB_ARGS, sizeof(void*));
         if (parsed != NULL) {
             fgets(input, MAX_READ, stdin);
             if (input[strlen(input)-1] == '\n') {
@@ -93,7 +93,7 @@ int main()
             }
             input[MAX_READ] = '\0';
 
-            err = tokenize_input(input, parsed, &size_parsed);
+            err = tokenize_input(input, &parsed, &size_parsed);
             if (err == ERR_OK) {
                 do {
                     err = strcmp(parsed[0], shell_cmds[k].name);
@@ -135,7 +135,7 @@ int main()
     return 0;
 }
 
-int tokenize_input (char* input, char ** parsed, int* size_parsed)
+int tokenize_input (char* input, char*** parsed, int* size_parsed)
 {
     if (input == NULL) return EXIT; //Pour s'occuper du cas CTRL + D
     char* ptr = NULL;
@@ -164,10 +164,10 @@ int tokenize_input (char* input, char ** parsed, int* size_parsed)
                     input[i] = '\0';
                     if (*size_parsed > size-1) {
                         ++size;
-                        parsed = realloc(parsed, sizeof(char) * size * MAX_READ);
-                        if (parsed == NULL) return EXIT;
+                        *parsed = realloc(*parsed, sizeof(void*) * size);
+                        if (*parsed == NULL) return EXIT;
                     }
-                    parsed[*(size_parsed)] = ptr;
+                    (*parsed)[*(size_parsed)] = ptr;
                     *(size_parsed) = *(size_parsed) + 1;
                 }
             }
@@ -183,12 +183,11 @@ int tokenize_input (char* input, char ** parsed, int* size_parsed)
     } while (i < l);
 
     if (*size_parsed > size-1) {
-        fprintf(stderr,"COUCOU\n");
         ++size;
-        parsed = realloc(parsed, sizeof(char) * size * MAX_READ);
-        if (parsed == NULL) return EXIT;
+        *parsed = realloc(*parsed, sizeof(char) * size * MAX_READ);
+        if (*parsed == NULL) return EXIT;
     }
-    parsed[*(size_parsed)] = ptr;
+    (*parsed)[*(size_parsed)] = ptr;
     *(size_parsed) = *(size_parsed) + 1;
 
     return 0;

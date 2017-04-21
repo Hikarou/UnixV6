@@ -18,8 +18,8 @@ int test(struct unix_filesystem *u)
 
     //char* ch = "/tmp/coucou.txt";
     //char* ch = "/tmp/coucoutxt";
-    char* ch = "///tmp/coucou.txt";
-    //char* ch = "////tmp////coucou.txt";//TODO Vérifier ceci
+    //char* ch = "///tmp/coucou.txt";
+    char* ch = "////tmp////coucou.txt/////";//TODO Vérifier ceci
     //char* ch = "/tmp/coucou.txt";
     //char* ch = "/hello/net/http/testdata/index.html";
     err = direntv6_dirlookup(u, ROOT_INUMBER, ch);

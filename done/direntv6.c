@@ -186,6 +186,9 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
                 ++taille; // taille contient déjà le \0
             }
         } else {
+            if (k == tailleTot-1){
+          		shiftTaille = k-taille;	
+          	}
             ++taille;
         }
         ++k;
@@ -203,6 +206,7 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
     if (name_ref == NULL) {
         return ERR_NOMEM;
     }
+    
 
     for (int i = 0; i< taille-1; ++i) {
         name_ref[i] = entry[shiftTaille + i];
@@ -213,12 +217,10 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
     struct directory_reader d;
     err = direntv6_opendir(u, inr, &d);
     if (err<0) {
-        printf("plante ici\n");
-        fflush(stdout);
         free(name_ref);
         return err;
     }
-
+	
     do {
         err = direntv6_readdir(&d, name_read, &inr_next);
         k = strncmp(name_ref, name_read, taille-1);
@@ -234,7 +236,6 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
         fprintf(stdout, "\nImpossible to find file: %s\n", entry);
         return ERR_IO;
     }
-
 
     // Ouvrir le prochain dossier ou retourner l'inode number
     if (tailleTot > shiftTaille + taille) { // il faut encore lire un dossier
