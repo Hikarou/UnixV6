@@ -116,7 +116,7 @@ int main()
                     if (err == 0) {
                         function = shell_cmds[k].fct;
 
-                        if ((shell_cmds[k]).argc == size_parsed-1) {
+                        if ((shell_cmds[k]).argc == (size_t)size_parsed-1) {
                             err = function(parsed);
                         } else {
                             printf("ERROR SHELL: wrong number of arguements\n");

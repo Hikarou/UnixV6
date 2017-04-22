@@ -66,18 +66,18 @@ void print_sha_inode(struct unix_filesystem *u, struct inode inode, int inr)
     } else {
         uint8_t content[inode_getsize(&inode)+1];
         uint8_t subcontent[SECTOR_SIZE+1];
-        int length = 0;
+        size_t length = 0;
         struct filev6 f;
-        int error = filev6_open(u, inr, &f);
+        int error = filev6_open(u, (uint16_t) inr, &f);
         //getting all the content from inode
         do {
             error = filev6_readblock(&f, subcontent);
             for(int i = 0; i < error; ++i) {
-                content[length + i] = subcontent[i];
+                content[length + (size_t) + i] = subcontent[i];
             }
-            length += error;
+            length += (size_t)error;
             content[length] = 0;
-        } while(error> 0);
+        } while(error > 0);
         print_sha_from_content(content, length);
     }
     printf("\n");

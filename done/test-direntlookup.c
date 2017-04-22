@@ -9,9 +9,7 @@ int test(struct unix_filesystem *u)
 {
     int err = 0;
 
-    char* chaine = NULL;
-
-    chaine = "";
+    const char* chaine = "";
 
     err = direntv6_print_tree(u,ROOT_INUMBER,chaine);
     printf("\n");
@@ -19,7 +17,7 @@ int test(struct unix_filesystem *u)
     //Test in disks/simple.uv6
     //char* ch = "/tmp/coucou.txt";
     //char* ch = "/tmp/coucoutxt";
-    char* ch = "///tmp/coucou.txt";
+    const char* ch = "///tmp/coucou.txt";
     //char* ch = "////tmp////coucou.txt/////";
     //Test in disks/first.uv6
     //char* ch = "/hello/net/http/testdata/index.html";

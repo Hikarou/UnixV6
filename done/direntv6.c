@@ -74,12 +74,12 @@ int direntv6_readdir(struct directory_reader *d, char *name, uint16_t *child_inr
             return err; // s'il n'y a pas de suite, => C'est la fin du fichier donc on renvoie 0
         }
         // s'il y a une suite, on regarde combien de fichiers il y a dans le dossier, et on remplit dirs
-        d -> last = err/sizeof(struct direntv6);
+        d -> last = err / (int)sizeof(struct direntv6);
         for (d -> cur = 0; (d -> cur) < (d -> last); ++(d -> cur)) {
             // remplir les deux champs de direntv6
             int cur = d -> cur;
             struct direntv6 * curDir = &(d -> dirs[cur]);
-            int curEntry = cur * sizeof(struct direntv6);
+            int curEntry = cur * (int)sizeof(struct direntv6);
             curDir -> d_inumber = (data[curEntry +1] << 8) + data[curEntry];
             strncpy(curDir -> d_name, (char*)(data + 2 + curEntry), DIRENT_MAXLEN);
         }
@@ -169,10 +169,10 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
     M_REQUIRE_NON_NULL(u);
     M_REQUIRE_NON_NULL(entry);
     int err = 0;
-    int tailleTot = strlen(entry);
-    int taille = 0;
-    int shiftTaille = 0;
-    int k = 0;
+    size_t tailleTot = strlen(entry);
+    size_t taille = 0;
+    size_t shiftTaille = 0;
+    size_t k = 0;
     uint16_t inr_next = 0;
     char* name_ref;
     char name_read[DIRENT_MAXLEN+1] = "";
@@ -208,7 +208,7 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
     }
 
 
-    for (int i = 0; i< taille-1; ++i) {
+    for (size_t i = 0; i< taille-1; ++i) {
         name_ref[i] = entry[shiftTaille + i];
     }
     name_ref[taille-1] = '\0';
@@ -221,19 +221,19 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
         return err;
     }
 
+    int comp = 0;
     do {
         err = direntv6_readdir(&d, name_read, &inr_next);
-        k = strncmp(name_ref, name_read, taille-1);
-    } while (err > 0 && k);
+        comp = strncmp(name_ref, name_read, taille-1);
+    } while (err > 0 && comp);
 
     if (err < 0) {
         free(name_ref);
         return err;
     }
 
-    if (k != 0) {
+    if (comp != 0) {
         free(name_ref);
-        //fprintf(stdout, "\nImpossible to find file: %s\n", entry);
         return ERR_IO;
     }
 

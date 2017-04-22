@@ -74,7 +74,7 @@ int filev6_readblock(struct filev6 *fv6, void *buf)
         return findSector;
     }
 
-    int sectorRead = sector_read(fv6 -> u -> f,findSector, buf);
+    int sectorRead = sector_read(fv6 -> u -> f, (uint32_t)findSector, buf);
 
     if (sectorRead <0) {
         return sectorRead;
