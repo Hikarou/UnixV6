@@ -21,7 +21,7 @@ int test(struct unix_filesystem *u)
         memset(chaine, '\0',1);
 
         err = direntv6_print_tree(u,ROOT_INUMBER,chaine);
-        printf("\n\n");
+        printf("\n");
         free(chaine);
     }
 

@@ -1,6 +1,6 @@
 /**
- * @file mount.h
- * @brief accessing the UNIX v6 filesystem -- core of the first set of assignments
+ * @file mount.c
+ * @brief accessing the UNIX v6 filesystem -- mounting part
  *
  * @author José Ferro Pinto
  * @author Marc Favrod-Coune
@@ -98,10 +98,6 @@ void mountv6_print_superblock(const struct unix_filesystem *u)
     fprintf(output, "s_fmod        : %" PRIu8 "\n", u -> s.s_fmod);
     fprintf(output, "s_ronly       : %" PRIu8 "\n", u -> s.s_ronly);
     fprintf(output, "s_time        : [%" PRIu16 "] %" PRIu16 "\n", u -> s.s_time[0], u -> s.s_time[1]);
-    /* pour la dernière ligne, je ne suis pas sûr s'il veut qu'on affiche entre [] la taille du
-     tableau ou simplement les deux cases du tableau (dont la première entre crochet)*/
-    //Il faudra faire la vérif dès qu'on a des valeurs qui sont sencées être différentes de 0
-    //ou demander mardi prochain aux assistants TODO
     fprintf(output, "**********FS SUPERBLOCK END**********\n");
 
 }

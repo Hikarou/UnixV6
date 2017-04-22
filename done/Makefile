@@ -1,4 +1,4 @@
-CFLAGS += -std=c99 -Wall -pedantic 
+CFLAGS += -std=c99 -Wall -pedantic
 #Flags given by the teacher to use for testing purpuses (There is actually some output with them)
 #CFLAGS += -Wextra -Wfloat-equal -Wshadow -Wpointer-arith -Wbad-function-cast 
 #CFLAGS += -Wcast-qual -Wcast-align -Wwrite-strings -Wconversion -Wunreachable-code

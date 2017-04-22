@@ -1,3 +1,11 @@
+/**
+ * @file inode.c
+ * @brief accessing the UNIX v6 filesystem -- inode/part
+ *
+ * @author José Ferro Pinto
+ * @author Marc Favrod-Coune
+ * @date mars 2017
+ */
 #include <stdio.h>
 #include "inode.h"
 #include "unixv6fs.h"
@@ -64,7 +72,7 @@ void inode_print(const struct inode* inode)
         fprintf(output,"i_size1 : %d\n", inode -> i_size1);
         fprintf(output,"size    : %d\n", inode_getsize(inode));
     }
-    fprintf(output,"**********FS INODE END**********\n");
+    fprintf(output,"***********FS INODE END***********\n");
 }
 
 /**

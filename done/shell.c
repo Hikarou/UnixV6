@@ -1,3 +1,12 @@
+/**
+ * @file shell.c
+ * @brief Small shell to use the function implemented
+ *
+ * @author José Ferro Pinto
+ * @author Marc Favrod-Coune
+ * @date avril 2017
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -92,39 +101,39 @@ int main()
                 input[strlen(input)-1] = '\0';
             }
             input[MAX_READ] = '\0';
+            // take care if end of file or error in file
+            if (feof(stdin) || ferror(stdin)) {
+                err = EXIT;
+            } else {
+                err = tokenize_input(input, &parsed, &size_parsed);
+                if (err == ERR_OK) {
+                    //finding the function asked
+                    do {
+                        err = strcmp(parsed[0], shell_cmds[k].name);
+                        ++k;
+                    } while (k < 13 && err != 0);
+                    --k;
+                    if (err == 0) {
+                        function = shell_cmds[k].fct;
 
-            err = tokenize_input(input, &parsed, &size_parsed);
-            if (err == ERR_OK) {
-                do {
-                    err = strcmp(parsed[0], shell_cmds[k].name);
-                    ++k;
-                } while (k < 13 && err != 0);
-                --k;
-                if (err == 0) {
-                    function = shell_cmds[k].fct;
-
-                    if ((shell_cmds[k]).argc == size_parsed-1) {
-                        err = function(parsed);
+                        if ((shell_cmds[k]).argc == size_parsed-1) {
+                            err = function(parsed);
+                        } else {
+                            printf("ERROR SHELL: wrong number of arguements\n");
+                            err = ERR_ARGS;
+                        }
                     } else {
-                        printf("ERROR SHELL: wrong number of arguements\n");
+                        printf("ERROR SHELL: Invalid command\n");
                         err = ERR_ARGS;
                     }
-                } else {
-                    printf("ERROR SHELL: Invalid command\n");
-                    err = ERR_ARGS;
                 }
+
+                free(parsed);
             }
-
-            free(parsed);
-
         } else {
             err = ERR_NOMEM;
             puts(ERR_MESSAGES[err - ERR_FIRST]);
             err =  EXIT;
-        }
-
-        if (err != 0 && err != EXIT) {
-            err = ERR_OK;
         }
     }
 
@@ -137,7 +146,6 @@ int main()
 
 int tokenize_input (char* input, char*** parsed, int* size_parsed)
 {
-    if (input == NULL) return EXIT; //Pour s'occuper du cas CTRL + D
     char* ptr = NULL;
     int size = NB_ARGS;
 
@@ -316,10 +324,8 @@ int do_sha(char** args)
     }
 
     inode_nb = direntv6_dirlookup(&u, ROOT_INUMBER, args[1]);
-    //printf("err inode_nb = %d\n", inode_nb);
     if (inode_nb < 0) {
         printf("ERROR FS: ");
-        //printf("COUCOU\n");
         puts(ERR_MESSAGES[inode_nb - ERR_FIRST]);
         return ERR_FS;
     }
@@ -336,7 +342,6 @@ int do_sha(char** args)
         printf("SHA inode %d: no SHA for directories\n", inode_nb);
         return ERR_ARGS;
     }
-    // printf("SHA inode %d: ", inode_nb);
     print_sha_inode(&u, file.i_node, (int) inode_nb);
     printf("\n");
 

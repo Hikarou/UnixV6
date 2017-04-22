@@ -14,19 +14,23 @@ int test(struct unix_filesystem *u)
     chaine = "";
 
     err = direntv6_print_tree(u,ROOT_INUMBER,chaine);
-    printf("\n\n");
+    printf("\n");
 
+    //Test in disks/simple.uv6
     //char* ch = "/tmp/coucou.txt";
     //char* ch = "/tmp/coucoutxt";
-    //char* ch = "///tmp/coucou.txt";
-    char* ch = "////tmp////coucou.txt/////";//TODO Vérifier ceci
-    //char* ch = "/tmp/coucou.txt";
+    char* ch = "///tmp/coucou.txt";
+    //char* ch = "////tmp////coucou.txt/////";
+    //Test in disks/first.uv6
     //char* ch = "/hello/net/http/testdata/index.html";
     err = direntv6_dirlookup(u, ROOT_INUMBER, ch);
 
-    printf("err = %d\n", err);
+    printf("La recherche de %s ", ch);
     if (err >0) {
-        printf("\nNumero d'inode: %d\n", err);
+        printf("donne le numéro d'inode: %d", err);
+    } else {
+        printf("est inconcluante");
     }
+    printf("\n");
     return 0;
 }

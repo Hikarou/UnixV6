@@ -175,7 +175,7 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
     int k = 0;
     uint16_t inr_next = 0;
     char* name_ref;
-    char name_read[DIRENT_MAXLEN+1] = ""; // changé de char* name_read[DIRENT_MAXLEN+1]
+    char name_read[DIRENT_MAXLEN+1] = "";
 
     // Nom du futur dossier:
     do {
@@ -186,9 +186,9 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
                 ++taille; // taille contient déjà le \0
             }
         } else {
-            if (k == tailleTot-1){
-          		shiftTaille = k-taille;	
-          	}
+            if (k == tailleTot-1) {
+                shiftTaille = k-taille;
+            }
             ++taille;
         }
         ++k;
@@ -206,7 +206,7 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
     if (name_ref == NULL) {
         return ERR_NOMEM;
     }
-    
+
 
     for (int i = 0; i< taille-1; ++i) {
         name_ref[i] = entry[shiftTaille + i];
@@ -220,7 +220,7 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
         free(name_ref);
         return err;
     }
-	
+
     do {
         err = direntv6_readdir(&d, name_read, &inr_next);
         k = strncmp(name_ref, name_read, taille-1);
@@ -233,7 +233,7 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
 
     if (k != 0) {
         free(name_ref);
-        fprintf(stdout, "\nImpossible to find file: %s\n", entry);
+        //fprintf(stdout, "\nImpossible to find file: %s\n", entry);
         return ERR_IO;
     }
 
