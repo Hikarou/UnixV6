@@ -51,6 +51,12 @@ filev6.o: filev6.c mount.o inode.o error.o
 
 sha.o: sha.c inode.o mount.o filev6.o
 
+fs.o: fs.c
+	$(COMPILE.c) -D_DEFAULT_SOURCE $$(pkg-config fuse --cflags) -o $@ -c $<
+
+fs: fs.o 
+	$(LINK.c) -o $@ $^ $(LDLIBS) $$(pkg-config fuse --libs)
+
 clean:
 	rm -f *.o
 
