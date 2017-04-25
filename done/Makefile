@@ -51,10 +51,10 @@ filev6.o: filev6.c mount.o inode.o error.o
 
 sha.o: sha.c inode.o mount.o filev6.o
 
-fs.o: fs.c
+fs.o: fs.c mount.o sector.o direntv6.o error.o inode.o filev6.o
 	$(COMPILE.c) -D_DEFAULT_SOURCE $$(pkg-config fuse --cflags) -o $@ -c $<
 
-fs: fs.o 
+fs: fs.o mount.o sector.o direntv6.o error.o inode.o filev6.o
 	$(LINK.c) -o $@ $^ $(LDLIBS) $$(pkg-config fuse --libs)
 
 clean:
