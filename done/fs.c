@@ -71,9 +71,7 @@ static int fs_getattr(const char *path, struct stat *stbuf)
 
 static int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
                          off_t offset, struct fuse_file_info *fi)
-{
-	int err = 0;
-	
+{	
     (void) offset;
     (void) fi;
 
@@ -92,7 +90,7 @@ static int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
     }
     
     if (!(i.i_mode & IFDIR)){
-    	printf("Problem: required inode on directory\n);
+    	printf("Problem: required inode on directory\n");
     	return ERR_BAD_PARAMETER;
     } 
 
@@ -100,8 +98,10 @@ static int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 	err = direntv6_opendir(&fs, inode_nb, &d);
 	
 	while (err == 1) {
-		// loop sur d -> dirs pour les afficher tous.
-		filler(buf, 
+		for (int i = 0; i < d.last; ++i){
+			filler(buf, ((d.dirs)[i]).d_name, NULL, 0);
+		}
+		
 		err = direntv6_opendir(&fs, inode_nb, &d);
 	}
 
