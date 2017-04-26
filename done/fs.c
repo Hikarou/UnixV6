@@ -26,14 +26,13 @@ static int fs_getattr(const char *path, struct stat *stbuf)
 {
     int res = 0;
 
-    //Je ne suis pas sûr si cette vérification est obligatoire
     if (fs.f == NULL) {
         exit(1);
     }
 
     int inode_nb = direntv6_dirlookup(&fs, ROOT_INUMBER, path);
     if (inode_nb < 0) {
-		return inode_nb;
+        return inode_nb;
     }
 
     struct inode i;
@@ -47,8 +46,8 @@ static int fs_getattr(const char *path, struct stat *stbuf)
 
     memset(stbuf, 0, sizeof(struct stat));
 
-    
-    stbuf -> st_dev = 0; //Je ne sais pas quoi mettre là dedans:
+
+    stbuf -> st_dev = 0;
     stbuf -> st_ino = inode_nb;
     stbuf -> st_mode = (i.i_mode & IFDIR) ? S_IFDIR : S_IFREG;
     //Je ne suis pas sûr que l'on puisse séparer ça en deux, mais c'est plus joli, je testerai plus tard
@@ -56,77 +55,78 @@ static int fs_getattr(const char *path, struct stat *stbuf)
     stbuf -> st_nlink = i.i_nlink;
     stbuf -> st_uid = i.i_uid;
     stbuf -> st_gid = i.i_gid;
-    stbuf -> st_rdev = 0; 
+    stbuf -> st_rdev = 0;
     stbuf -> st_size = inode_getsize(&i);
     stbuf -> st_blksize = SECTOR_SIZE;
 
     stbuf -> st_blocks = (stbuf -> st_size)/SECTOR_SIZE;
-    //stbuf -> st_atim = i.atime; //ces deux lignes plantent car elle demandent des types timespec
-    //stbuf -> st_mtim = i.mtime;
+    stbuf -> st_atim.tv_sec = i.atime[0];
+    stbuf -> st_atim.tv_nsec = i.atime[1];
+    stbuf -> st_mtim.tv_sec = i.mtime[0];
+    stbuf -> st_mtim.tv_nsec = i.mtime[1];
     //stbuf -> st_ctim = ????;
 
     return res;
 }
 
 static int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
-                         off_t offset, struct fuse_file_info *fi)
-{	
+                      off_t offset, struct fuse_file_info *fi)
+{
     (void) offset;
     (void) fi;
 
     filler(buf, ".", NULL, 0);
     filler(buf, "..", NULL, 0);
-    
+
     int inode_nb = direntv6_dirlookup(&fs, ROOT_INUMBER, path);
     if (inode_nb < 0) {
-		return inode_nb;
+        return inode_nb;
     }
-    
+
     struct inode i;
     int err = inode_read(&fs, inode_nb, &i);
     if (err != 0) {
         return err;
     }
-    
-    if (!(i.i_mode & IFDIR)){
-    	printf("Problem: required inode on directory\n");
-    	return ERR_BAD_PARAMETER;
-    } 
 
-	struct directory_reader d; 
-	err = direntv6_opendir(&fs, inode_nb, &d);
-	
-	while (err == 1) {
-		for (int i = 0; i < d.last; ++i){
-			filler(buf, ((d.dirs)[i]).d_name, NULL, 0);
-		}
-		
-		err = direntv6_opendir(&fs, inode_nb, &d);
-	}
+    if (!(i.i_mode & IFDIR)) {
+        return ERR_BAD_PARAMETER;
+    }
+
+    struct directory_reader d;
+    err = direntv6_opendir(&fs, inode_nb, &d);
+
+    while (err == 1) {
+        for (int i = 0; i < d.last; ++i) {
+            filler(buf, ((d.dirs)[i]).d_name, NULL, 0);
+        }
+
+        err = direntv6_opendir(&fs, inode_nb, &d);
+    }
 
     return 0;
 }
 
 static int fs_read(const char *path, char *buf, size_t size, off_t offset,
-                      struct fuse_file_info *fi)
+                   struct fuse_file_info *fi)
 {
     (void) fi;
     int nb_lu = 0;
     int inode_nb = 0;
     int k = 0;
     char *ptr = buf;
-	char *buf2 = NULL;
-	int err = 0;
+    char *buf2 = NULL;
+    int err = 0;
 
     struct filev6 file;
-    
+
     // ouvrir le fichier
     inode_nb = direntv6_dirlookup(&fs, ROOT_INUMBER, path);
     if (inode_nb < 0) {
         puts(ERR_MESSAGES[inode_nb - ERR_FIRST]);
         exit(1);
     }
-    
+
     err = inode_read(&fs, inode_nb, &(file.i_node));
     if (err != 0) {
         puts(ERR_MESSAGES[err - ERR_FIRST]);
@@ -138,55 +138,51 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset,
         puts(ERR_MESSAGES[err - ERR_FIRST]);
         exit(1);
     }
-    
-   	// changer l'offset
-   	err = filev6_lseek(&file, offset);
-   	if (err != 0) {
+
+    // changer l'offset
+    err = filev6_lseek(&file, offset);
+    if (err != 0) {
         puts(ERR_MESSAGES[err - ERR_FIRST]);
         exit(1);
     }
-    
-   	//lire les secteurs nécessaires pour avoir 64 ko au max
-   	if (size < SECTOR_SIZE){
-   		buf2 = malloc(SECTOR_SIZE);
-   		if (buf2 == NULL){
-   			exit(1);
-   		}
-   		// utilisation de memcpy
-   		k = file.offset % SECTOR_SIZE;
-   		err = filev6_readblock(&file, buf2);
-   		if (err < 0){
-   			return err;
-   		}
-   		else {
-   			if (k + size > SECTOR_SIZE){
-   				size = (size_t) (SECTOR_SIZE - k);		
-   			}
-   			memcpy(buf, buf2+k, size);
-   			nb_lu = size;
-   		}
-   		free(buf2);
-   	}
-   	else{
-		do{
-			err = filev6_readblock(&file, ptr);
-			if (err == SECTOR_SIZE){
-				ptr += SECTOR_SIZE;
-				++k;
-			}
-			else if (err > 0 && err < SECTOR_SIZE){
-				err = 0;
-			}
-		} while (err > 0 && k*SECTOR_SIZE < size);
-   		
-   		if (err < 0){
-   			nb_lu = 0;
-   		}
-   		else{
-   			nb_lu = file.offset;
-   		}
-   	}
-    
+
+    //lire les secteurs nécessaires pour avoir 64 ko au max
+    if (size < SECTOR_SIZE) {
+        buf2 = malloc(SECTOR_SIZE);
+        if (buf2 == NULL) {
+            exit(1);
+        }
+        // utilisation de memcpy
+        k = file.offset % SECTOR_SIZE;
+        err = filev6_readblock(&file, buf2);
+        if (err < 0) {
+            return err;
+        } else {
+            if (k + size > SECTOR_SIZE) {
+                size = (size_t) (SECTOR_SIZE - k);
+            }
+            memcpy(buf, buf2+k, size);
+            nb_lu = size;
+        }
+        free(buf2);
+    } else {
+        do {
+            err = filev6_readblock(&file, ptr);
+            if (err == SECTOR_SIZE) {
+                ptr += SECTOR_SIZE;
+                ++k;
+            } else if (err > 0 && err < SECTOR_SIZE) {
+                err = 0;
+            }
+        } while (err > 0 && k*SECTOR_SIZE < size);
+
+        if (err < 0) {
+            nb_lu = 0;
+        } else {
+            nb_lu = file.offset;
+        }
+    }
+
     return nb_lu;
 }
 
@@ -205,12 +201,12 @@ static int arg_parse(void *data, const char *filename, int key, struct fuse_args
     (void) outargs;
     if (key == FUSE_OPT_KEY_NONOPT && fs.f == NULL && filename != NULL) {
 
-		int err = mountv6(filename, &fs);
+        int err = mountv6(filename, &fs);
 
-		if (err != 0) {
-		       puts(ERR_MESSAGES[err - ERR_FIRST]);
-		   exit(1);
-		}
+        if (err != 0) {
+            puts(ERR_MESSAGES[err - ERR_FIRST]);
+            exit(1);
+        }
         return 0;
     }
     return 1;

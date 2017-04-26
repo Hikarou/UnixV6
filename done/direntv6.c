@@ -163,13 +163,20 @@ int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const cha
     return err;
 }
 
-
+/**
+ * @brief get the inode number for the given path
+ * @param u a mounted filesystem
+ * @param inr the root of the subtree
+ * @param entry the pathname relative to the subtree
+ * @return inr on success; <0 on error
+ */
 int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char *entry)
 {
     M_REQUIRE_NON_NULL(u);
     M_REQUIRE_NON_NULL(entry);
     int err = 0;
     size_t tailleTot = strlen(entry);
+    if (tailleTot == 1 && entry [0] == '/') return ROOT_INUMBER;
     size_t taille = 0;
     size_t shiftTaille = 0;
     size_t k = 0;
