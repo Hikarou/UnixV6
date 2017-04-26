@@ -114,8 +114,8 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset,
     int nb_lu = 0;
     int inode_nb = 0;
     int k = 0;
-    void *ptr = buf;
-	void *buf2 = NULL;
+    char *ptr = buf;
+	char *buf2 = NULL;
 	int err = 0;
 
     struct filev6 file;
