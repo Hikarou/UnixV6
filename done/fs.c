@@ -111,8 +111,83 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset,
                       struct fuse_file_info *fi)
 {
     (void) fi;
+    int nb_lu = 0;
+    int inode_nb = 0;
+    int k = 0;
+    void *ptr = buf;
+	void *buf2 = NULL;
+	int err = 0;
+
+    struct filev6 file;
     
+    // ouvrir le fichier
+    inode_nb = direntv6_dirlookup(&fs, ROOT_INUMBER, path);
+    if (inode_nb < 0) {
+        puts(ERR_MESSAGES[inode_nb - ERR_FIRST]);
+        exit(1);
+    }
     
+    err = inode_read(&fs, inode_nb, &(file.i_node));
+    if (err != 0) {
+        puts(ERR_MESSAGES[err - ERR_FIRST]);
+        exit(1);
+    }
+
+    err = filev6_open(&fs, inode_nb, &file);
+    if (err != 0) {
+        puts(ERR_MESSAGES[err - ERR_FIRST]);
+        exit(1);
+    }
+    
+   	// changer l'offset
+   	err = filev6_lseek(&file, offset);
+   	if (err != 0) {
+        puts(ERR_MESSAGES[err - ERR_FIRST]);
+        exit(1);
+    }
+    
+   	//lire les secteurs nécessaires pour avoir 64 ko au max
+   	if (size < SECTOR_SIZE){
+   		buf2 = malloc(SECTOR_SIZE);
+   		if (buf2 == NULL){
+   			exit(1);
+   		}
+   		// utilisation de memcpy
+   		k = file.offset % SECTOR_SIZE;
+   		err = filev6_readblock(&file, buf2);
+   		if (err < 0){
+   			return err;
+   		}
+   		else {
+   			if (k + size > SECTOR_SIZE){
+   				size = (size_t) (SECTOR_SIZE - k);		
+   			}
+   			memcpy(buf, buf2+k, size);
+   			nb_lu = size;
+   		}
+   		free(buf2);
+   	}
+   	else{
+		do{
+			err = filev6_readblock(&file, ptr);
+			if (err == SECTOR_SIZE){
+				ptr += SECTOR_SIZE;
+				++k;
+			}
+			else if (err > 0 && err < SECTOR_SIZE){
+				err = 0;
+			}
+		} while (err > 0 && k*SECTOR_SIZE < size);
+   		
+   		if (err < 0){
+   			nb_lu = 0;
+   		}
+   		else{
+   			nb_lu = file.offset;
+   		}
+   	}
+    
+    return nb_lu;
 }
 
 static struct fuse_operations available_ops = {
