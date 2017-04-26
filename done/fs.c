@@ -27,7 +27,6 @@ static int fs_getattr(const char *path, struct stat *stbuf)
     int res = 0;
 
     //Je ne suis pas sûr si cette vérification est obligatoire
-    // OUI je pense que c'est bien
     if (fs.f == NULL) {
         exit(1);
     }
@@ -49,7 +48,7 @@ static int fs_getattr(const char *path, struct stat *stbuf)
     memset(stbuf, 0, sizeof(struct stat));
 
     
-    //stbuf -> st_dev = ????; //Je ne sais pas quoi mettre là dedans:
+    stbuf -> st_dev = 0; //Je ne sais pas quoi mettre là dedans:
     stbuf -> st_ino = inode_nb;
     stbuf -> st_mode = (i.i_mode & IFDIR) ? S_IFDIR : S_IFREG;
     //Je ne suis pas sûr que l'on puisse séparer ça en deux, mais c'est plus joli, je testerai plus tard
@@ -57,9 +56,9 @@ static int fs_getattr(const char *path, struct stat *stbuf)
     stbuf -> st_nlink = i.i_nlink;
     stbuf -> st_uid = i.i_uid;
     stbuf -> st_gid = i.i_gid;
-    //stbuf -> st_rdev = ????; 
+    stbuf -> st_rdev = 0; 
     stbuf -> st_size = inode_getsize(&i);
-    //stbuf -> st_blksize = ????;   The st_blksize field gives the "preferred" blocksize for efficient filesystem I/O.   (Writing to a file in smaller chunks may cause an inefficient read-modify-rewrite.)
+    stbuf -> st_blksize = SECTOR_SIZE;
 
     stbuf -> st_blocks = (stbuf -> st_size)/SECTOR_SIZE;
     //stbuf -> st_atim = i.atime; //ces deux lignes plantent car elle demandent des types timespec
