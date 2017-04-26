@@ -47,7 +47,20 @@ int filev6_open(const struct unix_filesystem *u, uint16_t inr, struct filev6 *fv
  * @param off the new offset of the file
  * @return 0 on success; <0 on errror
  */
-int filev6_lseek(struct filev6 *fv6, int32_t offset);
+int filev6_lseek(struct filev6 *fv6, int32_t offset)
+{
+	if (offset < 0){
+		return ERR_BAD_PARAMETER;
+	}
+	
+	if (offset > inode_getsize(&(fv6 -> i_node))){
+		return ERR_OFFSET_OUT_OF_RANGE;
+	}
+	
+	fv6 -> offset = offset;
+	
+	return 0;
+}
 
 /**
  * @brief read at most SECTOR_SIZE from the file at the current cursor
