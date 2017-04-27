@@ -114,7 +114,6 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset,
     char *buf2 = NULL;
 
     struct filev6 file;
-
     // ouvrir le fichier
     int err = direntv6_dirlookup(&fs, ROOT_INUMBER, path);
     if (err < 0) {
@@ -136,7 +135,7 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset,
     }
 
     // changer l'offset
-    err = filev6_lseek(&file, offset);
+    err = filev6_lseek(&file, (int32_t) offset);
     if (err != 0) {
 	//C'est ici que j'ai corrigé. Il essayait de lire l'offset suivant et ça tombait à l'eau
 	//puts(ERR_MESSAGES[err - ERR_FIRST]);
@@ -177,7 +176,7 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset,
         if (err < 0) {
             nb_lu = 0;
         } else {
-            nb_lu = file.offset;
+            nb_lu = file.offset - offset;
         }
     }
 
