@@ -53,7 +53,7 @@ int filev6_lseek(struct filev6 *fv6, int32_t offset)
         return ERR_BAD_PARAMETER;
     }
 
-    if (offset > inode_getsize(&(fv6 -> i_node))) {
+    if (offset >= inode_getsize(&(fv6 -> i_node))) {
         return ERR_OFFSET_OUT_OF_RANGE;
     }
 
