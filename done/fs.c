@@ -41,15 +41,11 @@ static int fs_getattr(const char *path, struct stat *stbuf)
         return err;
     }
 
-    //For debug purpose
-    inode_print(&i);
-
     memset(stbuf, 0, sizeof(struct stat));
 
     stbuf -> st_dev = 0;
     stbuf -> st_ino = inode_nb;
     stbuf -> st_mode = (i.i_mode & IFDIR) ? S_IFDIR : S_IFREG;
-    //Je ne suis pas sûr que l'on puisse séparer ça en deux, mais c'est plus joli, je testerai plus tard
     stbuf -> st_mode = stbuf -> st_mode | S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH;
     stbuf -> st_nlink = i.i_nlink;
     stbuf -> st_uid = i.i_uid;
@@ -62,7 +58,6 @@ static int fs_getattr(const char *path, struct stat *stbuf)
     stbuf -> st_atim.tv_nsec = i.atime[1];
     stbuf -> st_mtim.tv_sec = i.mtime[0];
     stbuf -> st_mtim.tv_nsec = i.mtime[1];
-    //stbuf -> st_ctim = ????;
 
     return res;
 }
@@ -73,12 +68,10 @@ static int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
     (void) offset;
     (void) fi;
 
-    printf("rdir for %s\n", path);
     filler(buf, ".", NULL, 0);
     filler(buf, "..", NULL, 0);
 
     int err = direntv6_dirlookup(&fs, ROOT_INUMBER, path);
-    printf("rdir1 : %d\n", err);
     if (err < 0) {
         return err;
     }
@@ -86,7 +79,6 @@ static int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 
     struct inode i;
     err = inode_read(&fs, inode_nb, &i);
-    printf("rdir2 : %d\n", err);
 
     if (err != 0) {
         return err;
@@ -98,18 +90,15 @@ static int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 
     struct directory_reader d;
     err = direntv6_opendir(&fs, inode_nb, &d);
-    printf("rdir3 : %d\n", err);
 
     if (err < 0) return err;
 
     char name[DIRENT_MAXLEN+1] = "";
     err = direntv6_readdir(&d, name, &inode_nb);
-    printf("rdir4 : %d, %s\n", err, name);
 
     while (err == 1) {
 	filler(buf, name, NULL, 0);
         err = direntv6_readdir(&d, name, &inode_nb);
-        printf("rdir5 : %d, %s\n", err, name);
     };
 
     return 0;
@@ -118,34 +107,29 @@ static int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 static int fs_read(const char *path, char *buf, size_t size, off_t offset,
                    struct fuse_file_info *fi)
 {
-    printf("read1, %s\n", path);
     (void) fi;
     int nb_lu = 0;
-    int inode_nb = 0;
     int k = 0;
     char *ptr = buf;
     char *buf2 = NULL;
-    int err = 0;
 
     struct filev6 file;
 
     // ouvrir le fichier
-    inode_nb = direntv6_dirlookup(&fs, ROOT_INUMBER, path);
-    printf("read2, %d\n", inode_nb);
-    if (inode_nb < 0) {
-        puts(ERR_MESSAGES[inode_nb - ERR_FIRST]);
+    int err = direntv6_dirlookup(&fs, ROOT_INUMBER, path);
+    if (err < 0) {
+        puts(ERR_MESSAGES[err - ERR_FIRST]);
         exit(1);
     }
+    uint16_t inode_nb = (uint16_t) err;
 
     err = inode_read(&fs, inode_nb, &(file.i_node));
-    printf("read3, %d\n", err);
     if (err != 0) {
         puts(ERR_MESSAGES[err - ERR_FIRST]);
         exit(1);
     }
 
     err = filev6_open(&fs, inode_nb, &file);
-    printf("read4, %d\n", err);
     if (err != 0) {
         puts(ERR_MESSAGES[err - ERR_FIRST]);
         exit(1);
@@ -153,10 +137,11 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset,
 
     // changer l'offset
     err = filev6_lseek(&file, offset);
-    printf("read5, %d\n", err);
     if (err != 0) {
-        puts(ERR_MESSAGES[err - ERR_FIRST]);
-        exit(1);
+	//C'est ici que j'ai corrigé. Il essayait de lire l'offset suivant et ça tombait à l'eau
+	//puts(ERR_MESSAGES[err - ERR_FIRST]);
+        //exit(1);
+	return 0;
     }
 
     //lire les secteurs nécessaires pour avoir 64 ko au max
@@ -168,7 +153,6 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset,
         // utilisation de memcpy
         k = file.offset % SECTOR_SIZE;
         err = filev6_readblock(&file, buf2);
-        printf("read6, %d\n", err);
         if (err < 0) {
             return err;
         } else {
