@@ -46,7 +46,6 @@ static int fs_getattr(const char *path, struct stat *stbuf)
 
     memset(stbuf, 0, sizeof(struct stat));
 
-
     stbuf -> st_dev = 0;
     stbuf -> st_ino = inode_nb;
     stbuf -> st_mode = (i.i_mode & IFDIR) ? S_IFDIR : S_IFREG;
@@ -58,7 +57,6 @@ static int fs_getattr(const char *path, struct stat *stbuf)
     stbuf -> st_rdev = 0;
     stbuf -> st_size = inode_getsize(&i);
     stbuf -> st_blksize = SECTOR_SIZE;
-
     stbuf -> st_blocks = (stbuf -> st_size)/SECTOR_SIZE;
     stbuf -> st_atim.tv_sec = i.atime[0];
     stbuf -> st_atim.tv_nsec = i.atime[1];
@@ -75,16 +73,21 @@ static int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
     (void) offset;
     (void) fi;
 
+    printf("rdir for %s\n", path);
     filler(buf, ".", NULL, 0);
     filler(buf, "..", NULL, 0);
 
-    int inode_nb = direntv6_dirlookup(&fs, ROOT_INUMBER, path);
-    if (inode_nb < 0) {
-        return inode_nb;
+    int err = direntv6_dirlookup(&fs, ROOT_INUMBER, path);
+    printf("rdir1 : %d\n", err);
+    if (err < 0) {
+        return err;
     }
+    uint16_t inode_nb = (uint16_t) err;
 
     struct inode i;
-    int err = inode_read(&fs, inode_nb, &i);
+    err = inode_read(&fs, inode_nb, &i);
+    printf("rdir2 : %d\n", err);
+
     if (err != 0) {
         return err;
     }
@@ -95,14 +98,19 @@ static int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 
     struct directory_reader d;
     err = direntv6_opendir(&fs, inode_nb, &d);
+    printf("rdir3 : %d\n", err);
+
+    if (err < 0) return err;
+
+    char name[DIRENT_MAXLEN+1] = "";
+    err = direntv6_readdir(&d, name, &inode_nb);
+    printf("rdir4 : %d, %s\n", err, name);
 
     while (err == 1) {
-        for (int i = 0; i < d.last; ++i) {
-            filler(buf, ((d.dirs)[i]).d_name, NULL, 0);
-        }
-
-        err = direntv6_opendir(&fs, inode_nb, &d);
-    }
+	filler(buf, name, NULL, 0);
+        err = direntv6_readdir(&d, name, &inode_nb);
+        printf("rdir5 : %d, %s\n", err, name);
+    };
 
     return 0;
 }
