@@ -15,7 +15,11 @@ extern "C" {
 #endif
 
 struct bmblock_array {
-    int unused; // so that it can compile before WEEK 9
+   size_t length;
+   uint64_t cursor;
+   uint64_t min;
+   uint64_t max;
+   uint64_t bm[1];
 };
 
 #define BITS_PER_VECTOR (8*sizeof(((struct bmblock_array*)0)->bm[0]))

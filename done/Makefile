@@ -9,11 +9,18 @@ inode.o: inode.c inode.h sector.o error.o
 
 error.o: error.c error.h
 
+bmblock.o: bmblock.c error.o
+
 test-core.o: test-core.c error.o mount.o 
 
 test-machin.o: test-machin.c error.o
 
 test-machin: test-machin.o test-core.o error.o mount.o sector.o inode.o
+	gcc -o $@ $^
+	
+test-bitmap.o: test-bitmap.c error.o bmblock.o 
+
+test-bitmap: test-bitmap.o error.o bmblock.o 
 	gcc -o $@ $^
 
 test-inodes.o: test-inodes.c test-inodes.h mount.o error.o
