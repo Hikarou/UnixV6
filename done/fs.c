@@ -58,6 +58,8 @@ static int fs_getattr(const char *path, struct stat *stbuf)
     stbuf -> st_atim.tv_nsec = i.atime[1];
     stbuf -> st_mtim.tv_sec = i.mtime[0];
     stbuf -> st_mtim.tv_nsec = i.mtime[1];
+    stbuf -> st_ctim.tv_sec = i.mtime[0];
+    stbuf -> st_ctim.tv_nsec = i.mtime[1];
 
     return res;
 }
@@ -97,7 +99,7 @@ static int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
     err = direntv6_readdir(&d, name, &inode_nb);
 
     while (err == 1) {
-	filler(buf, name, NULL, 0);
+        filler(buf, name, NULL, 0);
         err = direntv6_readdir(&d, name, &inode_nb);
     };
 
@@ -137,10 +139,7 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset,
     // changer l'offset
     err = filev6_lseek(&file, (int32_t) offset);
     if (err != 0) {
-	//C'est ici que j'ai corrigé. Il essayait de lire l'offset suivant et ça tombait à l'eau
-	//puts(ERR_MESSAGES[err - ERR_FIRST]);
-        //exit(1);
-	return 0;
+        return 0;
     }
 
     //lire les secteurs nécessaires pour avoir 64 ko au max
