@@ -66,7 +66,7 @@ int bm_get(struct bmblock_array *bmblock_array, uint64_t x)
         return ERR_BAD_PARAMETER;
 
     uint64_t i = (x - bmblock_array -> min)/(sizeof(uint64_t)*8);
-    return (bmblock_array -> bm[i]) & (UINT64_C(1) << ((x - bmblock_array -> min)%(sizeof(uint64_t)*8)));
+    return (bmblock_array -> bm[i]) & (UINT64_C(1) << ((x - bmblock_array -> min)%(sizeof(uint64_t)*8))) ? 1 : 0;
 
     //pratique pour la suite peut-être
     /*if(err == 0 && ((x - bmblock_array -> min)< bmblock_array -> cursor)){
@@ -119,11 +119,14 @@ void bm_print(struct bmblock_array *bmblock_array)
             printf("%lu: ", i);
             for (size_t j = 0; j < sizeof(uint64_t); ++j) {
                 for (size_t k = 0; k<8; ++k) {
+                    printf("%d", bm_get(bmblock_array, i*8*8 + j*8 + k + bmblock_array -> min));
+			/*
                     if ((bmblock_array -> bm[i]) & (UINT64_C(1) << (j*8 + k))) {
                         printf("1");
                     } else {
                         printf("0");
                     }
+		    // */
                 }
                 printf(" ");
             }
