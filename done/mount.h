@@ -23,6 +23,19 @@ struct unix_filesystem {
     struct bmblock_array *ibm;     /* inode bitmap  -- ignore before WEEK 10 */
 };
 
+
+/**
+ * @brief  fill the vector bitmap of the inodes 
+ * u - the mounted filesystem
+ */
+void fill_ibm(struct unix_filesystem * u);
+
+/**
+ * @brief  fill the vector bitmap of the sectors 
+ * u - the mounted filesystem
+ */
+void fill_fbm(struct unix_filesystem * u);
+
 /**
  * @brief  mount a unix v6 filesystem
  * @param filename name of the unixv6 filesystem on the underlying disk (IN)

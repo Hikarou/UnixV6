@@ -33,9 +33,9 @@ test-file.o: test-file.c test-core.o filev6.o error.o mount.o sector.o inode.o
 test-file : test-file.o test-core.o filev6.o error.o mount.o sector.o inode.o sha.o
 	gcc -o $@ $^ -lcrypto
 
-test-dirent.o: test-dirent.c direntv6.o mount.o error.o sector.o
+test-dirent.o: test-dirent.c direntv6.o mount.o error.o sector.o bmblock.o
 
-test-dirent: test-dirent.o test-core.o mount.o error.o direntv6.o sector.o filev6.o inode.o
+test-dirent: test-dirent.o test-core.o mount.o error.o direntv6.o sector.o filev6.o inode.o bmblock.o
 	gcc -o $@ $^
 	
 test-direntlookup.o: test-direntlookup.c direntv6.o mount.o error.o sector.o
@@ -52,7 +52,7 @@ direntv6.o: direntv6.c direntv6.h filev6.o error.o
 
 sector.o: sector.c error.o
 
-mount.o: mount.c sector.o inode.o error.o
+mount.o: mount.c sector.o inode.o error.o bmblock.o
 
 filev6.o: filev6.c mount.o inode.o error.o
 
