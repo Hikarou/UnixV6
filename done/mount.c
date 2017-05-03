@@ -31,13 +31,18 @@ void fill_ibm(struct unix_filesystem * u)
 	struct inode inode;
 	uint8_t data[SECTOR_SIZE];
 	uint64_t actu = 0; 
-	 
-	for (uint32_t i = 0; i < u -> s.s_isize; ++i) { // pour chaque secteur
+	uint64_t i = 0;
+	uint16_t k = 0;
+	
+	for (uint64_t j = u -> ibm -> min; j < u -> ibm -> max; ++j){ // tout effacer
+		bm_clear(u -> ibm, j);
+	}
+	
+	while (actu < u -> ibm -> max) { // pour chaque secteur
         err = sector_read(u -> f, u -> s.s_inode_start + i, data);
-        for (uint16_t k = 0; k < INODES_PER_SECTOR; ++k) { // pour chaque inode
-        	actu = (uint64_t) (u -> ibm -> min + i*INODES_PER_SECTOR + k);
+        for (k = 0; k < INODES_PER_SECTOR; ++k) { // pour chaque inode
             if (!err){ // si pas d'erreur de lecture
-            	if ((actu > u -> ibm -> min) && (actu < u -> ibm -> max)){ 
+            	if ((actu >= u -> ibm -> min) && (actu <= u -> ibm -> max)){ 
 				    inode.i_mode = (uint16_t)((data[k * 32 + 1] << 8) + data[k * 32]);
 				    if (inode.i_mode & IALLOC) {
 						bm_set(u -> ibm, actu);
@@ -45,12 +50,17 @@ void fill_ibm(struct unix_filesystem * u)
 				    else{
 				    	bm_clear(u -> ibm, actu);
 				    }
+				    //printf("actuellement: %lu\n", actu);
 		        }
             }
             else{// si une erreur de lecture
             	bm_set(u -> ibm, actu);
             }
+            ++actu;
         }
+        ++i;
+        actu += (uint64_t) INODES_PER_SECTOR;
+
     }
 }
 
@@ -72,15 +82,17 @@ void fill_fbm(struct unix_filesystem * u)
 	// pour chaque inode: appeler inode find sector
 	for (uint64_t i = u -> ibm -> min; i < u -> ibm -> max; ++i){
 		err = bm_get(u -> ibm, i);
+		printf("i = %d, utilisé: %d\n",i, err);
 		if (err == 1){
-			// ici il y a un soucis avec ce que le prof veut
 			err = inode_read(u, i, &inode);
-			taille = inode_getsize(&inode);
 			if (!err){
+				taille = inode_getsize(&inode);
 				err =  inode_findsector(u, &inode, 0);
+				printf("Premier Secteur: %d\n",err);
 				if (err > 0){
 					while (0 < taille){
 						bm_set(u->fbm, err);
+						printf("secteur: %d : 1\n", err);
 						++err;
 						taille -= SECTOR_SIZE;
 					}
@@ -147,7 +159,7 @@ int mountv6(const char *filename, struct unix_filesystem *u)
 	u -> fbm = NULL;
 	u -> ibm = NULL;
 
-	u -> fbm = bm_alloc((uint64_t) u -> s.s_block_start, (uint64_t) u -> s.s_fsize);
+	u -> fbm = bm_alloc((uint64_t) u -> s.s_block_start+ UINT64_C(1), (uint64_t) u -> s.s_fsize);
 	u -> ibm = bm_alloc(UINT64_C(ROOT_INUMBER + 1), (uint64_t) (u -> s.s_isize)*INODES_PER_SECTOR);
 	
 	if (u -> ibm == NULL ||u -> fbm == NULL ){

@@ -119,14 +119,12 @@ void bm_print(struct bmblock_array *bmblock_array)
             printf("%lu: ", i);
             for (size_t j = 0; j < sizeof(uint64_t); ++j) {
                 for (size_t k = 0; k<8; ++k) {
-                    printf("%d", bm_get(bmblock_array, i*8*8 + j*8 + k + bmblock_array -> min));
-			/*
+              //      printf("%d", bm_get(bmblock_array, i*sizeof(uint64_t)*8 + j*8 + k + bmblock_array -> min));
                     if ((bmblock_array -> bm[i]) & (UINT64_C(1) << (j*8 + k))) {
                         printf("1");
                     } else {
                         printf("0");
                     }
-		    // */
                 }
                 printf(" ");
             }
