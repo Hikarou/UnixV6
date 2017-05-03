@@ -5,63 +5,63 @@ CFLAGS += -std=c99 -Wall -pedantic
 
 all: test-inodes test-file test-dirent test-direntlookup shell fs test-bitmap
 
-inode.o: inode.c inode.h sector.o error.o
+inode.o: inode.c inode.h
 
 error.o: error.c error.h
 
-bmblock.o: bmblock.c error.o
+bmblock.o: bmblock.c error.h
 
-test-core.o: test-core.c error.o mount.o 
+test-core.o: test-core.c
 
-test-machin.o: test-machin.c error.o
+test-machin.o: test-machin.c
 
 test-machin: test-machin.o test-core.o error.o mount.o sector.o inode.o
 	gcc -o $@ $^
 	
-test-bitmap.o: test-bitmap.c error.o bmblock.o 
+test-bitmap.o: test-bitmap.c
 
 test-bitmap: test-bitmap.o error.o bmblock.o 
 	gcc -o $@ $^
 
-test-inodes.o: test-inodes.c test-inodes.h mount.o error.o
+test-inodes.o: test-inodes.c
 
-test-inodes: test-inodes.o test-core.o error.o mount.o sector.o inode.o
+test-inodes: test-inodes.o test-core.o error.o mount.o sector.o inode.o bmblock.o
 	gcc -o $@ $^
 
-test-file.o: test-file.c test-core.o filev6.o error.o mount.o sector.o inode.o
+test-file.o: test-file.c
 
-test-file : test-file.o test-core.o filev6.o error.o mount.o sector.o inode.o sha.o
+test-file : test-file.o test-core.o filev6.o error.o mount.o sector.o inode.o sha.o bmblock.o
 	gcc -o $@ $^ -lcrypto
 
-test-dirent.o: test-dirent.c direntv6.o mount.o error.o sector.o bmblock.o
+test-dirent.o: test-dirent.c
 
 test-dirent: test-dirent.o test-core.o mount.o error.o direntv6.o sector.o filev6.o inode.o bmblock.o
 	gcc -o $@ $^
 	
-test-direntlookup.o: test-direntlookup.c direntv6.o mount.o error.o sector.o
+test-direntlookup.o: test-direntlookup.c
 
-test-direntlookup: test-direntlookup.o test-core.o mount.o error.o direntv6.o sector.o filev6.o inode.o
+test-direntlookup: test-direntlookup.o test-core.o mount.o error.o direntv6.o sector.o filev6.o inode.o bmblock.o
 	gcc -o $@ $^
 
-shell.o: shell.c mount.o sector.o direntv6.o error.o inode.o sha.o filev6.o bmblock.o
+shell.o: shell.c
 
 shell: shell.o mount.o sector.o direntv6.o error.o inode.o sha.o filev6.o bmblock.o
 	gcc -g -o $@ $^ -lcrypto
 
-direntv6.o: direntv6.c direntv6.h filev6.o error.o
+direntv6.o: direntv6.c direntv6.h
 
-sector.o: sector.c error.o
+sector.o: sector.c sector.h
 
-mount.o: mount.c sector.o inode.o error.o bmblock.o
+mount.o: mount.c mount.h
 
-filev6.o: filev6.c mount.o inode.o error.o
+filev6.o: filev6.c mount.h
 
-sha.o: sha.c inode.o mount.o filev6.o
+sha.o: sha.c sha.h
 
-fs.o: fs.c mount.o sector.o direntv6.o error.o inode.o filev6.o
+fs.o: fs.c
 	$(COMPILE.c) -D_DEFAULT_SOURCE $$(pkg-config fuse --cflags) -o $@ -c $<
 
-fs: fs.o mount.o sector.o direntv6.o error.o inode.o filev6.o
+fs: fs.o mount.o sector.o direntv6.o error.o inode.o filev6.o bmblock.o
 	$(LINK.c) -o $@ $^ $(LDLIBS) $$(pkg-config fuse --libs)
 
 clean:
