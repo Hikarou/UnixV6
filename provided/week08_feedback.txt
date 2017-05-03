@@ -42,42 +42,7 @@ s_time        : [0] 0						s_time              : [0] 0
 Inode   1 (DIR) len     16				      |	inode   1 (DIR) len   16
 Inode   2 (DIR) len     16				      |	inode   2 (DIR) len   16
 Inode   3 (FIL) len     18				      |	inode   3 (FIL) len   18
-							      |	TESTS_BEGINNING
-							      >	isize: 32
-							      >	fsize: 1024
-							      >	fbmsize: 0
-							      >	ibmsize: 0
-							      >	inode_start: 2
-							      >	block_start: 34
-							      >	fbm_start: 0
-							      >	ibm_start: 0
-							      >	TEST_BEGIN
-							      >	sector_read_null_file_ptr: PASS
-							      >	sector_read_null_data_ptr: PASS
-							      >	successful_read: PASS
-							      >	overseek: PASS
-							      >	fbm_null: PASS
-							      >	ibm_null: PASS
-							      >	non_null_file: PASS
-							      >	TEST_END
-							      >	MOUNT_TEST_BEGIN
-							      >	**********FS SUPERBLOCK START**********
-							      >	s_isize             : 32
-							      >	s_fsize             : 1024
-							      >	s_fbmsize           : 0
-							      >	s_ibmsize           : 0
-							      >	s_inode_start       : 2
-							      >	s_block_start       : 34
-							      >	s_fbm_start         : 0
-							      >	s_ibm_start         : 0
-							      >	s_flock             : 0
-							      >	s_ilock             : 0
-							      >	s_fmod              : 0
-							      >	s_ronly             : 0
-							      >	s_time              : [0] 0
-							      >	**********FS SUPERBLOCK END**********
-							      >	MOUNT_TEST_END
-							      >	TESTS_END
+							      <
 =====
 testing our test-inodes on disk aiw.uv6: done.
 diff from reference:
@@ -117,42 +82,7 @@ Inode  18 (FIL) len  12149				      |	inode  18 (FIL) len 12149
 Inode  19 (FIL) len   1428				      |	inode  19 (FIL) len 1428
 Inode  20 (DIR) len     16				      |	inode  20 (DIR) len   16
 Inode  21 (FIL) len 169856				      |	inode  21 (FIL) len 169856
-							      |	TESTS_BEGINNING
-							      >	isize: 64
-							      >	fsize: 4096
-							      >	fbmsize: 0
-							      >	ibmsize: 0
-							      >	inode_start: 2
-							      >	block_start: 66
-							      >	fbm_start: 0
-							      >	ibm_start: 0
-							      >	TEST_BEGIN
-							      >	sector_read_null_file_ptr: PASS
-							      >	sector_read_null_data_ptr: PASS
-							      >	successful_read: PASS
-							      >	overseek: PASS
-							      >	fbm_null: PASS
-							      >	ibm_null: PASS
-							      >	non_null_file: PASS
-							      >	TEST_END
-							      >	MOUNT_TEST_BEGIN
-							      >	**********FS SUPERBLOCK START**********
-							      >	s_isize             : 64
-							      >	s_fsize             : 4096
-							      >	s_fbmsize           : 0
-							      >	s_ibmsize           : 0
-							      >	s_inode_start       : 2
-							      >	s_block_start       : 66
-							      >	s_fbm_start         : 0
-							      >	s_ibm_start         : 0
-							      >	s_flock             : 0
-							      >	s_ilock             : 0
-							      >	s_fmod              : 0
-							      >	s_ronly             : 0
-							      >	s_time              : [0] 0
-							      >	**********FS SUPERBLOCK END**********
-							      >	MOUNT_TEST_END
-							      >	TESTS_END
+							      <
 =====
 testing our test-file on disk simple.uv6: done.
 diff from reference:
@@ -171,27 +101,27 @@ s_fmod        : 0						s_fmod              : 0
 s_ronly       : 0						s_ronly             : 0
 s_time        : [0] 0						s_time              : [0] 0
 **********FS SUPERBLOCK END**********				**********FS SUPERBLOCK END**********
-							      |	TEST_BEGIN
-Printing inode #3:					      |	inode_read_null_fs: PASS
-**********FS INODE START**********			      |	inode_read_null_inode: PASS
-i_mode  : 32768						      |	inode_read_bad_inr: PASS
-i_nlink : 0						      |	inode_read_too_high_inr: PASS
-i_uid   : 0						      |	inode_fail_if_unallocated: FAIL
-i_gid   : 0						      |	inode_findsector_null_fs: PASS
-i_size0 : 0						      |	inode_findsector_null_inode: PASS
-i_size1 : 18						      |	filev6_open_null_filesystem: PASS
-size    : 18						      |	filev6_open_null_file: PASS
-***********FS INODE END***********			      |	filev6_matching_internal_inode_copy: PASS
-the first sector of data of which contains:		      |	filev6_matching_non_inode_fields: PASS
-Coucou le monde !					      |	filev6_readblock_null_filev6: PASS
-							      |	filev6_readblock_file_done: PASS
-----							      |	filev6_readblock_read_full_file: PASS
-filev6_open failed for inode #5.			      |	inode_findsector_unallocated_inode: PASS
-							      |	inode_findsector_over_offset: FAIL
-Listing inodes SHA:					      |	inode_findsector_small_over_offset: PASS
-SHA inode 1: no SHA for directories.			      |	inode_findsector_large_over_offset: PASS
-SHA inode 2: no SHA for directories.			      |	TEST_END
-SHA inode 3: 338fc4bb0d037f3747396a4c852d2a9d8b545d622c6c744c <
+
+Printing inode #3:						Printing inode #3:
+**********FS INODE START**********				**********FS INODE START**********
+i_mode  : 32768							i_mode: 32768
+i_nlink : 0							i_nlink: 0
+i_uid   : 0							i_uid: 0
+i_gid   : 0							i_gid: 0
+i_size0 : 0							i_size0: 0
+i_size1 : 18							i_size1: 18
+size    : 18							size: 18 
+***********FS INODE END***********			      |	**********FS INODE END**********
+the first sector of data of which contains:			the first sector of data of which contains:
+Coucou le monde !						Coucou le monde !
+
+----								----
+filev6_open failed for inode #5.				filev6_open failed for inode #5.
+
+Listing inodes SHA:						Listing inodes SHA:
+SHA inode 1: no SHA for directories.				SHA inode 1: no SHA for directories.
+SHA inode 2: no SHA for directories.				SHA inode 2: no SHA for directories.
+SHA inode 3: 338fc4bb0d037f3747396a4c852d2a9d8b545d622c6c744c	SHA inode 3: 338fc4bb0d037f3747396a4c852d2a9d8b545d622c6c744c
 =====
 testing our test-file on disk aiw.uv6: done.
 diff from reference:
@@ -210,68 +140,68 @@ s_fmod        : 0						s_fmod              : 0
 s_ronly       : 0						s_ronly             : 0
 s_time        : [0] 0						s_time              : [0] 0
 **********FS SUPERBLOCK END**********				**********FS SUPERBLOCK END**********
-							      |	TEST_BEGIN
-Printing inode #3:					      |	inode_read_null_fs: PASS
-**********FS INODE START**********			      |	inode_read_null_inode: PASS
-i_mode  : 49152						      |	inode_read_bad_inr: PASS
-i_nlink : 0						      |	inode_read_too_high_inr: PASS
-i_uid   : 0						      |	inode_fail_if_unallocated: FAIL
-i_gid   : 0						      |	inode_findsector_null_fs: PASS
-i_size0 : 0						      |	inode_findsector_null_inode: PASS
-i_size1 : 32						      |	filev6_open_null_filesystem: PASS
-size    : 32						      |	filev6_open_null_file: PASS
-***********FS INODE END***********			      |	filev6_matching_internal_inode_copy: PASS
-which is a directory.					      |	filev6_matching_non_inode_fields: PASS
-							      |	filev6_readblock_null_filev6: PASS
-Printing inode #5:					      |	filev6_readblock_file_done: PASS
-**********FS INODE START**********			      |	filev6_readblock_read_full_file: PASS
-i_mode  : 32768						      |	inode_findsector_unallocated_inode: PASS
-i_nlink : 0						      |	inode_findsector_over_offset: FAIL
-i_uid   : 0						      |	inode_findsector_small_over_offset: PASS
-i_gid   : 0						      |	inode_findsector_large_over_offset: PASS
-i_size0 : 0						      |	TEST_END
-i_size1 : 17385						      <
-size    : 17385						      <
-***********FS INODE END***********			      <
-the first sector of data of which contains:		      <
-*** START: FULL LICENSE ***				      <
-							      <
-THE FULL PROJECT GUTENBERG LICENSE			      <
-PLEASE READ THIS BEFORE YOU DISTRIBUTE OR USE THIS WORK	      <
-							      <
-To protect the Project Gutenberg-tm mission of promoting the  <
-distribution of electronic works, by using or distributing th <
-(or any other work associated in any way with the phrase “Pro <
-Gutenberg”), you agree to comply with all the terms of the Fu <
-Gutenberg-tm License (available with this file or online at   <
-http://gutenberg.org/license).				      <
-							      <
-							      <
-Section 1.  General T					      <
-----							      <
-							      <
-Listing inodes SHA:					      <
-SHA inode 1: no SHA for directories.			      <
-SHA inode 2: no SHA for directories.			      <
-SHA inode 3: no SHA for directories.			      <
-SHA inode 4: no SHA for directories.			      <
-SHA inode 5: 819b3529b07803dcb47741634ae1b40e497ec95a446ab1e1 <
-SHA inode 6: 076b4252236b5c65a22770eb8c3316e2ac0629805a5e2d72 <
-SHA inode 7: c2971e205022f72b0caa0aa10daca11be0212d943013272c <
-SHA inode 8: 48cd4b1136fa0838f3bf8ce223e797f38706181ca12e9e6b <
-SHA inode 9: 41f2dc3958e33e459e0c6cd220815f50a3979cc1e5aa4bb8 <
-SHA inode 10: cdea875906eee21f90f754383002eaa759e8d7cca8a1f02 <
-SHA inode 11: 0a0741431cbb375690b4caff30179e3c69f877d099ba0f9 <
-SHA inode 12: f55cfe8b940af2afa0ce0fe4f3a3b3a2985ad729cf5ba81 <
-SHA inode 13: 2230f84ec20cd05e47ae9472cb9c72e465a793284b72196 <
-SHA inode 14: 5daf44c4d13d3dce6fae82048229b01d9f1ae9571bebb4c <
-SHA inode 15: 096013d6aab6164cdbf871ecdf44620a3efbdc0721a7be8 <
-SHA inode 16: 8c8ebdfc9a861c47bd6b76bfea88496cdab3a6732a6c6c0 <
-SHA inode 17: 8a5b56ab6fe0d5dd7c54f0301fd36eff6fc79812c55874c <
-SHA inode 18: 5a68e7881617e00238c6b05d4bcf7ccd96fdbfa764d4d2d <
-SHA inode 19: 37302d665c56d16309f795f023ffb46d5b457a2aa906a4e <
-SHA inode 20: no SHA for directories.			      <
-SHA inode 21: 7ee39739006a4a5f1b2a082d1f825837ee4403c85acc8a6 <
+
+Printing inode #3:						Printing inode #3:
+**********FS INODE START**********				**********FS INODE START**********
+i_mode  : 49152							i_mode: 49152
+i_nlink : 0							i_nlink: 0
+i_uid   : 0							i_uid: 0
+i_gid   : 0							i_gid: 0
+i_size0 : 0							i_size0: 0
+i_size1 : 32							i_size1: 32
+size    : 32							size: 32 
+***********FS INODE END***********			      |	**********FS INODE END**********
+which is a directory.						which is a directory.
+
+Printing inode #5:						Printing inode #5:
+**********FS INODE START**********				**********FS INODE START**********
+i_mode  : 32768							i_mode: 32768
+i_nlink : 0							i_nlink: 0
+i_uid   : 0							i_uid: 0
+i_gid   : 0							i_gid: 0
+i_size0 : 0							i_size0: 0
+i_size1 : 17385							i_size1: 17385
+size    : 17385							size: 17385 
+***********FS INODE END***********			      |	**********FS INODE END**********
+the first sector of data of which contains:			the first sector of data of which contains:
+*** START: FULL LICENSE ***					*** START: FULL LICENSE ***
+
+THE FULL PROJECT GUTENBERG LICENSE				THE FULL PROJECT GUTENBERG LICENSE
+PLEASE READ THIS BEFORE YOU DISTRIBUTE OR USE THIS WORK		PLEASE READ THIS BEFORE YOU DISTRIBUTE OR USE THIS WORK
+
+To protect the Project Gutenberg-tm mission of promoting the 	To protect the Project Gutenberg-tm mission of promoting the 
+distribution of electronic works, by using or distributing th	distribution of electronic works, by using or distributing th
+(or any other work associated in any way with the phrase “Pro	(or any other work associated in any way with the phrase “Pro
+Gutenberg”), you agree to comply with all the terms of the Fu	Gutenberg”), you agree to comply with all the terms of the Fu
+Gutenberg-tm License (available with this file or online at	Gutenberg-tm License (available with this file or online at
+http://gutenberg.org/license).					http://gutenberg.org/license).
+
+
+Section 1.  General T						Section 1.  General T
+----								----
+
+Listing inodes SHA:						Listing inodes SHA:
+SHA inode 1: no SHA for directories.				SHA inode 1: no SHA for directories.
+SHA inode 2: no SHA for directories.				SHA inode 2: no SHA for directories.
+SHA inode 3: no SHA for directories.				SHA inode 3: no SHA for directories.
+SHA inode 4: no SHA for directories.				SHA inode 4: no SHA for directories.
+SHA inode 5: 819b3529b07803dcb47741634ae1b40e497ec95a446ab1e1	SHA inode 5: 819b3529b07803dcb47741634ae1b40e497ec95a446ab1e1
+SHA inode 6: 076b4252236b5c65a22770eb8c3316e2ac0629805a5e2d72	SHA inode 6: 076b4252236b5c65a22770eb8c3316e2ac0629805a5e2d72
+SHA inode 7: c2971e205022f72b0caa0aa10daca11be0212d943013272c	SHA inode 7: c2971e205022f72b0caa0aa10daca11be0212d943013272c
+SHA inode 8: 48cd4b1136fa0838f3bf8ce223e797f38706181ca12e9e6b	SHA inode 8: 48cd4b1136fa0838f3bf8ce223e797f38706181ca12e9e6b
+SHA inode 9: 41f2dc3958e33e459e0c6cd220815f50a3979cc1e5aa4bb8	SHA inode 9: 41f2dc3958e33e459e0c6cd220815f50a3979cc1e5aa4bb8
+SHA inode 10: cdea875906eee21f90f754383002eaa759e8d7cca8a1f02	SHA inode 10: cdea875906eee21f90f754383002eaa759e8d7cca8a1f02
+SHA inode 11: 0a0741431cbb375690b4caff30179e3c69f877d099ba0f9	SHA inode 11: 0a0741431cbb375690b4caff30179e3c69f877d099ba0f9
+SHA inode 12: f55cfe8b940af2afa0ce0fe4f3a3b3a2985ad729cf5ba81	SHA inode 12: f55cfe8b940af2afa0ce0fe4f3a3b3a2985ad729cf5ba81
+SHA inode 13: 2230f84ec20cd05e47ae9472cb9c72e465a793284b72196	SHA inode 13: 2230f84ec20cd05e47ae9472cb9c72e465a793284b72196
+SHA inode 14: 5daf44c4d13d3dce6fae82048229b01d9f1ae9571bebb4c	SHA inode 14: 5daf44c4d13d3dce6fae82048229b01d9f1ae9571bebb4c
+SHA inode 15: 096013d6aab6164cdbf871ecdf44620a3efbdc0721a7be8	SHA inode 15: 096013d6aab6164cdbf871ecdf44620a3efbdc0721a7be8
+SHA inode 16: 8c8ebdfc9a861c47bd6b76bfea88496cdab3a6732a6c6c0	SHA inode 16: 8c8ebdfc9a861c47bd6b76bfea88496cdab3a6732a6c6c0
+SHA inode 17: 8a5b56ab6fe0d5dd7c54f0301fd36eff6fc79812c55874c	SHA inode 17: 8a5b56ab6fe0d5dd7c54f0301fd36eff6fc79812c55874c
+SHA inode 18: 5a68e7881617e00238c6b05d4bcf7ccd96fdbfa764d4d2d	SHA inode 18: 5a68e7881617e00238c6b05d4bcf7ccd96fdbfa764d4d2d
+SHA inode 19: 37302d665c56d16309f795f023ffb46d5b457a2aa906a4e	SHA inode 19: 37302d665c56d16309f795f023ffb46d5b457a2aa906a4e
+SHA inode 20: no SHA for directories.				SHA inode 20: no SHA for directories.
+SHA inode 21: 7ee39739006a4a5f1b2a082d1f825837ee4403c85acc8a6	SHA inode 21: 7ee39739006a4a5f1b2a082d1f825837ee4403c85acc8a6
 =====
 testing our test-dirent on disk simple.uv6: done.
 diff from reference:
@@ -290,22 +220,6 @@ s_fmod        : 0						s_fmod              : 0
 s_ronly       : 0						s_ronly             : 0
 s_time        : [0] 0						s_time              : [0] 0
 **********FS SUPERBLOCK END**********				**********FS SUPERBLOCK END**********
-							      >	TEST_BEGIN
-							      >	direntv6_opendir_null_directory_reader: PASS
-							      >	direntv6_opendir_null_filesystem: PASS
-							      >	direntv6_opendir_illegal_inr: PASS
-							      >	direntv6_opendir_too_high_inr: PASS
-							      >	direntv6_opendir_open_file: PASS
-							      >	direntv6_opendir_open_directory: PASS
-							      >	direntv6_opendir_correct_file_open: PASS
-							      >	direntv6_readdir_null_directory_reader: PASS
-							      >	direntv6_readdir_null_name: PASS
-							      >	direntv6_readdir_null_inode_number: PASS
-							      >	Start directory read test
-							      >	inr 2, name 'tmp'
-							      >	End directory read test
-							      >	direntv6_read_all_directories: PASS
-							      >	TEST_END
 DIR /								DIR /
 DIR /tmp/							DIR /tmp/
 FIL /tmp/coucou.txt						FIL /tmp/coucou.txt
@@ -327,22 +241,6 @@ s_fmod        : 0						s_fmod              : 0
 s_ronly       : 0						s_ronly             : 0
 s_time        : [0] 0						s_time              : [0] 0
 **********FS SUPERBLOCK END**********				**********FS SUPERBLOCK END**********
-							      >	TEST_BEGIN
-							      >	direntv6_opendir_null_directory_reader: PASS
-							      >	direntv6_opendir_null_filesystem: PASS
-							      >	direntv6_opendir_illegal_inr: PASS
-							      >	direntv6_opendir_too_high_inr: PASS
-							      >	direntv6_opendir_open_file: PASS
-							      >	direntv6_opendir_open_directory: PASS
-							      >	direntv6_opendir_correct_file_open: PASS
-							      >	direntv6_readdir_null_directory_reader: PASS
-							      >	direntv6_readdir_null_name: PASS
-							      >	direntv6_readdir_null_inode_number: PASS
-							      >	Start directory read test
-							      >	inr 2, name 'books'
-							      >	End directory read test
-							      >	direntv6_read_all_directories: PASS
-							      >	TEST_END
 DIR /								DIR /
 DIR /books/							DIR /books/
 DIR /books/aiw/							DIR /books/aiw/
