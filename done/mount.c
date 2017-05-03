@@ -37,12 +37,14 @@ void fill_ibm(struct unix_filesystem * u)
         for (uint16_t k = 0; k < INODES_PER_SECTOR; ++k) { // pour chaque inode
         	actu = (uint64_t) (u -> ibm -> min + i*INODES_PER_SECTOR + k);
             if (!err){ // si pas d'erreur de lecture
-		        inode.i_mode = (uint16_t)((data[k * 32 + 1] << 8) + data[k * 32]);
-		        if (inode.i_mode & IALLOC) {
-					bm_set(u -> ibm, actu);
-		        }
-		        else{
-		        	bm_clear(u -> ibm, actu);
+            	if ((actu > u -> ibm -> min) && (actu < u -> ibm -> max)){ 
+				    inode.i_mode = (uint16_t)((data[k * 32 + 1] << 8) + data[k * 32]);
+				    if (inode.i_mode & IALLOC) {
+						bm_set(u -> ibm, actu);
+				    }
+				    else{
+				    	bm_clear(u -> ibm, actu);
+				    }
 		        }
             }
             else{// si une erreur de lecture
@@ -61,7 +63,6 @@ void fill_fbm(struct unix_filesystem * u)
 	int err = 0;
 	int taille = 0;
 	struct inode inode;
-	int32_t offset = 0;
 	
 	// mettre tous les secteurs à libre
 	for (uint64_t i = u -> fbm -> min; i < u -> fbm -> max; ++i){
@@ -147,11 +148,7 @@ int mountv6(const char *filename, struct unix_filesystem *u)
 	u -> ibm = NULL;
 
 	u -> fbm = bm_alloc((uint64_t) u -> s.s_block_start, (uint64_t) u -> s.s_fsize);
-	
-	// ceci donne le bon résultat mais c'est faux d'un point de vu concept:
-	//u -> ibm = bm_alloc((uint64_t) (u -> s.s_inode_start), (uint64_t) (u -> s.s_isize)*INODE_PER_SECTOR);
-	
-	u -> ibm = bm_alloc((uint64_t) ROOT_INUMBER + 1, (uint64_t) (u -> s.s_isize)*INODES_PER_SECTOR);
+	u -> ibm = bm_alloc(UINT64_C(ROOT_INUMBER + 1), (uint64_t) (u -> s.s_isize)*INODES_PER_SECTOR);
 	
 	if (u -> ibm == NULL ||u -> fbm == NULL ){
 		return ERR_NOMEM;

@@ -32,13 +32,13 @@ struct bmblock_array *bm_alloc(uint64_t min, uint64_t max)
     if (max < min) {
         err = ERR_BAD_PARAMETER;
     } else {
-        size_t taille = (max - min + 1)/(sizeof(uint64_t)*8);
+        size_t taille = (max - min)/(sizeof(uint64_t)*8);
         b = malloc(sizeof(struct bmblock_array) + sizeof(uint64_t)*(taille));
 
         if (b == NULL) {
             err = ERR_NOMEM;
         } else {
-            b -> length = taille;
+            b -> length = taille + 1;
             b -> cursor = 0;
             b -> min = min;
             b -> max = max;
