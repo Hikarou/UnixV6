@@ -234,7 +234,7 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
         comp = strncmp(name_ref, name_read, taille-1);
     } while (err > 0 && comp);
 
-    if (err < 0) {
+    if (err < 0 || strlen(name_ref) != strlen(name_read)) {
         free(name_ref);
         return err;
     }
