@@ -17,6 +17,7 @@
 #include "inode.h"
 #include "mount.h"
 #include "bmblock.h"
+#include <stdlib.h>
 #include <inttypes.h>
 
 
@@ -150,7 +151,7 @@ int mountv6(const char *filename, struct unix_filesystem *u)
 	// ceci donne le bon résultat mais c'est faux d'un point de vu concept:
 	//u -> ibm = bm_alloc((uint64_t) (u -> s.s_inode_start), (uint64_t) (u -> s.s_isize)*INODE_PER_SECTOR);
 	
-	u -> ibm = bm_alloc((uint64_t) 1, (uint64_t) (u -> s.s_isize)*INODES_PER_SECTOR);
+	u -> ibm = bm_alloc((uint64_t) ROOT_INUMBER + 1, (uint64_t) (u -> s.s_isize)*INODES_PER_SECTOR);
 	
 	if (u -> ibm == NULL ||u -> fbm == NULL ){
 		return ERR_NOMEM;
@@ -198,6 +199,9 @@ void mountv6_print_superblock(const struct unix_filesystem *u)
 int umountv6(struct unix_filesystem *u)
 {
     M_REQUIRE_NON_NULL(u);
+    
+    free(u -> ibm);
+    free(u -> fbm);
 
     if(!fclose(u -> f)) {
         return ERR_IO;
