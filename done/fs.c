@@ -114,7 +114,7 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset,
     int k = 0;
     char *ptr = buf;
     char *buf2 = NULL;
-    size = SECTOR_SIZE/3;
+    //size = SECTOR_SIZE/3;
 
     struct filev6 file;
     // ouvrir le fichier
