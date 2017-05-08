@@ -194,9 +194,9 @@ int mountv6(const char *filename, struct unix_filesystem *u)
 
 	u -> fbm = NULL;
 	u -> ibm = NULL;
-
-	u -> fbm = bm_alloc((uint64_t) (u -> s.s_block_start + 1), (uint64_t) u -> s.s_fsize);
-	u -> ibm = bm_alloc((uint64_t) (ROOT_INUMBER + 1), (uint64_t) (u -> s.s_isize)*INODES_PER_SECTOR);
+	// plus 0 pour se souvenir TODO
+	u -> fbm = bm_alloc((uint64_t) (u -> s.s_block_start + 0), (uint64_t) u -> s.s_fsize);
+	u -> ibm = bm_alloc((uint64_t) (ROOT_INUMBER + 0), (uint64_t) (u -> s.s_isize)*INODES_PER_SECTOR);
 	
 	if (u -> ibm == NULL ||u -> fbm == NULL ){
 		return ERR_NOMEM;
