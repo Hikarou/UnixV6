@@ -68,7 +68,7 @@ int bm_get(struct bmblock_array *bmblock_array, uint64_t x)
     uint64_t i = (x - bmblock_array -> min)/(sizeof(uint64_t)*8);
     return (bmblock_array -> bm[i]) & (UINT64_C(1) << ((x - bmblock_array -> min)%(sizeof(uint64_t)*8))) ? 1 : 0;
 
-    //pratique pour la suite peut-être
+    //pratique pour la suite peut-être TODO Effacer si pas utile
     /*if(err == 0 && ((x - bmblock_array -> min)< bmblock_array -> cursor)){
       	bmblock_array -> cursor = x - bmblock_array -> min;
     }*/
@@ -100,7 +100,6 @@ void bm_clear(struct bmblock_array *bmblock_array, uint64_t x)
         (bmblock_array -> bm[i]) = (bmblock_array -> bm[i]) & ~(UINT64_C(1) << ((x - bmblock_array -> min)%(sizeof(uint64_t)*8)));
     }
 
-    //pratique pour la suite peut-être
     if ((x - bmblock_array -> min) < bmblock_array -> cursor) {
         bmblock_array -> cursor = x - bmblock_array -> min;
     }
@@ -119,14 +118,18 @@ void bm_print(struct bmblock_array *bmblock_array)
             printf("%lu: ", i);
             for (size_t j = 0; j < sizeof(uint64_t); ++j) {
                 for (size_t k = 0; k<8; ++k) {
-                    //      printf("%d", bm_get(bmblock_array, i*sizeof(uint64_t)*8 + j*8 + k + bmblock_array -> min));
+                    int offset = bm_get(bmblock_array, i*sizeof(uint64_t)*8 + j*8 + k + bmblock_array -> min);
+                    //To take care of the overflow to print correctly what is expected
+                    printf("%d", (offset >= 0 ? offset : 0));
+                    /* TODO effacer si tout bon
                     if ((bmblock_array -> bm[i]) & (UINT64_C(1) << (j*8 + k))) {
                         printf("1");
                     } else {
                         printf("0");
                     }
+                    // */
                 }
-                printf(" ");
+                if (j != sizeof(uint64_t) - 1) printf(" ");
             }
             printf("\n");
         }

@@ -56,3 +56,5 @@ dkms.conf
 #Linux swap
 *.swp
 
+#Project's specs
+unixv6fs/*
