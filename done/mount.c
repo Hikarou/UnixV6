@@ -77,9 +77,20 @@ void fill_fbm(struct unix_filesystem * u)
     }
 
     // en supposant que le premier secteur est toujours plein (par la root) TODO A supprimer si solution du bas est OK
-    /*err = inode_read(u, ROOT_INUMBER, &inode);
+    err = inode_read(u, ROOT_INUMBER, &inode);
     taille = inode_getsize(&inode)/SECTOR_SIZE;
     if (!err){
+    	taille = inode_getsize(&inode)/SECTOR_SIZE;
+        if (taille < 7*ADDRESSES_PER_SECTOR && taille > 7) {
+            printf("Long fichier, secteurs: "); //TODO A Supprimer pour le rendu
+            taille_grand = taille/ADDRESSES_PER_SECTOR;
+            for (int k = 0; k <= taille_grand; ++k) {
+                printf("%d ", inode.i_addr[k]); //TODO A Supprimer pour le rendu
+                bm_set(u -> fbm, inode.i_addr[k]);
+            }
+            printf("\n"); //TODO A Supprimer pour le rendu
+        }
+    	
     	err =  inode_findsector(u, &inode, offset);
     	while (offset <= taille && err > 0) {
     		printf("    secteur: %d : rempli. offset = %d, taille = %d\n", err, offset, taille);
@@ -94,11 +105,11 @@ void fill_fbm(struct unix_filesystem * u)
     else{
     	printf("ERROR reading ROOT SECTOR\n");
     	puts(ERR_MESSAGES[err - ERR_FIRST]);
-    }*/
+    }
 
 
     //Solution intermédiaire en attendant la réponse sur le forum TODO
-    bm_set(u -> fbm, u -> fbm -> min);
+   // bm_set(u -> fbm, u -> fbm -> min);
     // pour chaque inode: appeler inode find sector
     for (uint64_t i = u -> ibm -> min; i < u -> ibm -> max; ++i) {
         offset = 0;
@@ -116,7 +127,7 @@ void fill_fbm(struct unix_filesystem * u)
                         printf("%d ", inode.i_addr[k]); //TODO A Supprimer pour le rendu
                         bm_set(u -> fbm, inode.i_addr[k]);
                     }
-                    printf("\n");
+                    printf("\n"); //TODO A Supprimer pour le rendu
                 }
 
                 err =  inode_findsector(u, &inode, offset);
