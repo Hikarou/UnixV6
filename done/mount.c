@@ -22,38 +22,36 @@
 
 
 /**
- * @brief  fill the vector bitmap of the inodes 
+ * @brief  fill the vector bitmap of the inodes
  * u - the mounted filesystem
  */
 void fill_ibm(struct unix_filesystem * u)
 {
-	int err = 0;
-	struct inode inode;
-	uint8_t data[SECTOR_SIZE];
-	uint64_t actu = 0; 
-	uint64_t i = 0;
-	uint16_t k = 0;
-	
-	for (uint64_t j = u -> ibm -> min; j < u -> ibm -> max; ++j){ // tout effacer
-		bm_clear(u -> ibm, j);
-	}
-	
-	while (actu < u -> ibm -> max) { // pour chaque secteur
+    int err = 0;
+    struct inode inode;
+    uint8_t data[SECTOR_SIZE];
+    uint64_t actu = 0;
+    uint64_t i = 0;
+    uint16_t k = 0;
+
+    for (uint64_t j = u -> ibm -> min; j < u -> ibm -> max; ++j) { // tout effacer
+        bm_clear(u -> ibm, j);
+    }
+
+    while (actu < u -> ibm -> max) { // pour chaque secteur
         err = sector_read(u -> f, u -> s.s_inode_start + i, data);
         for (k = 0; k < INODES_PER_SECTOR; ++k) { // pour chaque inode
-            if (!err){ // si pas d'erreur de lecture
-            	if ((actu >= u -> ibm -> min) && (actu <= u -> ibm -> max)){ 
-				    inode.i_mode = (uint16_t)((data[k * 32 + 1] << 8) + data[k * 32]);
-				    if (inode.i_mode & IALLOC) {
-						bm_set(u -> ibm, actu);
-				    }
-				    else{
-				    	bm_clear(u -> ibm, actu);
-				    }
-		        }
-            }
-            else{// si une erreur de lecture
-            	bm_set(u -> ibm, actu);
+            if (!err) { // si pas d'erreur de lecture
+                if ((actu >= u -> ibm -> min) && (actu <= u -> ibm -> max)) {
+                    inode.i_mode = (uint16_t)((data[k * 32 + 1] << 8) + data[k * 32]);
+                    if (inode.i_mode & IALLOC) {
+                        bm_set(u -> ibm, actu);
+                    } else {
+                        bm_clear(u -> ibm, actu);
+                    }
+                }
+            } else { // si une erreur de lecture
+                bm_set(u -> ibm, actu);
             }
             ++actu;
         }
@@ -62,80 +60,79 @@ void fill_ibm(struct unix_filesystem * u)
 }
 
 /**
- * @brief  fill the vector bitmap of the sectors 
+ * @brief  fill the vector bitmap of the sectors
  * u - the mounted filesystem
  */
 void fill_fbm(struct unix_filesystem * u)
 {
-	int err = 0;
-	int taille = 0;
-	int taille_grand = 0;
-	int32_t offset = 0;
-	struct inode inode;
-	
-	// mettre tous les secteurs à libre
-	for (uint64_t i = u -> fbm -> min; i < u -> fbm -> max; ++i){
-		bm_clear(u->fbm, i);
-	}
-	
-	// en supposant que le premier secteur est toujours plein (par la root)
-	/*err = inode_read(u, ROOT_INUMBER, &inode);
-	taille = inode_getsize(&inode)/SECTOR_SIZE;
-	if (!err){
-		err =  inode_findsector(u, &inode, offset);
-		while (offset <= taille && err > 0) {
-			printf("    secteur: %d : rempli. offset = %d, taille = %d\n", err, offset, taille);		
-			bm_set(u->fbm, err);
-			++offset;
-			err =  inode_findsector(u, &inode, offset);
-		}
-		if (err < 0){
-			  puts(ERR_MESSAGES[err - ERR_FIRST]);
-		}
-	}
-	else{
-		printf("ERROR reading ROOT SECTOR\n");
-		puts(ERR_MESSAGES[err - ERR_FIRST]);
-	}*/
-	
-	// pour chaque inode: appeler inode find sector
-	for (uint64_t i = u -> ibm -> min; i < u -> ibm -> max; ++i){
-		offset = 0;
-		err = bm_get(u -> ibm, i);
-		
-		if (err == 1){
-			printf("i = %d, utilisé: %d\n",i, err);
-			err = inode_read(u, i, &inode);
-			if (!err){
-				taille = inode_getsize(&inode)/SECTOR_SIZE;	
-				if (taille < 7*ADDRESSES_PER_SECTOR && taille > 7) {
-					printf("Long fichier, secteurs: ");
-					taille_grand = taille/ADDRESSES_PER_SECTOR;
-					for (int k = 0; k <= taille_grand; ++k){
-						printf("%d ", inode.i_addr[k]);
-						bm_set(u -> fbm, inode.i_addr[k]);
-					}
-					printf("\n");
-				}
-				
-				err =  inode_findsector(u, &inode, offset);
-				while (offset <= taille && err > 0) {
-					printf("    secteur: %d : rempli. offset = %d, taille = %d\n", err, offset, taille);		
-					bm_set(u -> fbm, err);
-					++offset;
-					err =  inode_findsector(u, &inode, offset);
-				}
-				if (err < 0){
-					printf("ERROR in inode_findsector\n"); 
-					puts(ERR_MESSAGES[err - ERR_FIRST]);
-				}	
-			}
-			else{
-				printf("ERROR unable to read inode %d\n", i);
-				puts(ERR_MESSAGES[err - ERR_FIRST]);
-			}	
-		}
-	}
+    int err = 0;
+    int taille = 0;
+    int taille_grand = 0;
+    int32_t offset = 0;
+    struct inode inode;
+
+    // mettre tous les secteurs à libre
+    for (uint64_t i = u -> fbm -> min; i < u -> fbm -> max; ++i) {
+        bm_clear(u->fbm, i);
+    }
+
+    // en supposant que le premier secteur est toujours plein (par la root)
+    /*err = inode_read(u, ROOT_INUMBER, &inode);
+    taille = inode_getsize(&inode)/SECTOR_SIZE;
+    if (!err){
+    	err =  inode_findsector(u, &inode, offset);
+    	while (offset <= taille && err > 0) {
+    		printf("    secteur: %d : rempli. offset = %d, taille = %d\n", err, offset, taille);
+    		bm_set(u->fbm, err);
+    		++offset;
+    		err =  inode_findsector(u, &inode, offset);
+    	}
+    	if (err < 0){
+    		  puts(ERR_MESSAGES[err - ERR_FIRST]);
+    	}
+    }
+    else{
+    	printf("ERROR reading ROOT SECTOR\n");
+    	puts(ERR_MESSAGES[err - ERR_FIRST]);
+    }*/
+
+    // pour chaque inode: appeler inode find sector
+    for (uint64_t i = u -> ibm -> min; i < u -> ibm -> max; ++i) {
+        offset = 0;
+        err = bm_get(u -> ibm, i);
+
+        if (err == 1) {
+            printf("i = %lu, utilisé: %d\n",i, err);
+            err = inode_read(u, i, &inode);
+            if (!err) {
+                taille = inode_getsize(&inode)/SECTOR_SIZE;
+                if (taille < 7*ADDRESSES_PER_SECTOR && taille > 7) {
+                    printf("Long fichier, secteurs: ");
+                    taille_grand = taille/ADDRESSES_PER_SECTOR;
+                    for (int k = 0; k <= taille_grand; ++k) {
+                        printf("%d ", inode.i_addr[k]);
+                        bm_set(u -> fbm, inode.i_addr[k]);
+                    }
+                    printf("\n");
+                }
+
+                err =  inode_findsector(u, &inode, offset);
+                while (offset <= taille && err > 0) {
+                    printf("    secteur: %d : rempli. offset = %d, taille = %d\n", err, offset, taille);
+                    bm_set(u -> fbm, err);
+                    ++offset;
+                    err =  inode_findsector(u, &inode, offset);
+                }
+                if (err < 0) {
+                    printf("ERROR in inode_findsector\n");
+                    puts(ERR_MESSAGES[err - ERR_FIRST]);
+                }
+            } else {
+                printf("ERROR unable to read inode %lu\n", i);
+                puts(ERR_MESSAGES[err - ERR_FIRST]);
+            }
+        }
+    }
 }
 
 /**
@@ -192,21 +189,21 @@ int mountv6(const char *filename, struct unix_filesystem *u)
     u -> s.s_time[0] = (superblock[21] << 8) + superblock[20];
     u -> s.s_time[1] = (superblock[23] << 8) + superblock[22];
 
-	u -> fbm = NULL;
-	u -> ibm = NULL;
-	// plus 0 pour se souvenir TODO
-	u -> fbm = bm_alloc((uint64_t) (u -> s.s_block_start + 0), (uint64_t) u -> s.s_fsize);
-	u -> ibm = bm_alloc((uint64_t) (ROOT_INUMBER + 0), (uint64_t) (u -> s.s_isize)*INODES_PER_SECTOR);
-	
-	if (u -> ibm == NULL ||u -> fbm == NULL ){
-		return ERR_NOMEM;
-	}
-	
-	fill_ibm(u);
-	fill_fbm(u);	
-	
-	bm_print(u -> fbm);
-	bm_print(u -> ibm);	
+    u -> fbm = NULL;
+    u -> ibm = NULL;
+    // plus 0 pour se souvenir TODO
+    u -> fbm = bm_alloc((uint64_t) (u -> s.s_block_start + 0), (uint64_t) u -> s.s_fsize);
+    u -> ibm = bm_alloc((uint64_t) (ROOT_INUMBER + 0), (uint64_t) (u -> s.s_isize)*INODES_PER_SECTOR);
+
+    if (u -> ibm == NULL ||u -> fbm == NULL ) {
+        return ERR_NOMEM;
+    }
+
+    fill_ibm(u);
+    fill_fbm(u);
+
+    bm_print(u -> fbm);
+    bm_print(u -> ibm);
     return 0;
 }
 
@@ -244,7 +241,7 @@ void mountv6_print_superblock(const struct unix_filesystem *u)
 int umountv6(struct unix_filesystem *u)
 {
     M_REQUIRE_NON_NULL(u);
-    
+
     free(u -> ibm);
     free(u -> fbm);
 
