@@ -80,6 +80,23 @@ void fill_fbm(struct unix_filesystem * u)
 	
 	// en supposant que le premier secteur est toujours plein (par la root)
 	//bm_set(u->fbm, u -> fbm -> min);
+	err = inode_read(u, ROOT_INUMBER, &inode);
+	taille = inode_getsize(&inode)/SECTOR_SIZE;
+	if (!err){
+		err =  inode_findsector(u, &inode, offset);
+		while (offset <= taille && err > 0) {
+			printf("    secteur: %d : rempli. offset = %d, taille = %d\n", err, offset, taille);		
+			bm_set(u->fbm, err);
+			++offset;
+			err =  inode_findsector(u, &inode, offset);
+		}
+		if (err < 0){
+			  puts(ERR_MESSAGES[err - ERR_FIRST]);
+		}
+	}
+	else{
+		printf("ERROR reading ROOT SECTOR\n");
+	}
 	
 	// pour chaque inode: appeler inode find sector
 	for (uint64_t i = u -> ibm -> min; i < u -> ibm -> max; ++i){
@@ -99,11 +116,13 @@ void fill_fbm(struct unix_filesystem * u)
 					err =  inode_findsector(u, &inode, offset);
 				}
 				if (err < 0){
-					  puts(ERR_MESSAGES[err - ERR_FIRST]);
+					printf("ERROR in inode_findsector\n"); 
+					puts(ERR_MESSAGES[err - ERR_FIRST]);
 				}
 			}
 			else{
-				printf("   erreur lecture inode = %d\n", err);
+				printf("ERROR unable to read inode\n");
+				puts(ERR_MESSAGES[err - ERR_FIRST]);
 			}
 		}
 	}
