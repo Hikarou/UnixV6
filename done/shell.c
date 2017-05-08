@@ -190,14 +190,17 @@ int tokenize_input (char* input, char*** parsed, int* size_parsed)
         ++i;
     } while (i < l);
 
-    if (*size_parsed > size-1) {
-        ++size;
-        *parsed = realloc(*parsed, sizeof(char) * size * MAX_READ);
-        if (*parsed == NULL) return EXIT;
-    }
-    (*parsed)[*(size_parsed)] = ptr;
-    *(size_parsed) = *(size_parsed) + 1;
 
+	if (k == 0){
+		if (*size_parsed > size-1) {
+		    ++size;
+		    *parsed = realloc(*parsed, sizeof(char) * size * MAX_READ);
+		    if (*parsed == NULL) return EXIT;
+		}
+		(*parsed)[*(size_parsed)] = ptr;
+		*(size_parsed) = *(size_parsed) + 1;
+	}
+	
     return 0;
 }
 
