@@ -87,7 +87,7 @@ int inode_read(const struct unix_filesystem *u, uint16_t inr, struct inode *inod
     int err = 0;
     uint8_t data[SECTOR_SIZE];
     size_t nbrInodeSec = 0;
-    
+
     // PEUT-ÊTRE UNE FAUTE ICI
 
     // regarde de ou à ou commencent les inodes

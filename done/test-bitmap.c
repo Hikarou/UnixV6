@@ -9,8 +9,8 @@ int main ()
     struct bmblock_array* b;
 
     b = bm_alloc(UINT64_C(4), UINT64_C(131));
-	int err = 0;
-	
+    int err = 0;
+
     if (b != NULL) {
         bm_print(b);
         printf("find next() = %d\n", bm_find_next(b));
@@ -26,11 +26,11 @@ int main ()
         for (uint64_t i = UINT64_C(4); i< b->max; i+=UINT64_C(3)) {
             bm_set(b, i);
         }
-		
-		err = bm_get(b, UINT64_C(228));
-		if (err >= 0){
-			printf("Valeur = %d\n", err);
-		}
+
+        err = bm_get(b, UINT64_C(228));
+        if (err >= 0) {
+            printf("Valeur = %d\n", err);
+        }
         bm_print(b);
         printf("find next() = %d\n", bm_find_next(b));
 
