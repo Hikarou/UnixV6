@@ -87,11 +87,11 @@ int inode_read(const struct unix_filesystem *u, uint16_t inr, struct inode *inod
     int err = 0;
     uint8_t data[SECTOR_SIZE];
     size_t nbrInodeSec = 0;
-    
+
     // PEUT-ÊTRE UNE FAUTE ICI
 
     // regarde de ou à ou commencent les inodes
-    if ((u -> s.s_isize)*INODES_PER_SECTOR < inr || inr < 1) {
+    if ((u -> s.s_isize)*INODES_PER_SECTOR < inr || inr < ROOT_INUMBER) {
         err = ERR_INODE_OUTOF_RANGE;
         return err;
     }

@@ -231,10 +231,10 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
     int comp = 0;
     do {
         err = direntv6_readdir(&d, name_read, &inr_next);
-        comp = strncmp(name_ref, name_read, taille-1);
+        comp = strncmp(name_ref, name_read, taille);
     } while (err > 0 && comp);
 
-    if (err < 0 || strlen(name_ref) != strlen(name_read)) {
+    if (err < 0) {
         free(name_ref);
         return err;
     }

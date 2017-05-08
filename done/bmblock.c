@@ -62,7 +62,7 @@ struct bmblock_array *bm_alloc(uint64_t min, uint64_t max)
 int bm_get(struct bmblock_array *bmblock_array, uint64_t x)
 {
     M_REQUIRE_NON_NULL(bmblock_array);
-    if (x < bmblock_array -> min || x > bmblock_array -> max) 
+    if (x < bmblock_array -> min || x > bmblock_array -> max)
         return ERR_BAD_PARAMETER;
 
     uint64_t i = (x - bmblock_array -> min)/(sizeof(uint64_t)*8);
@@ -119,7 +119,7 @@ void bm_print(struct bmblock_array *bmblock_array)
             printf("%lu: ", i);
             for (size_t j = 0; j < sizeof(uint64_t); ++j) {
                 for (size_t k = 0; k<8; ++k) {
-              //      printf("%d", bm_get(bmblock_array, i*sizeof(uint64_t)*8 + j*8 + k + bmblock_array -> min));
+                    //      printf("%d", bm_get(bmblock_array, i*sizeof(uint64_t)*8 + j*8 + k + bmblock_array -> min));
                     if ((bmblock_array -> bm[i]) & (UINT64_C(1) << (j*8 + k))) {
                         printf("1");
                     } else {
