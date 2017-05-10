@@ -87,7 +87,7 @@ int inode_read(const struct unix_filesystem *u, uint16_t inr, struct inode *inod
  * @param u the filesystem (IN)
  * @param inode the inode (IN)
  * @param file_sec_off the offset within the file (in sector-size units)
- * @return >0: the sector on disk;  0: unallocated;  <0 error
+ * @return >0: the sector on disk;  <0 error
  */
 int inode_findsector(const struct unix_filesystem *u, const struct inode *i, int32_t file_sec_off);
 
@@ -105,7 +105,7 @@ int inode_alloc(struct unix_filesystem *u);
  * @param inode the inode structure, read from disk (IN)
  * @return 0 on success; <0 on error
  */
-int inode_write(struct unix_filesystem *u, uint16_t inr, struct inode *inode);
+int inode_write(struct unix_filesystem *u, uint16_t inr, const struct inode *inode);
 
 #ifdef __cplusplus
 }
