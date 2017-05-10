@@ -44,9 +44,6 @@ void mountv6_print_superblock(const struct unix_filesystem *u);
  */
 int umountv6(struct unix_filesystem *u);
 
-/*
- * staff only; students will not have to implement
- */
 /**
  * @brief create a new filesystem
  * @param num_blocks the total number of blocks (= max size of disk), in sectors

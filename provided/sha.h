@@ -25,7 +25,7 @@ void print_sha_from_content(const unsigned char *content, size_t length);
 /**
  * @brief print the sha of the content of an inode
  * @param u the filesystem
- * @param inode the inocde of which we want to print the content
+ * @param inode the inode of which we want to print the content
  * @param inr the inode number
  */
 void print_sha_inode(struct unix_filesystem *u, struct inode inode, int inr);
