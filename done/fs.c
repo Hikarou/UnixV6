@@ -111,7 +111,6 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset,
 {
     (void) fi;
     int nb_lu = 0;
-    int k = 0;
     char *ptr = buf;
     char *buf2 = NULL;
     //size = SECTOR_SIZE/3;
@@ -143,6 +142,7 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset,
         return 0;
     }
 
+    int k = 0;
     //lire les secteurs nécessaires pour avoir 64 ko au max
     if (size < SECTOR_SIZE) {
         buf2 = malloc(SECTOR_SIZE);
@@ -155,8 +155,9 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset,
         if (err < 0) {
             return 0;
         } else {
-            if (size > err) {
-                size = err;
+            size_t bytesRead = (size_t) err;
+            if (size > bytesRead) {
+                size = bytesRead;
             }
             if (k + size > SECTOR_SIZE) {
                 size = (size_t) (SECTOR_SIZE - k);

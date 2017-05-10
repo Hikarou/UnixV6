@@ -27,7 +27,6 @@
  */
 void fill_ibm(struct unix_filesystem * u)
 {
-    int err = 0;
     struct inode inode;
     uint8_t data[SECTOR_SIZE];
     uint64_t actu = 0;
@@ -39,7 +38,7 @@ void fill_ibm(struct unix_filesystem * u)
     }
 
     while (actu < u -> ibm -> max) { // pour chaque secteur
-        err = sector_read(u -> f, u -> s.s_inode_start + i, data);
+        int err = sector_read(u -> f, u -> s.s_inode_start + i, data);
         for (k = 0; k < INODES_PER_SECTOR; ++k) { // pour chaque inode
             if (!err) { // si pas d'erreur de lecture
                 if ((actu >= u -> ibm -> min) && (actu <= u -> ibm -> max)) {
@@ -65,7 +64,6 @@ void fill_ibm(struct unix_filesystem * u)
  */
 void fill_fbm(struct unix_filesystem * u)
 {
-    int err = 0;
     int taille = 0;
     int taille_grand = 0;
     int32_t offset = 0;
@@ -79,7 +77,7 @@ void fill_fbm(struct unix_filesystem * u)
     // pour chaque inode: appeler inode find sector
     for (uint64_t i = u -> ibm -> min - 1; i < u -> ibm -> max; ++i) {
         offset = 0;
-        err = bm_get(u -> ibm, i);
+        int err = bm_get(u -> ibm, i);
 
         if (err == 1 || i == u -> ibm -> min - 1) {
             err = inode_read(u, i, &inode);
@@ -94,7 +92,7 @@ void fill_fbm(struct unix_filesystem * u)
 
                 err =  inode_findsector(u, &inode, offset);
                 while (offset <= taille && err > 0) {
-                    bm_set(u -> fbm, err);
+                    bm_set(u -> fbm, (uint64_t)err);
                     ++offset;
                     err =  inode_findsector(u, &inode, offset);
                 }

@@ -155,7 +155,7 @@ int bm_find_next(struct bmblock_array *bmblock_array)
         if (bmblock_array -> bm[i] != UINT64_C(-1)) {
             // il reste encore la place
             if (!((bmblock_array -> bm[i]) & (UINT64_C(1) << ((bmblock_array -> cursor)%( sizeof(uint64_t)*8))))) {
-                // si la valeur du curseur actuel est zero
+                // si la valeur du curseur actuelle est zero
                 err = bmblock_array -> cursor + bmblock_array -> min;
                 k = 1;
             }
