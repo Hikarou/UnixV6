@@ -27,7 +27,8 @@ cc -std=c99 -Wall -pedantic   -c -o test-bitmap.o test-bitmap.c
 gcc -o test-bitmap test-bitmap.o error.o bmblock.o
 test-bitmap done.
 =====
-testing our test-inodes on disk simple.uv6: done.
+testing our test-inodes on disk simple.uv6: Running command: /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-inodes /home/whitlock/pps/Dev2017/mainprj/disks/simple.uv6
+done.
 diff from reference:
 i = 1, utilisé: 1					      <
     secteur: 35 : rempli. offset = 0, taille = 0	      <
@@ -93,7 +94,8 @@ Inode   2 (DIR) len     16				      |	inode   2 (DIR) len   16
 Inode   3 (FIL) len     18				      |	inode   3 (FIL) len   18
 							      <
 =====
-testing our test-inodes on disk aiw.uv6: done.
+testing our test-inodes on disk aiw.uv6: Running command: /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-inodes /home/whitlock/pps/Dev2017/mainprj/disks/aiw.uv6
+done.
 diff from reference:
 i = 1, utilisé: 1					      <
     secteur: 67 : rempli. offset = 0, taille = 0	      <
@@ -937,7 +939,8 @@ Inode  20 (DIR) len     16				      |	inode  20 (DIR) len   16
 Inode  21 (FIL) len 169856				      |	inode  21 (FIL) len 169856
 							      <
 =====
-testing our test-file on disk simple.uv6: done.
+testing our test-file on disk simple.uv6: Running command: /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-file /home/whitlock/pps/Dev2017/mainprj/disks/simple.uv6
+done.
 diff from reference:
 i = 1, utilisé: 1					      <
     secteur: 35 : rempli. offset = 0, taille = 0	      <
@@ -1020,7 +1023,8 @@ SHA inode 1: no SHA for directories.				SHA inode 1: no SHA for directories.
 SHA inode 2: no SHA for directories.				SHA inode 2: no SHA for directories.
 SHA inode 3: 338fc4bb0d037f3747396a4c852d2a9d8b545d622c6c744c	SHA inode 3: 338fc4bb0d037f3747396a4c852d2a9d8b545d622c6c744c
 =====
-testing our test-file on disk aiw.uv6: done.
+testing our test-file on disk aiw.uv6: Running command: /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-file /home/whitlock/pps/Dev2017/mainprj/disks/aiw.uv6
+done.
 diff from reference:
 i = 1, utilisé: 1					      <
     secteur: 67 : rempli. offset = 0, taille = 0	      <
@@ -1904,7 +1908,8 @@ SHA inode 19: 37302d665c56d16309f795f023ffb46d5b457a2aa906a4e	SHA inode 19: 3730
 SHA inode 20: no SHA for directories.				SHA inode 20: no SHA for directories.
 SHA inode 21: 7ee39739006a4a5f1b2a082d1f825837ee4403c85acc8a6	SHA inode 21: 7ee39739006a4a5f1b2a082d1f825837ee4403c85acc8a6
 =====
-testing our test-dirent on disk simple.uv6: done.
+testing our test-dirent on disk simple.uv6: Running command: /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-dirent /home/whitlock/pps/Dev2017/mainprj/disks/simple.uv6
+done.
 diff from reference:
 i = 1, utilisé: 1					      <
     secteur: 35 : rempli. offset = 0, taille = 0	      <
@@ -1969,7 +1974,8 @@ DIR /								DIR /
 DIR /tmp/							DIR /tmp/
 FIL /tmp/coucou.txt						FIL /tmp/coucou.txt
 =====
-testing our test-dirent on disk aiw.uv6: done.
+testing our test-dirent on disk aiw.uv6: Running command: /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-dirent /home/whitlock/pps/Dev2017/mainprj/disks/aiw.uv6
+done.
 diff from reference:
 i = 1, utilisé: 1					      <
     secteur: 67 : rempli. offset = 0, taille = 0	      <
@@ -2812,7 +2818,8 @@ FIL /books/aiw/by_chapters/11-0-end.txt				FIL /books/aiw/by_chapters/11-0-end.t
 DIR /books/aiw/full/						DIR /books/aiw/full/
 FIL /books/aiw/full/11-0.txt					FIL /books/aiw/full/11-0.txt
 =====
-testing our test-bitmap on disk simple.uv6: done.
+testing our test-bitmap on disk simple.uv6: Running command: /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-bitmap /home/whitlock/pps/Dev2017/mainprj/disks/simple.uv6
+done.
 diff from reference:
 **********BitMap Block START**********				**********BitMap Block START**********
 length: 2							length: 2
@@ -2855,7 +2862,8 @@ content:							content:
 **********BitMap Block END************				**********BitMap Block END************
 find_next() = 5							find_next() = 5
 =====
-testing our test-bitmap on disk aiw.uv6: done.
+testing our test-bitmap on disk aiw.uv6: Running command: /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-bitmap /home/whitlock/pps/Dev2017/mainprj/disks/aiw.uv6
+done.
 diff from reference:
 **********BitMap Block START**********				**********BitMap Block START**********
 length: 2							length: 2
@@ -4155,6 +4163,63 @@ fs done.
 
 -----
 stderr:
++ '[' 1 -ge 1 ']'
++ week_num=9
+++ realpath /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done
++ student_dir=/home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done
++++ realpath /home/whitlock/pps/Dev2017/grading/students_feedback/week09/submit.sh
+++ dirname /home/whitlock/pps/Dev2017/grading/students_feedback/week09/submit.sh
++ DIR=/home/whitlock/pps/Dev2017/grading/students_feedback/week09
+++ realpath /home/whitlock/pps/Dev2017/grading/students_feedback/week09/../../..
++ project_root=/home/whitlock/pps/Dev2017
++ tests='test-inodes test-file test-dirent test-bitmap'
++ disks='simple.uv6 aiw.uv6'
++ disks_dir=/home/whitlock/pps/Dev2017/mainprj/disks
++ expected_dir=/home/whitlock/pps/Dev2017/mainprj/expected/week09
++ cmdfile=/home/whitlock/pps/Dev2017/grading/students_feedback/week09/shell_cmd.txt
++ refoutput=/home/whitlock/pps/Dev2017/grading/students_feedback/week09/shell_expected_output.txt
++ '[' '!' -d /home/whitlock/pps/Dev2017/mainprj/expected/week09 ']'
++ pushd /home/whitlock/pps/Dev2017/mainprj/expected/week09
++ make
++ popd
++ '[' -d /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done ']'
++ for name in '$tests'
++ src=/home/whitlock/pps/Dev2017/grading/students_feedback/week09/test-inodes.c
++ required_ressource_file /home/whitlock/pps/Dev2017/grading/students_feedback/week09/test-inodes.c
++ '[' -f /home/whitlock/pps/Dev2017/grading/students_feedback/week09/test-inodes.c ']'
++ '[' -x /home/whitlock/pps/Dev2017/mainprj/expected/week09/test-inodes ']'
++ cp /home/whitlock/pps/Dev2017/grading/students_feedback/week09/test-inodes.c /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done
++ for name in '$tests'
++ src=/home/whitlock/pps/Dev2017/grading/students_feedback/week09/test-file.c
++ required_ressource_file /home/whitlock/pps/Dev2017/grading/students_feedback/week09/test-file.c
++ '[' -f /home/whitlock/pps/Dev2017/grading/students_feedback/week09/test-file.c ']'
++ '[' -x /home/whitlock/pps/Dev2017/mainprj/expected/week09/test-file ']'
++ cp /home/whitlock/pps/Dev2017/grading/students_feedback/week09/test-file.c /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done
++ for name in '$tests'
++ src=/home/whitlock/pps/Dev2017/grading/students_feedback/week09/test-dirent.c
++ required_ressource_file /home/whitlock/pps/Dev2017/grading/students_feedback/week09/test-dirent.c
++ '[' -f /home/whitlock/pps/Dev2017/grading/students_feedback/week09/test-dirent.c ']'
++ '[' -x /home/whitlock/pps/Dev2017/mainprj/expected/week09/test-dirent ']'
++ cp /home/whitlock/pps/Dev2017/grading/students_feedback/week09/test-dirent.c /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done
++ for name in '$tests'
++ src=/home/whitlock/pps/Dev2017/grading/students_feedback/week09/test-bitmap.c
++ required_ressource_file /home/whitlock/pps/Dev2017/grading/students_feedback/week09/test-bitmap.c
++ '[' -f /home/whitlock/pps/Dev2017/grading/students_feedback/week09/test-bitmap.c ']'
++ '[' -x /home/whitlock/pps/Dev2017/mainprj/expected/week09/test-bitmap ']'
++ cp /home/whitlock/pps/Dev2017/grading/students_feedback/week09/test-bitmap.c /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done
++ for disk in '$disks'
++ '[' -f /home/whitlock/pps/Dev2017/mainprj/disks/simple.uv6 ']'
++ for disk in '$disks'
++ '[' -f /home/whitlock/pps/Dev2017/mainprj/disks/aiw.uv6 ']'
++ required_ressource_file /home/whitlock/pps/Dev2017/grading/students_feedback/week09/shell_cmd.txt
++ '[' -f /home/whitlock/pps/Dev2017/grading/students_feedback/week09/shell_cmd.txt ']'
++ required_ressource_file /home/whitlock/pps/Dev2017/grading/students_feedback/week09/shell_expected_output.txt
++ '[' -f /home/whitlock/pps/Dev2017/grading/students_feedback/week09/shell_expected_output.txt ']'
++ pushd /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done
++ for name in '$tests'
++ rm -f test-inodes
++ echo 'making (our) test-inodes: '
++ make test-inodes
 mount.c: In function ‘fill_fbm’:
 mount.c:107:11: warning: format ‘%d’ expects argument of type ‘int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
     printf("i = %d, utilisé: %d\n",i, err);
@@ -4162,3 +4227,191 @@ mount.c:107:11: warning: format ‘%d’ expects argument of type ‘int’, but
 mount.c:134:12: warning: format ‘%d’ expects argument of type ‘int’, but argument 2 has type ‘uint64_t {aka long unsigned int}’ [-Wformat=]
      printf("ERROR unable to read inode %d\n", i);
             ^
++ echo 'test-inodes done.'
++ for name in '$tests'
++ rm -f test-file
++ echo 'making (our) test-file: '
++ make test-file
++ echo 'test-file done.'
++ for name in '$tests'
++ rm -f test-dirent
++ echo 'making (our) test-dirent: '
++ make test-dirent
++ echo 'test-dirent done.'
++ for name in '$tests'
++ rm -f test-bitmap
++ echo 'making (our) test-bitmap: '
++ make test-bitmap
++ echo 'test-bitmap done.'
++ popd
++ for name in '$tests'
++ exec=/home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-inodes
++ '[' '!' -x /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-inodes ']'
++ for disk in '$disks'
++ echo =====
++ printf 'testing our test-inodes on disk simple.uv6: '
++ echo 'Running command: /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-inodes /home/whitlock/pps/Dev2017/mainprj/disks/simple.uv6'
++ /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-inodes /home/whitlock/pps/Dev2017/mainprj/disks/simple.uv6
++ fine=0
++ '[' x0 = x0 ']'
++ echo done.
++ echo 'diff from reference:'
++ set +e
++ diff -wy /dev/fd/63 /dev/fd/62
+++ /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-inodes /home/whitlock/pps/Dev2017/mainprj/disks/simple.uv6
+++ /home/whitlock/pps/Dev2017/mainprj/expected/week09/test-inodes /home/whitlock/pps/Dev2017/mainprj/disks/simple.uv6
++ true
++ set -e
++ for disk in '$disks'
++ echo =====
++ printf 'testing our test-inodes on disk aiw.uv6: '
++ echo 'Running command: /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-inodes /home/whitlock/pps/Dev2017/mainprj/disks/aiw.uv6'
++ /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-inodes /home/whitlock/pps/Dev2017/mainprj/disks/aiw.uv6
++ fine=0
++ '[' x0 = x0 ']'
++ echo done.
++ echo 'diff from reference:'
++ set +e
++ diff -wy /dev/fd/63 /dev/fd/62
+++ /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-inodes /home/whitlock/pps/Dev2017/mainprj/disks/aiw.uv6
+++ /home/whitlock/pps/Dev2017/mainprj/expected/week09/test-inodes /home/whitlock/pps/Dev2017/mainprj/disks/aiw.uv6
++ true
++ set -e
++ for name in '$tests'
++ exec=/home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-file
++ '[' '!' -x /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-file ']'
++ for disk in '$disks'
++ echo =====
++ printf 'testing our test-file on disk simple.uv6: '
++ echo 'Running command: /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-file /home/whitlock/pps/Dev2017/mainprj/disks/simple.uv6'
++ /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-file /home/whitlock/pps/Dev2017/mainprj/disks/simple.uv6
++ fine=0
++ '[' x0 = x0 ']'
++ echo done.
++ echo 'diff from reference:'
++ set +e
++ diff -wy /dev/fd/63 /dev/fd/62
+++ /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-file /home/whitlock/pps/Dev2017/mainprj/disks/simple.uv6
+++ /home/whitlock/pps/Dev2017/mainprj/expected/week09/test-file /home/whitlock/pps/Dev2017/mainprj/disks/simple.uv6
++ true
++ set -e
++ for disk in '$disks'
++ echo =====
++ printf 'testing our test-file on disk aiw.uv6: '
++ echo 'Running command: /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-file /home/whitlock/pps/Dev2017/mainprj/disks/aiw.uv6'
++ /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-file /home/whitlock/pps/Dev2017/mainprj/disks/aiw.uv6
++ fine=0
++ '[' x0 = x0 ']'
++ echo done.
++ echo 'diff from reference:'
++ set +e
++ diff -wy /dev/fd/63 /dev/fd/62
+++ /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-file /home/whitlock/pps/Dev2017/mainprj/disks/aiw.uv6
+++ /home/whitlock/pps/Dev2017/mainprj/expected/week09/test-file /home/whitlock/pps/Dev2017/mainprj/disks/aiw.uv6
++ true
++ set -e
++ for name in '$tests'
++ exec=/home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-dirent
++ '[' '!' -x /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-dirent ']'
++ for disk in '$disks'
++ echo =====
++ printf 'testing our test-dirent on disk simple.uv6: '
++ echo 'Running command: /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-dirent /home/whitlock/pps/Dev2017/mainprj/disks/simple.uv6'
++ /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-dirent /home/whitlock/pps/Dev2017/mainprj/disks/simple.uv6
++ fine=0
++ '[' x0 = x0 ']'
++ echo done.
++ echo 'diff from reference:'
++ set +e
++ diff -wy /dev/fd/63 /dev/fd/62
+++ /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-dirent /home/whitlock/pps/Dev2017/mainprj/disks/simple.uv6
+++ /home/whitlock/pps/Dev2017/mainprj/expected/week09/test-dirent /home/whitlock/pps/Dev2017/mainprj/disks/simple.uv6
++ true
++ set -e
++ for disk in '$disks'
++ echo =====
++ printf 'testing our test-dirent on disk aiw.uv6: '
++ echo 'Running command: /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-dirent /home/whitlock/pps/Dev2017/mainprj/disks/aiw.uv6'
++ /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-dirent /home/whitlock/pps/Dev2017/mainprj/disks/aiw.uv6
++ fine=0
++ '[' x0 = x0 ']'
++ echo done.
++ echo 'diff from reference:'
++ set +e
++ diff -wy /dev/fd/63 /dev/fd/62
+++ /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-dirent /home/whitlock/pps/Dev2017/mainprj/disks/aiw.uv6
+++ /home/whitlock/pps/Dev2017/mainprj/expected/week09/test-dirent /home/whitlock/pps/Dev2017/mainprj/disks/aiw.uv6
++ true
++ set -e
++ for name in '$tests'
++ exec=/home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-bitmap
++ '[' '!' -x /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-bitmap ']'
++ for disk in '$disks'
++ echo =====
++ printf 'testing our test-bitmap on disk simple.uv6: '
++ echo 'Running command: /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-bitmap /home/whitlock/pps/Dev2017/mainprj/disks/simple.uv6'
++ /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-bitmap /home/whitlock/pps/Dev2017/mainprj/disks/simple.uv6
++ fine=0
++ '[' x0 = x0 ']'
++ echo done.
++ echo 'diff from reference:'
++ set +e
++ diff -wy /dev/fd/63 /dev/fd/62
+++ /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-bitmap /home/whitlock/pps/Dev2017/mainprj/disks/simple.uv6
+++ /home/whitlock/pps/Dev2017/mainprj/expected/week09/test-bitmap /home/whitlock/pps/Dev2017/mainprj/disks/simple.uv6
++ true
++ set -e
++ for disk in '$disks'
++ echo =====
++ printf 'testing our test-bitmap on disk aiw.uv6: '
++ echo 'Running command: /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-bitmap /home/whitlock/pps/Dev2017/mainprj/disks/aiw.uv6'
++ /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-bitmap /home/whitlock/pps/Dev2017/mainprj/disks/aiw.uv6
++ fine=0
++ '[' x0 = x0 ']'
++ echo done.
++ echo 'diff from reference:'
++ set +e
++ diff -wy /dev/fd/63 /dev/fd/62
+++ /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/test-bitmap /home/whitlock/pps/Dev2017/mainprj/disks/aiw.uv6
+++ /home/whitlock/pps/Dev2017/mainprj/expected/week09/test-bitmap /home/whitlock/pps/Dev2017/mainprj/disks/aiw.uv6
++ true
++ set -e
++ echo =====
++ try_to_make /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done shell
++ '[' -d /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done ']'
++ '[' xshell '!=' x ']'
++ pushd /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done
++ rm -f shell
++ echo 'making (your) shell: '
++ make
++ '[' -x shell ']'
++ echo 'shell done.'
++ popd
++ name=shell
++ exec=/home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/shell
++ '[' '!' -x /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/shell ']'
++ echo 'testing your shell: '
+++ mktemp
++ output=/tmp/tmp.XiUIiB5Li5
++ set +e
++ timeout -s TERM -k 15s 10s /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done/shell
++ fine=0
++ set -e
++ '[' x0 = x0 ']'
++ echo done.
++ echo 'diff from reference:'
++ set +e
++ diff -wy /tmp/tmp.XiUIiB5Li5 /home/whitlock/pps/Dev2017/grading/students_feedback/week09/shell_expected_output.txt
++ true
++ set -e
++ echo =====
++ try_to_make /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done fs
++ '[' -d /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done ']'
++ '[' xfs '!=' x ']'
++ pushd /home/whitlock/pps/pps17_repos/team/repositories/pps17-team-jfp-mf/repository/done
++ rm -f fs
++ echo 'making (your) fs: '
++ make
++ '[' -x fs ']'
++ echo 'fs done.'
++ popd
