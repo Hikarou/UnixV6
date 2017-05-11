@@ -45,17 +45,14 @@ int sector_write(FILE *f, uint32_t sector, void  *data)
 	M_REQUIRE_NON_NULL(f);
 	size_t written = 0;
 	if (data == NULL){
-		printf("data NULL\n");
 		return ERR_IO;
 	}
 	
 	if (fseek(f, sector * SECTOR_SIZE, SEEK_SET) == -1) {
-		printf("impossible de se positionner au bon endroit\n");
         return ERR_IO;
     }
 	written = fwrite(data, SECTOR_SIZE, 1, f);
 	if (written != 1) {
-		printf("written == %d\n", written);
         return ERR_IO;
     }
     
