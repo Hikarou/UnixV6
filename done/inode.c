@@ -193,7 +193,7 @@ int inode_write(struct unix_filesystem *u, uint16_t inr, struct inode *inode)
     // Lire le secteur
     err = sector_read(u -> f, (uint32_t) (u -> s.s_inode_start + inr / INODES_PER_SECTOR), data);
     nbrInodeSec = inr%INODES_PER_SECTOR;
-   
+   	
     if (!err){
     	data[nbrInodeSec*32] = (uint8_t) (inode -> i_mode & nb_bin_petit);
     	data[nbrInodeSec*32+1] = (uint8_t) ((inode -> i_mode & nb_bin_grand) >> 8);
