@@ -121,7 +121,7 @@ int mountv6(const char *filename, struct unix_filesystem *u)
     memset(u, 0, sizeof(*u));
     u -> fbm = NULL;
     u -> ibm = NULL;
-    u -> f = fopen(filename, "rd");
+    u -> f = fopen(filename, "r+b");
     if (u -> f == NULL) {
         return ERR_IO;
     }

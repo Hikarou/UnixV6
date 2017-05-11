@@ -192,20 +192,15 @@ int inode_write(struct unix_filesystem *u, uint16_t inr, struct inode *inode)
     }
     // Lire le secteur
     err = sector_read(u -> f, (uint32_t) (u -> s.s_inode_start + inr / INODES_PER_SECTOR), data);
+    nbrInodeSec = inr%INODES_PER_SECTOR;
+   
     if (!err){
-    	nbrInodeSec = inr%INODES_PER_SECTOR;
-    	//inode -> i_mode = (uint16_t)((data[nbrInodeSec*32+1] << 8) + data[nbrInodeSec*32]);
     	data[nbrInodeSec*32] = (uint8_t) (inode -> i_mode & nb_bin_petit);
     	data[nbrInodeSec*32+1] = (uint8_t) ((inode -> i_mode & nb_bin_grand) >> 8);
-        //inode -> i_nlink = data[nbrInodeSec*32+2];
         data[nbrInodeSec*32+2] = (uint8_t) (inode -> i_nlink);
-        //inode -> i_uid = data[nbrInodeSec*32+3];
         data[nbrInodeSec*32+3] = (uint8_t) (inode -> i_uid);
-        //inode -> i_gid = data[nbrInodeSec*32+4];
         data[nbrInodeSec*32+4] = (uint8_t) (inode -> i_gid);
-        //inode -> i_size0 = data[nbrInodeSec*32+5];
         data[nbrInodeSec*32+5] = (uint8_t) (inode -> i_size0);
-        //inode -> i_size1 = (uint16_t)((data[nbrInodeSec*32+7] << 8) + data[nbrInodeSec*32+6]);
         data[nbrInodeSec*32+6] = (uint8_t) (inode -> i_size1 & nb_bin_petit);
     	data[nbrInodeSec*32+7] = (uint8_t) ((inode -> i_size1 & nb_bin_grand) >> 8);
         
@@ -227,7 +222,7 @@ int inode_write(struct unix_filesystem *u, uint16_t inr, struct inode *inode)
         }
         
         
-        err = sector_read(u -> f, (uint32_t) (u -> s.s_inode_start + inr / INODES_PER_SECTOR), data);
+        err = sector_write(u -> f, (uint32_t) (u -> s.s_inode_start + inr / INODES_PER_SECTOR), data);
         return err;
     }
     else{
