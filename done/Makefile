@@ -25,7 +25,7 @@ test-bitmap: test-bitmap.o error.o bmblock.o
 
 test-inodes.o: test-inodes.c
 
-test-inodes: test-inodes.o test-core.o error.o mount.o sector.o inode.o bmblock.o
+test-inodes: test-inodes.o test-core.o error.o mount.o sector.o inode.o bmblock.o filev6.o
 	gcc -o $@ $^
 
 test-file.o: test-file.c

@@ -110,7 +110,40 @@ int filev6_readblock(struct filev6 *fv6, void *buf)
  * @param fv6 the filev6 (IN-OUT; offset will be changed)
  * @return 0 on success; <0 on errror
  */
-int filev6_create(struct unix_filesystem *u, uint16_t mode, struct filev6 *fv6);
+int filev6_create(struct unix_filesystem *u, uint16_t mode, struct filev6 *fv6)
+{
+ 	int err = 0;
+ 	struct inode inode;
+ 
+
+ 	// Intialiser l'inode TODO: vérfier que ces champs soient les bons
+	inode.i_mode = mode;
+    inode.i_nlink = 0;
+    inode.i_uid = 0;
+    inode.i_gid = 0;
+    inode.i_size0 = 0;
+    inode.i_size1 = 0;
+    for (size_t i = 0; i<ADDR_SMALL_LENGTH; ++i) {
+    	inode.i_addr[i] = 0;
+    }
+    
+    for (size_t i = 0; i<2; ++i) {
+    	inode.atime[i] = 0;
+        inode.mtime[i] = 0;
+    } 	
+ 	
+ 	// recopier l'inode dans fv6 
+ 	fv6 -> i_node = inode;
+ 	fv6 -> u = u;
+    fv6 -> offset = 0;
+ 	
+ 	
+ 	// écrire l'inode sur le disk
+ 	err =  inode_write(u, fv6 -> i_number, &inode);
+ 	
+ 	return err;
+
+}
 
 /**
  * @brief write the len bytes of the given buffer on disk to the given filev6

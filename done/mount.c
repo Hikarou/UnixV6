@@ -173,6 +173,9 @@ int mountv6(const char *filename, struct unix_filesystem *u)
 
     fill_ibm(u);
     fill_fbm(u);
+    
+    bm_print(u->fbm);
+    bm_print(u->ibm);
 
     return 0;
 }
@@ -220,4 +223,51 @@ int umountv6(struct unix_filesystem *u)
     }
 
     return 0;
+}
+
+
+/**
+ * @brief create a new filesystem
+ * @param num_blocks the total number of blocks (= max size of disk), in sectors
+ * @param num_inodes the total number of inodes
+ */
+int mountv6_mkfs(const char *filename, uint16_t num_blocks, uint16_t num_inodes)
+{
+	int err = 0;
+	uint8_t superblock[SECTOR_SIZE];
+	
+	memset(superblock,0,SECTOR_SIZE);
+	
+	
+	//Calcul des valeur de superblock et tests
+	uint16_t s_fsize = num_blocks;	    /* size in sectors of entire volume */
+	uint16_t s_isize = num_inodes/INODE_PER_SECTOR;    	/* size in sectors of the inodes */
+	
+	if (num_blocks <= 2 + s_isize + num_inodes + 1){
+		return ERR_NOT_ENOUGH_BLOCS;
+	}
+	
+	//créer superblock
+	
+	uint16_t s_fbmsize = 0;      /* size in sectors of the freelist bitmap */
+    uint16_t s_ibmsize = 0;      /* size in sectors of the inode bitmap */
+    uint16_t s_inode_start = 2;  /* first sector with inodes */
+    uint16_t s_block_start = 1 + s_isize + 1;  /* first sector with data */
+    uint16_t s_fbm_start = 0;    /* first sector with the freebitmap (==2) */
+    uint16_t s_ibm_start = 0;    /* first sector with the inode bitmap */
+    uint8_t s_flock = 0;	    /* lock during free list manipulation */
+    uint8_t s_ilock = 0;	    /* lock during I list manipulation */
+    uint8_t s_fmod = 0;		    /* super block modified flag */
+    uint8_t s_ronly = 0;	    /* mounted read-only flag */
+    uint16_t s_time[2] = {0,0};	    /* current date of last update */
+   
+	
+	// créer un fichier binaire du bon nom et le remplr de zeros juqu'à la bonne taille
+	
+	// écrire le bootsector 
+	
+	// écrire le superblock
+	
+	
+	return err;
 }
