@@ -164,8 +164,8 @@ int mountv6(const char *filename, struct unix_filesystem *u)
 
     u -> fbm = NULL;
     u -> ibm = NULL;
-    u -> fbm = bm_alloc((uint64_t) (u -> s.s_block_start + 1), (uint64_t) u -> s.s_fsize);
-    u -> ibm = bm_alloc((uint64_t) (ROOT_INUMBER + 1), (uint64_t) (u -> s.s_isize)*INODES_PER_SECTOR);
+    u -> fbm = bm_alloc((uint64_t) (u -> s.s_block_start + 1), (uint64_t) u -> s.s_fsize-1);
+    u -> ibm = bm_alloc((uint64_t) (ROOT_INUMBER + 1), (uint64_t) (u -> s.s_isize)*INODES_PER_SECTOR-1);
 
     if (u -> ibm == NULL ||u -> fbm == NULL ) {
         return ERR_NOMEM;
@@ -173,9 +173,6 @@ int mountv6(const char *filename, struct unix_filesystem *u)
 
     fill_ibm(u);
     fill_fbm(u);
-    
-    bm_print(u->fbm);
-    bm_print(u->ibm);
 
     return 0;
 }
@@ -233,15 +230,26 @@ int umountv6(struct unix_filesystem *u)
  */
 int mountv6_mkfs(const char *filename, uint16_t num_blocks, uint16_t num_inodes)
 {
+	M_REQUIRE_NON_NULL(filename);
+	if (num_inodes <= 1){
+		return ERR_NOT_ENOUGH_BLOCS;
+	}
+	
 	int err = 0;
 	uint8_t superblock[SECTOR_SIZE];
+	uint8_t sector[SECTOR_SIZE];
+	FILE* fichier = NULL;
+	uint16_t nb_bin_petit = (1<<8)-1;
+	uint16_t nb_bin_grand = -1 - nb_bin_petit;
+	struct inode inode;
+	
 	
 	memset(superblock,0,SECTOR_SIZE);
-	
+	memset(sector,0,SECTOR_SIZE);
 	
 	//Calcul des valeur de superblock et tests
 	uint16_t s_fsize = num_blocks;	    /* size in sectors of entire volume */
-	uint16_t s_isize = num_inodes/INODE_PER_SECTOR;    	/* size in sectors of the inodes */
+	uint16_t s_isize = num_inodes/INODES_PER_SECTOR;    	/* size in sectors of the inodes */
 	
 	if (num_blocks <= 2 + s_isize + num_inodes + 1){
 		return ERR_NOT_ENOUGH_BLOCS;
@@ -251,23 +259,126 @@ int mountv6_mkfs(const char *filename, uint16_t num_blocks, uint16_t num_inodes)
 	
 	uint16_t s_fbmsize = 0;      /* size in sectors of the freelist bitmap */
     uint16_t s_ibmsize = 0;      /* size in sectors of the inode bitmap */
-    uint16_t s_inode_start = 2;  /* first sector with inodes */
-    uint16_t s_block_start = 1 + s_isize + 1;  /* first sector with data */
+    uint16_t s_inode_start = SUPERBLOCK_SECTOR + 1;  /* first sector with inodes */
+    uint16_t s_block_start = SUPERBLOCK_SECTOR + s_isize + 1;  /* first sector with data */
     uint16_t s_fbm_start = 0;    /* first sector with the freebitmap (==2) */
     uint16_t s_ibm_start = 0;    /* first sector with the inode bitmap */
     uint8_t s_flock = 0;	    /* lock during free list manipulation */
     uint8_t s_ilock = 0;	    /* lock during I list manipulation */
     uint8_t s_fmod = 0;		    /* super block modified flag */
-    uint8_t s_ronly = 0;	    /* mounted read-only flag */
+    uint8_t s_ronly = 0;	    /* mounted read-only flag */ // faut-il mettre quelque chose de particulier ici?
     uint16_t s_time[2] = {0,0};	    /* current date of last update */
    
+   
+   	//s.s_isize = (superblock[1] << 8) + superblock[0];
+   	superblock[0] = (uint8_t) (s_isize & nb_bin_petit);
+   	superblock[1] = (uint8_t) ((s_isize & nb_bin_grand) >> 8);
+    //u -> s.s_fsize = (superblock[3] << 8) + superblock[2];
+    superblock[2] = (uint8_t) (s_fsize & nb_bin_petit);
+    superblock[3] = (uint8_t) ((s_fsize & nb_bin_grand) >> 8); 
+    //u -> s.s_fbmsize = (superblock[5] << 8) + superblock[4];
+    superblock[4] = (uint8_t) (s_fbmsize & nb_bin_petit);
+    superblock[5] = (uint8_t) ((s_fbmsize  & nb_bin_grand) >> 8);
+    //u -> s.s_ibmsize = (superblock[7] << 8) + superblock[6];
+    superblock[6] = (uint8_t) (s_ibmsize & nb_bin_petit);
+    superblock[7] = (uint8_t) ((s_ibmsize & nb_bin_grand) >> 8);
+    //u -> s.s_inode_start = (superblock[9] << 8) + superblock[8];
+    superblock[8] = (uint8_t) (s_inode_start & nb_bin_petit);
+    superblock[9] = (uint8_t) ((s_inode_start & nb_bin_grand) >> 8);
+   // u -> s.s_block_start = (superblock[11] << 8) + superblock[10];
+    superblock[10] = (uint8_t) (s_block_start & nb_bin_petit);
+    superblock[11} = (uint8_t) ((s_block_start & nb_bin_grand) >> 8);
+    //u -> s.s_fbm_start = (superblock[13] << 8) + superblock[12];
+    superblock[12] = (uint8_t) (s_fbm_start & nb_bin_petit):
+    superblock[13] = (uint8_t) ((s_fbm_start & nb_bin_grand) >> 8);
+    //u -> s.s_ibm_start = (superblock[15] << 8) + superblock[14];
+    superblock[14] = (uint8_t) (s_ibm_start & nb_bin_petit);
+    superblock[15] = (uint8_t) ((s_ibm_start & nb_bin_grand) >> 8);
+    superblock[16] = s.s_flock;
+   	superblock[17] = s_ilock;
+    superblock[18] = s_fmod;
+    superblock[19] = s_ronly;
+    //u -> s.s_time[0] = (superblock[21] << 8) + superblock[20];
+	superblock[20] = (uint8_t) (s_time[0] & nb_bin_petit);
+    superblock[21] = (uint8_t) ((s_time[0] & nb_bin_grand) >> 8);
+    //u -> s.s_time[1] = (superblock[23] << 8) + superblock[22];
+	superblock[22] = (uint8_t) (s_time[1] & nb_bin_petit);
+	superblock[23] = (uint8_t) (s_time[1] & nb_bin_grand) >> 8);
 	
 	// créer un fichier binaire du bon nom et le remplr de zeros juqu'à la bonne taille
+	fichier = fopen(filename, "wb");
+	if (fichier == NULL){
+		return ERR_IO;
+	}
 	
-	// écrire le bootsector 
+	// écrire le bootsector et le superblock 
+	err = fseek(fichier,0,SEEK_SET);
+	if (err){
+		return err;
+	}
 	
-	// écrire le superblock
+	sector[BOOTBLOCK_MAGIC_NUM_OFFSET] = BOOTBLOCK_MAGIC_NUM; 
+	err = sector_write(fichier, 0, sector);
+	if (err){
+		return err;
+	}
+	err = sector_write(fichier, 1, superblock);
+	if (err){
+		return err;
+	}
 	
+	memset(sector,0,SECTOR_SIZE);
+	
+	// écrire inode_root 
+	
+	inode.i_mode = IALLOC | IFDIR;
+    inode.i_nlink = 0;
+    inode.i_uid = 0;
+    inode.i_gid = 0;
+    
+    inode.i_size0 = 0;
+    inode.i_size1 = 0;
+    
+    inode.i_addr[0] = s_block_start;
+    for (size_t i = 1; i<ADDR_SMALL_LENGTH; ++i) {
+    	inode.i_addr[i] = 0;
+    }
+    
+    for (size_t i = 0; i<2; ++i) {
+    	inode.atime[i] = 0;
+        inode.mtime[i] = 0;
+    } 	
+ 	
+ 	
+	sector[ROOT_INUMBER*32] = (uint8_t) (inode -> i_mode & nb_bin_petit);
+	sector[ROOT_INUMBER*32+1] = (uint8_t) ((inode -> i_mode & nb_bin_grand) >> 8);
+    sector[ROOT_INUMBER*32+2] = (uint8_t) (inode -> i_nlink);
+    sector[ROOT_INUMBER*32+3] = (uint8_t) (inode -> i_uid);
+    sector[ROOT_INUMBER*32+4] = (uint8_t) (inode -> i_gid);
+    sector[ROOT_INUMBER*32+5] = (uint8_t) (inode -> i_size0);
+    sector[ROOT_INUMBER*32+6] = (uint8_t) (inode -> i_size1 & nb_bin_petit);
+	sector[ROOT_INUMBER*32+7] = (uint8_t) ((inode -> i_size1 & nb_bin_grand) >> 8);
+    
+    for (size_t i = 0; i<ADDR_SMALL_LENGTH; ++i) {
+        sector[ROOT_INUMBER*32+8+2*i] = (uint8_t) ((inode -> i_addr[i] & nb_bin_petit));
+		sector[ROOT_INUMBER*32+9+2*i] = (uint8_t) ((inode -> i_addr[i] & nb_bin_grand) >> 8);
+    }
+    for (size_t i = 0; i<2; ++i) {
+        sector[ROOT_INUMBER*32+24+2*i] = (uint8_t) (inode -> atime[i] & nb_bin_petit);
+		sector[ROOT_INUMBER*32+25+2*i] = (uint8_t) ((inode -> atime[i] & nb_bin_grand) >> 8);
+   		sector[ROOT_INUMBER*32+28+2*i] = (uint8_t) (inode -> mtime[i] & nb_bin_petit);
+		sector[ROOT_INUMBER*32+29+2*i] = (uint8_t) ((inode -> mtime[i] & nb_bin_grand) >> 8);
+    }
+    
+    err = sector_write(fichier, s_inode_start, sector);
+	if (err){
+		return err;
+	}
+	
+	memset(sector,0,SECTOR_SIZE);
+	// faire une boucle sur tous les secteurs des inodes 
+	
+	// faire une boucle sur tous les secteurs des data
 	
 	return err;
 }

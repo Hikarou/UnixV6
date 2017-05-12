@@ -112,9 +112,15 @@ int filev6_readblock(struct filev6 *fv6, void *buf)
  */
 int filev6_create(struct unix_filesystem *u, uint16_t mode, struct filev6 *fv6)
 {
+	M_REQUIRE_NON_NULL(fv6);
+	M_REQUIRE_NON_NULL(u);
+	
  	int err = 0;
  	struct inode inode;
  
+ 	if (!(mode & IALLOC)){
+ 		return ERR_BAD_PARAMETER;
+ 	}
 
  	// Intialiser l'inode TODO: vérfier que ces champs soient les bons
 	inode.i_mode = mode;

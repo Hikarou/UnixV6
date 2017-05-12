@@ -179,6 +179,10 @@ int inode_findsector(const struct unix_filesystem *u, const struct inode *i, int
  */
 int inode_write(struct unix_filesystem *u, uint16_t inr, struct inode *inode)
 {
+	
+	M_REQUIRE_NON_NULL(u);
+	M_REQUIRE_NON_NULL(inode);
+	
 	int err = 0;
 	uint8_t data[SECTOR_SIZE];
 	size_t nbrInodeSec = 0;
