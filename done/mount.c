@@ -270,38 +270,28 @@ int mountv6_mkfs(const char *filename, uint16_t num_blocks, uint16_t num_inodes)
     uint16_t s_time[2] = {0,0};	    /* current date of last update */
    
    
-   	//s.s_isize = (superblock[1] << 8) + superblock[0];
    	superblock[0] = (uint8_t) (s_isize & nb_bin_petit);
    	superblock[1] = (uint8_t) ((s_isize & nb_bin_grand) >> 8);
-    //u -> s.s_fsize = (superblock[3] << 8) + superblock[2];
     superblock[2] = (uint8_t) (s_fsize & nb_bin_petit);
-    superblock[3] = (uint8_t) ((s_fsize & nb_bin_grand) >> 8); 
-    //u -> s.s_fbmsize = (superblock[5] << 8) + superblock[4];
+    superblock[3] = (uint8_t) ((s_fsize & nb_bin_grand) >> 8);
     superblock[4] = (uint8_t) (s_fbmsize & nb_bin_petit);
     superblock[5] = (uint8_t) ((s_fbmsize  & nb_bin_grand) >> 8);
-    //u -> s.s_ibmsize = (superblock[7] << 8) + superblock[6];
     superblock[6] = (uint8_t) (s_ibmsize & nb_bin_petit);
     superblock[7] = (uint8_t) ((s_ibmsize & nb_bin_grand) >> 8);
-    //u -> s.s_inode_start = (superblock[9] << 8) + superblock[8];
     superblock[8] = (uint8_t) (s_inode_start & nb_bin_petit);
     superblock[9] = (uint8_t) ((s_inode_start & nb_bin_grand) >> 8);
-   // u -> s.s_block_start = (superblock[11] << 8) + superblock[10];
     superblock[10] = (uint8_t) (s_block_start & nb_bin_petit);
     superblock[11] = (uint8_t) ((s_block_start & nb_bin_grand) >> 8);
-    //u -> s.s_fbm_start = (superblock[13] << 8) + superblock[12];
     superblock[12] = (uint8_t) (s_fbm_start & nb_bin_petit);
     superblock[13] = (uint8_t) ((s_fbm_start & nb_bin_grand) >> 8);
-    //u -> s.s_ibm_start = (superblock[15] << 8) + superblock[14];
     superblock[14] = (uint8_t) (s_ibm_start & nb_bin_petit);
     superblock[15] = (uint8_t) ((s_ibm_start & nb_bin_grand) >> 8);
     superblock[16] = s_flock;
    	superblock[17] = s_ilock;
     superblock[18] = s_fmod;
     superblock[19] = s_ronly;
-    //u -> s.s_time[0] = (superblock[21] << 8) + superblock[20];
 	superblock[20] = (uint8_t) (s_time[0] & nb_bin_petit);
     superblock[21] = (uint8_t) ((s_time[0] & nb_bin_grand) >> 8);
-    //u -> s.s_time[1] = (superblock[23] << 8) + superblock[22];
 	superblock[22] = (uint8_t) (s_time[1] & nb_bin_petit);
 	superblock[23] = (uint8_t) ((s_time[1] & nb_bin_grand) >> 8);
 	
