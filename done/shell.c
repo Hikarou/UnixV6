@@ -403,12 +403,45 @@ int do_istat(char** args)
 
 int do_mkfs(char** args)
 {
-    return NOT_IMPLEMENTED;
+	int err = 0;
+	uint16_t num_blocks = 0;
+	uint16_t num_inodes = 0;
+	
+	err = sscanf(args[3],"%hu",&num_blocks); 
+	if (err != 1){
+		return ERR_ARGS;
+	}
+
+	err = sscanf(args[2],"%hu",&num_inodes); 
+	if (err != 1){
+		return ERR_ARGS;
+	}
+	err = mountv6_mkfs(args[1],  num_blocks,  num_inodes);
+    if (err){
+    	printf("ERROR FS: ");
+        puts(ERR_MESSAGES[err - ERR_FIRST]);
+        return ERR_FS;
+	}
+	
+	return ERR_OK;
 }
 
-int do_mkdir(char** args)
+int do_mkdir(char** args)	
 {
-    return NOT_IMPLEMENTED;
+
+	int err = 0;
+	if (u.f == NULL) {
+        printf("ERROR SHELL: mount the FS before operation\n");
+        return ERR_NOT_MOUNTED;
+    }
+    
+    err = direntv6_create(&u, args[1], IALLOC | IFDIR);
+    if (err){
+    	printf("ERROR FS: ");
+        puts(ERR_MESSAGES[err - ERR_FIRST]);
+        return ERR_FS;
+	}
+	return ERR_OK;
 }
 
 int do_add(char** args)

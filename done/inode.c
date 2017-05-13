@@ -11,6 +11,7 @@
 #include "unixv6fs.h"
 #include "mount.h"
 #include "error.h"
+#include "bmblock.h"
 #include "sector.h"
 
 /**
@@ -232,4 +233,23 @@ int inode_write(struct unix_filesystem *u, uint16_t inr, struct inode *inode)
     else{
     	return err;
     }
+}
+
+/**
+ * @brief alloc a new inode (returns its inr if possible)
+ * @param u the filesystem (IN)
+ * @return the inode number of the new inode or error code on error
+ */
+int inode_alloc(struct unix_filesystem *u)
+{
+	int err = 0;
+	
+	err = bm_find_next(u -> ibm);
+	if (err < 0){
+		return ERR_NOMEM;
+	}
+	
+	bm_set(u -> ibm, (uint64_t) err);
+	
+	return err;
 }

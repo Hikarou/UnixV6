@@ -287,14 +287,14 @@ int mountv6_mkfs(const char *filename, uint16_t num_blocks, uint16_t num_inodes)
     superblock[9] = (uint8_t) ((s_inode_start & nb_bin_grand) >> 8);
    // u -> s.s_block_start = (superblock[11] << 8) + superblock[10];
     superblock[10] = (uint8_t) (s_block_start & nb_bin_petit);
-    superblock[11} = (uint8_t) ((s_block_start & nb_bin_grand) >> 8);
+    superblock[11] = (uint8_t) ((s_block_start & nb_bin_grand) >> 8);
     //u -> s.s_fbm_start = (superblock[13] << 8) + superblock[12];
-    superblock[12] = (uint8_t) (s_fbm_start & nb_bin_petit):
+    superblock[12] = (uint8_t) (s_fbm_start & nb_bin_petit);
     superblock[13] = (uint8_t) ((s_fbm_start & nb_bin_grand) >> 8);
     //u -> s.s_ibm_start = (superblock[15] << 8) + superblock[14];
     superblock[14] = (uint8_t) (s_ibm_start & nb_bin_petit);
     superblock[15] = (uint8_t) ((s_ibm_start & nb_bin_grand) >> 8);
-    superblock[16] = s.s_flock;
+    superblock[16] = s_flock;
    	superblock[17] = s_ilock;
     superblock[18] = s_fmod;
     superblock[19] = s_ronly;
@@ -303,7 +303,7 @@ int mountv6_mkfs(const char *filename, uint16_t num_blocks, uint16_t num_inodes)
     superblock[21] = (uint8_t) ((s_time[0] & nb_bin_grand) >> 8);
     //u -> s.s_time[1] = (superblock[23] << 8) + superblock[22];
 	superblock[22] = (uint8_t) (s_time[1] & nb_bin_petit);
-	superblock[23] = (uint8_t) (s_time[1] & nb_bin_grand) >> 8);
+	superblock[23] = (uint8_t) ((s_time[1] & nb_bin_grand) >> 8);
 	
 	// créer un fichier binaire du bon nom et le remplr de zeros juqu'à la bonne taille
 	fichier = fopen(filename, "wb");
@@ -314,16 +314,19 @@ int mountv6_mkfs(const char *filename, uint16_t num_blocks, uint16_t num_inodes)
 	// écrire le bootsector et le superblock 
 	err = fseek(fichier,0,SEEK_SET);
 	if (err){
+		fclose(fichier);
 		return err;
 	}
 	
 	sector[BOOTBLOCK_MAGIC_NUM_OFFSET] = BOOTBLOCK_MAGIC_NUM; 
 	err = sector_write(fichier, 0, sector);
 	if (err){
+		fclose(fichier);
 		return err;
 	}
 	err = sector_write(fichier, 1, superblock);
 	if (err){
+		fclose(fichier);
 		return err;
 	}
 	
@@ -350,35 +353,52 @@ int mountv6_mkfs(const char *filename, uint16_t num_blocks, uint16_t num_inodes)
     } 	
  	
  	
-	sector[ROOT_INUMBER*32] = (uint8_t) (inode -> i_mode & nb_bin_petit);
-	sector[ROOT_INUMBER*32+1] = (uint8_t) ((inode -> i_mode & nb_bin_grand) >> 8);
-    sector[ROOT_INUMBER*32+2] = (uint8_t) (inode -> i_nlink);
-    sector[ROOT_INUMBER*32+3] = (uint8_t) (inode -> i_uid);
-    sector[ROOT_INUMBER*32+4] = (uint8_t) (inode -> i_gid);
-    sector[ROOT_INUMBER*32+5] = (uint8_t) (inode -> i_size0);
-    sector[ROOT_INUMBER*32+6] = (uint8_t) (inode -> i_size1 & nb_bin_petit);
-	sector[ROOT_INUMBER*32+7] = (uint8_t) ((inode -> i_size1 & nb_bin_grand) >> 8);
+	sector[ROOT_INUMBER*32] = (uint8_t) (inode.i_mode & nb_bin_petit);
+	sector[ROOT_INUMBER*32+1] = (uint8_t) ((inode.i_mode & nb_bin_grand) >> 8);
+    sector[ROOT_INUMBER*32+2] = (uint8_t) (inode.i_nlink);
+    sector[ROOT_INUMBER*32+3] = (uint8_t) (inode.i_uid);
+    sector[ROOT_INUMBER*32+4] = (uint8_t) (inode.i_gid);
+    sector[ROOT_INUMBER*32+5] = (uint8_t) (inode.i_size0);
+    sector[ROOT_INUMBER*32+6] = (uint8_t) (inode.i_size1 & nb_bin_petit);
+	sector[ROOT_INUMBER*32+7] = (uint8_t) ((inode.i_size1 & nb_bin_grand) >> 8);
     
     for (size_t i = 0; i<ADDR_SMALL_LENGTH; ++i) {
-        sector[ROOT_INUMBER*32+8+2*i] = (uint8_t) ((inode -> i_addr[i] & nb_bin_petit));
-		sector[ROOT_INUMBER*32+9+2*i] = (uint8_t) ((inode -> i_addr[i] & nb_bin_grand) >> 8);
+        sector[ROOT_INUMBER*32+8+2*i] = (uint8_t) ((inode.i_addr[i] & nb_bin_petit));
+		sector[ROOT_INUMBER*32+9+2*i] = (uint8_t) ((inode.i_addr[i] & nb_bin_grand) >> 8);
     }
     for (size_t i = 0; i<2; ++i) {
-        sector[ROOT_INUMBER*32+24+2*i] = (uint8_t) (inode -> atime[i] & nb_bin_petit);
-		sector[ROOT_INUMBER*32+25+2*i] = (uint8_t) ((inode -> atime[i] & nb_bin_grand) >> 8);
-   		sector[ROOT_INUMBER*32+28+2*i] = (uint8_t) (inode -> mtime[i] & nb_bin_petit);
-		sector[ROOT_INUMBER*32+29+2*i] = (uint8_t) ((inode -> mtime[i] & nb_bin_grand) >> 8);
+        sector[ROOT_INUMBER*32+24+2*i] = (uint8_t) (inode.atime[i] & nb_bin_petit);
+		sector[ROOT_INUMBER*32+25+2*i] = (uint8_t) ((inode.atime[i] & nb_bin_grand) >> 8);
+   		sector[ROOT_INUMBER*32+28+2*i] = (uint8_t) (inode.mtime[i] & nb_bin_petit);
+		sector[ROOT_INUMBER*32+29+2*i] = (uint8_t) ((inode.mtime[i] & nb_bin_grand) >> 8);
     }
     
     err = sector_write(fichier, s_inode_start, sector);
 	if (err){
+		fclose(fichier);
 		return err;
 	}
 	
 	memset(sector,0,SECTOR_SIZE);
 	// faire une boucle sur tous les secteurs des inodes 
+	for (uint16_t i = s_inode_start+1; i < s_block_start; ++i){
+		err = sector_write(fichier, i, sector);
+		if (err){
+			fclose(fichier);
+			return err;
+		}
+	}
 	
 	// faire une boucle sur tous les secteurs des data
+	for (uint16_t i = s_block_start; i <= s_fsize; ++i){
+		err = sector_write(fichier, i, sector);
+		if (err){
+			fclose(fichier);
+			return err;
+		}
+	}
 	
-	return err;
+	fclose(fichier);
+	
+	return 0;
 }
