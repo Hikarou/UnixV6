@@ -159,4 +159,118 @@ int filev6_create(struct unix_filesystem *u, uint16_t mode, struct filev6 *fv6)
  * @param len the length of the bytes we want to write
  * @return 0 on success; <0 on errror
  */
-int filev6_writebytes(struct unix_filesystem *u, struct filev6 *fv6, void *buf, int len);
+int filev6_writebytes(struct unix_filesystem *u, struct filev6 *fv6, void *buf, int len)
+{
+	M_REQUIRE_NON_NULL(fv6);
+	M_REQUIRE_NON_NULL(u);
+	M_REQUIRE_NON_NULL(buf);
+	
+	
+	int err = 0;
+	
+	
+	
+	return err;
+	
+}
+
+
+/** 
+ * Retourne le nombre de caractère écrit
+ *
+ */
+int filev6_writesector(struct unix_filesystem *u, struct filev6 *fv6, void* data, int len)
+{
+	M_REQUIRE_NON_NULL(fv6);
+	M_REQUIRE_NON_NULL(u);
+	M_REQUIRE_NON_NULL(data);
+
+	
+	int err = 0;
+	size_t taille_actu = 0;
+	int nb_bytes = 0;
+	int taille_last_sector = 0;
+	int nb_sector_used = 0;
+	uint32_t sector_number = 0;
+	uint8_t sector[SECTOR_SIZE];
+	uint8_t read[SECTOR_SIZE];
+	
+	// mesure de la taille du fichier actuel
+	taille_actu = inode_getsize(fv6 -> i_number);
+	if (taille_actu >  7 * ADDRESSES_PER_SECTOR * SECTOR_SIZE){
+		return ERR_FILE_TOO_LARGE;
+	}
+	
+	nb_sector_used = taille_actu / SECTOR_SIZE;
+	taille_last_sector = taille_actu % SECTOR_SIZE;
+	// si la taille actuelle ne remplit pas complètement tous les secteurs
+	if (taille_last_sector){
+		if (len < SECTOR_SIZE-taille_last_sector){
+			nb_bytes = len; 
+		}
+		else {
+			nb_bytes = SECTOR_SIZE-taille_last_sector;
+		}
+		memset(sector, 0, SECTOR_SIZE);
+		
+		// Lire le secteur actuel
+		if (nb_sector_used > 7){
+			return ERR_BAD_PARAMETER;
+		}
+		
+		sector_number = fv6 -> inode.i_addr[nb_sector_used-1];
+		err = sector_read(u -> f, sector_number, read);
+		
+		// rajouter à la fin la suite
+		memcpy(sector, read, taille_last_sector);
+		memcpy(sector + taille_last_sector, data, nb_bytes);
+		
+		// Ecrire le nouveau secteur et mettre à jour l'offset
+		err =  sector_write(u -> f, sector_number, sector);
+		if (err){
+			return err;
+		}
+	}
+	else {
+		// remplir le secteur
+		memset(sector, 0, SECTOR_SIZE);
+		if (len < SECTOR_SIZE){
+			nb_bytes = len; 
+		}
+		else {
+			nb_bytes = SECTOR_SIZE;
+		}
+		
+		memcpy(sector, data, nb_bytes);
+		
+		// trouver le prochain secteur libre
+		err = find_next(u -> fbm);
+		if (err < 0){
+			return err;
+		}	
+		sector_number = (uint32_t) err;
+		
+		// ecrire dans le secteur 
+		err =  sector_write(u -> f, sector_number, sector);
+		if (err){
+			return err;
+		}
+		
+		/* a mon avis, cette fonction ferait mieux d'aller ailleurs
+		 * de même que celle qui met à jour la taille d'un inode
+		 */
+		 
+		// mettre à jour les adresses de l'inode
+		if (nb_sector_used >7){
+			return ERR_BAD_PARAMETER;
+		}
+		fv6 -> inode.i_addr[nb_sector_used] = sector_number;
+		
+	}
+	
+	
+	// mise à jour de l'offset
+	offset += nb_bytes;
+	return nb_bytes;
+}
+
