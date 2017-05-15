@@ -35,10 +35,10 @@ Submission accepted
 
 -----
 stderr:
-direntv6.c: In function 'direntv6_create':
-direntv6.c:281:15: warning: initialization discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
+direntv6.c: In function ‘direntv6_create’:
+direntv6.c:281:15: warning: initialization discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
   char* path = entry;
                ^
-direntv6.c:297:7: warning: assignment discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
+direntv6.c:297:7: warning: assignment discards ‘const’ qualifier from pointer target type [-Wdiscarded-qualifiers]
   name = entry + k + 1;
        ^
