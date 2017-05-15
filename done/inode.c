@@ -81,7 +81,7 @@ void inode_print(const struct inode* inode)
  * @brief read the content of an inode from disk
  * @param u the filesystem (IN)
  * @param inr the inode number of the inode to read (IN)
- * @param inode the inodePourTestinode structure, read from disk (OUT)
+ * @param inode the inode structure, read from disk (OUT)
  * @return 0 on success; <0 on error
  */
 int inode_read(const struct unix_filesystem *u, uint16_t inr, struct inode *inode)

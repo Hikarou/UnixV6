@@ -28,13 +28,13 @@ int sector_read(FILE *f, uint32_t sector, void *data);
 
 // Implemented WEEK 11
 /**
- * @brief read one 512-byte sector from the virtual disk
+ * @brief write one 512-byte sector from the virtual disk
  * @param f open file of the virtual disk
  * @param sector the location (in sector units, not bytes) within the virtual disk
  * @param data a pointer to 512-bytes of memory (IN)
  * @return 0 on success; <0 on error
  */
-int sector_write(FILE *f, uint32_t sector, void  *data);
+int sector_write(FILE *f, uint32_t sector, const void *data);
 
 #ifdef __cplusplus
 }

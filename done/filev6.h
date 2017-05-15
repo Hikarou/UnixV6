@@ -23,11 +23,11 @@ struct filev6 {
 };
 
 /**
- * @brief open up a file corresponding to a given inode; set offset to zero
+ * @brief open the file corresponding to a given inode; set offset to zero
  * @param u the filesystem (IN)
- * @param inr he inode number (IN)
+ * @param inr the inode number (IN)
  * @param fv6 the complete filve6 data structure (OUT)
- * @return 0 on success; <0 on errror
+ * @return 0 on success; the appropriate error code (<0) on error
  */
 int filev6_open(const struct unix_filesystem *u, uint16_t inr, struct filev6 *fv6);
 
@@ -43,7 +43,8 @@ int filev6_lseek(struct filev6 *fv6, int32_t offset);
  * @brief read at most SECTOR_SIZE from the file at the current cursor
  * @param fv6 the filev6 (IN-OUT; offset will be changed)
  * @param buf points to SECTOR_SIZE bytes of available memory (OUT)
- * @return >0: the number of bytes of the file read; 0: end of file; <0 error
+ * @return >0: the number of bytes of the file read; 0: end of file;
+ *             the appropriate error code (<0) on error
  */
 int filev6_readblock(struct filev6 *fv6, void *buf);
 
@@ -64,7 +65,7 @@ int filev6_create(struct unix_filesystem *u, uint16_t mode, struct filev6 *fv6);
  * @param len the length of the bytes we want to write
  * @return 0 on success; <0 on errror
  */
-int filev6_writebytes(struct unix_filesystem *u, struct filev6 *fv6, void *buf, int len);
+int filev6_writebytes(struct unix_filesystem *u, struct filev6 *fv6, const void *buf, int len);
 
 
 #ifdef __cplusplus
