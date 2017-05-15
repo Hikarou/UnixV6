@@ -22,12 +22,10 @@
 int sector_read(FILE *f, uint32_t sector, void *data)
 {
     M_REQUIRE_NON_NULL(f);
-    size_t read = 0;
     if (fseek(f, sector * SECTOR_SIZE, SEEK_SET) == -1) {
         return ERR_IO;
     }
-    read  = fread(data, SECTOR_SIZE, 1, f);
-    if (read != 1) {
+    if (fread(data, SECTOR_SIZE, 1, f) != 1) {
         return ERR_IO;
     }
     return 0;
@@ -42,19 +40,17 @@ int sector_read(FILE *f, uint32_t sector, void *data)
  */
 int sector_write(FILE *f, uint32_t sector, const void  *data)
 {
-	M_REQUIRE_NON_NULL(f);
-	size_t written = 0;
-	if (data == NULL){
-		return ERR_IO;
-	}
-	
-	if (fseek(f, sector * SECTOR_SIZE, SEEK_SET) == -1) {
+    M_REQUIRE_NON_NULL(f);
+    if (data == NULL) { // TODO C'est pas mieux de faire comme pour f M_REQUIRE_... c'est un problème d'arguments et pas d'IO non?
         return ERR_IO;
     }
-	written = fwrite(data, SECTOR_SIZE, 1, f);
-	if (written != 1) {
+
+    if (fseek(f, sector * SECTOR_SIZE, SEEK_SET) == -1) {
         return ERR_IO;
     }
-    
-	return 0;
+    if (fwrite(data, SECTOR_SIZE, 1, f) != 1) {
+        return ERR_IO;
+    }
+
+    return 0;
 }

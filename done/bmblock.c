@@ -117,7 +117,7 @@ void bm_print(struct bmblock_array *bmblock_array)
                     int offset = bm_get(bmblock_array, i*sizeof(uint64_t)*8 + j*8 + k + bmblock_array -> min);
                     //To take care of the overflow to print correctly what is expected
                     printf("%d", (offset >= 0 ? offset : 0));
-                   
+
                 }
                 if (j != sizeof(uint64_t) - 1) printf(" ");
             }

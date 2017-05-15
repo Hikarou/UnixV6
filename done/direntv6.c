@@ -268,92 +268,92 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
  */
 int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
 {
-	M_REQUIRE_NON_NULL(u);
+    M_REQUIRE_NON_NULL(u);
     M_REQUIRE_NON_NULL(entry);
-    
-	int err = 0;
-	size_t taille = strlen(entry);
-	size_t taille_nom = 0;
-	int k = (int) taille;
-	uint16_t child = 0;
-	char* name = NULL;
-	char nom_cmp[DIRENT_MAXLEN+1];
-	char* path = entry;
-	struct directory_reader d_parent;
-	struct direntv6 dir_new;
-	struct filev6 file_new;
-	
-	// diviser le chemin
-	do {
-		--k;
-	} while (path[k] == '/');
-	
-	path[k+1] = '\0';
-	
-	do {
-		--k;
-	} while (path[k] != '/' && k >= 0);
-	
-	name = entry + k + 1;
-	path = NULL;
-	
-	if (k < 1){
-		path = malloc(sizeof(char)*2);
-		if (path == NULL){
-			return ERR_NOMEM;
-		}
-		path[0] = '/';
-		path[1] = '\0';
-	} else {
-		path = malloc(sizeof(char)*(k+1));
-		if (path == NULL){
-			return ERR_NOMEM;
-		}
-		strncpy(path,entry,k);
-		path[k] = '\0';
-	}
-	
-	taille_nom = strlen(name);
-	if (strlen(name) > DIRENT_MAXLEN){
-		return ERR_FILENAME_TOO_LONG;
-	}
-	
-	// vérifier que le parent existe
-	err =  direntv6_dirlookup(u, ROOT_INUMBER, path);
-	if (err <= 0){
-		return err;
-	}
-	
-	// on a plus besoin du path.
-	free(path);
-		
-	// création du directory_reader
-	err = direntv6_opendir(u, (uint16_t) err, &d_parent);
-	if (err){
-		return err;
-	}
-	
-	// vérifier que le fils n'existe pas
-	do {
-		err =  direntv6_readdir(&d_parent, nom_cmp, &child);
-		if (!strncmp(name, nom_cmp,taille_nom)){
-			return ERR_FILENAME_ALREADY_EXISTS;
-		}
-	} while (err > 0);
 
-	// Création de l'inode: (si on a le droit de le faire)
-	err = inode_alloc(u);
-	if (err < 0){
-		return err;
-	}
-	
-	// intialiser la structure direntv6 et filev6
-	file_new.i_number = err;
-	dir_new.d_inumber = err;
-	strncpy(name, dir_new.d_name, DIRENT_MAXLEN);
-	err = filev6_create(u, mode, &file_new);
-	
-	// lire le parent: il se trouve déjà dans directory_Reader: 
-	return err;
+    int err = 0;
+    size_t taille = strlen(entry);
+    size_t taille_nom = 0;
+    int k = (int) taille;
+    uint16_t child = 0;
+    char* name = NULL;
+    char nom_cmp[DIRENT_MAXLEN+1];
+    char* path = entry;
+    struct directory_reader d_parent;
+    struct direntv6 dir_new;
+    struct filev6 file_new;
+
+    // diviser le chemin
+    do {
+        --k;
+    } while (path[k] == '/');
+
+    path[k+1] = '\0';
+
+    do {
+        --k;
+    } while (path[k] != '/' && k >= 0);
+
+    name = entry + k + 1;
+    path = NULL;
+
+    if (k < 1) {
+        path = malloc(sizeof(char)*2);
+        if (path == NULL) {
+            return ERR_NOMEM;
+        }
+        path[0] = '/';
+        path[1] = '\0';
+    } else {
+        path = malloc(sizeof(char)*(k+1));
+        if (path == NULL) {
+            return ERR_NOMEM;
+        }
+        strncpy(path,entry,k);
+        path[k] = '\0';
+    }
+
+    taille_nom = strlen(name);
+    if (strlen(name) > DIRENT_MAXLEN) {
+        return ERR_FILENAME_TOO_LONG;
+    }
+
+    // vérifier que le parent existe
+    err =  direntv6_dirlookup(u, ROOT_INUMBER, path);
+    if (err <= 0) {
+        return err;
+    }
+
+    // on a plus besoin du path.
+    free(path);
+
+    // création du directory_reader
+    err = direntv6_opendir(u, (uint16_t) err, &d_parent);
+    if (err) {
+        return err;
+    }
+
+    // vérifier que le fils n'existe pas
+    do {
+        err =  direntv6_readdir(&d_parent, nom_cmp, &child);
+        if (!strncmp(name, nom_cmp,taille_nom)) {
+            return ERR_FILENAME_ALREADY_EXISTS;
+        }
+    } while (err > 0);
+
+    // Création de l'inode: (si on a le droit de le faire)
+    err = inode_alloc(u);
+    if (err < 0) {
+        return err;
+    }
+
+    // intialiser la structure direntv6 et filev6
+    file_new.i_number = err;
+    dir_new.d_inumber = err;
+    strncpy(name, dir_new.d_name, DIRENT_MAXLEN);
+    err = filev6_create(u, mode, &file_new);
+
+    // lire le parent: il se trouve déjà dans directory_Reader:
+    return err;
 }
 

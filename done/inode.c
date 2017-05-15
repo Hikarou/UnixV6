@@ -72,7 +72,7 @@ void inode_print(const struct inode* inode)
         fprintf(output,"i_size0 : %d\n", inode -> i_size0);
         fprintf(output,"i_size1 : %d\n", inode -> i_size1);
         fprintf(output,"size    : %d\n", inode_getsize(inode));
-        
+
     }
     fprintf(output,"***********FS INODE END***********\n");
 }
@@ -180,58 +180,55 @@ int inode_findsector(const struct unix_filesystem *u, const struct inode *i, int
  */
 int inode_write(struct unix_filesystem *u, uint16_t inr, const struct inode *inode)
 {
-	
-	M_REQUIRE_NON_NULL(u);
-	M_REQUIRE_NON_NULL(inode);
-	
-	int err = 0;
-	uint8_t data[SECTOR_SIZE];
-	size_t nbrInodeSec = 0;
-	uint16_t nb_bin_petit = (1<<8)-1;
-	uint16_t nb_bin_grand = -1 - nb_bin_petit;
-	
-	
-	if ((u -> s.s_isize)*INODES_PER_SECTOR < inr || inr < ROOT_INUMBER) {
-        err = ERR_INODE_OUTOF_RANGE;
-        return err;
+
+    M_REQUIRE_NON_NULL(u);
+    M_REQUIRE_NON_NULL(inode);
+
+    int err = 0;
+    uint8_t data[SECTOR_SIZE];
+    size_t nbrInodeSec = 0;
+    uint16_t nb_bin_petit = (1<<8)-1;
+    uint16_t nb_bin_grand = -1 - nb_bin_petit;
+
+
+    if ((u -> s.s_isize)*INODES_PER_SECTOR < inr || inr < ROOT_INUMBER) {
+        return ERR_INODE_OUTOF_RANGE;
     }
     // Lire le secteur
     err = sector_read(u -> f, (uint32_t) (u -> s.s_inode_start + inr / INODES_PER_SECTOR), data);
     nbrInodeSec = inr%INODES_PER_SECTOR;
-   	
-    if (!err){
-    	data[nbrInodeSec*32] = (uint8_t) (inode -> i_mode & nb_bin_petit);
-    	data[nbrInodeSec*32+1] = (uint8_t) ((inode -> i_mode & nb_bin_grand) >> 8);
+
+    if (!err) {
+        data[nbrInodeSec*32] = (uint8_t) (inode -> i_mode & nb_bin_petit);
+        data[nbrInodeSec*32+1] = (uint8_t) ((inode -> i_mode & nb_bin_grand) >> 8);
         data[nbrInodeSec*32+2] = (uint8_t) (inode -> i_nlink);
         data[nbrInodeSec*32+3] = (uint8_t) (inode -> i_uid);
         data[nbrInodeSec*32+4] = (uint8_t) (inode -> i_gid);
         data[nbrInodeSec*32+5] = (uint8_t) (inode -> i_size0);
         data[nbrInodeSec*32+6] = (uint8_t) (inode -> i_size1 & nb_bin_petit);
-    	data[nbrInodeSec*32+7] = (uint8_t) ((inode -> i_size1 & nb_bin_grand) >> 8);
-        
+        data[nbrInodeSec*32+7] = (uint8_t) ((inode -> i_size1 & nb_bin_grand) >> 8);
+
         for (size_t i = 0; i<ADDR_SMALL_LENGTH; ++i) {
             //inode -> i_addr[i] = (uint16_t)((data[nbrInodeSec*32+9+2*i] << 8) +
-            //                                data[nbrInodeSec*32+8+2*i]);
+            //                                data[nbrInodeSec*32+8+2*i]); //TODO A enlever?
             data[nbrInodeSec*32+8+2*i] = (uint8_t) ((inode -> i_addr[i] & nb_bin_petit));
-    		data[nbrInodeSec*32+9+2*i] = (uint8_t) ((inode -> i_addr[i] & nb_bin_grand) >> 8);
+            data[nbrInodeSec*32+9+2*i] = (uint8_t) ((inode -> i_addr[i] & nb_bin_grand) >> 8);
         }
         for (size_t i = 0; i<2; ++i) {
             //inode -> atime[i] = (uint16_t)((data[nbrInodeSec*32+25+2*i] << 8) +
             //                               data[nbrInodeSec*32+24 +2*i]);
             data[nbrInodeSec*32+24+2*i] = (uint8_t) (inode -> atime[i] & nb_bin_petit);
-    		data[nbrInodeSec*32+25+2*i] = (uint8_t) ((inode -> atime[i] & nb_bin_grand) >> 8);
-           // inode -> mtime[i] = (uint16_t)((data[nbrInodeSec*32+29+2*i] << 8) +
-           //                                data[nbrInodeSec*32+28 +2*i]);
-       		data[nbrInodeSec*32+28+2*i] = (uint8_t) (inode -> mtime[i] & nb_bin_petit);
-    		data[nbrInodeSec*32+29+2*i] = (uint8_t) ((inode -> mtime[i] & nb_bin_grand) >> 8);
+            data[nbrInodeSec*32+25+2*i] = (uint8_t) ((inode -> atime[i] & nb_bin_grand) >> 8);
+            // inode -> mtime[i] = (uint16_t)((data[nbrInodeSec*32+29+2*i] << 8) +
+            //                                data[nbrInodeSec*32+28 +2*i]);
+            data[nbrInodeSec*32+28+2*i] = (uint8_t) (inode -> mtime[i] & nb_bin_petit);
+            data[nbrInodeSec*32+29+2*i] = (uint8_t) ((inode -> mtime[i] & nb_bin_grand) >> 8);
         }
-        
-        
-        err = sector_write(u -> f, (uint32_t) (u -> s.s_inode_start + inr / INODES_PER_SECTOR), data);
+
+
+        return sector_write(u -> f, (uint32_t) (u -> s.s_inode_start + inr / INODES_PER_SECTOR), data);
+    } else {
         return err;
-    }
-    else{
-    	return err;
     }
 }
 
@@ -242,14 +239,14 @@ int inode_write(struct unix_filesystem *u, uint16_t inr, const struct inode *ino
  */
 int inode_alloc(struct unix_filesystem *u)
 {
-	int err = 0;
-	
-	err = bm_find_next(u -> ibm);
-	if (err < 0){
-		return ERR_NOMEM;
-	}
-	
-	bm_set(u -> ibm, (uint64_t) err);
-	
-	return err;
+    int err = 0;
+
+    err = bm_find_next(u -> ibm);
+    if (err < 0) {
+        return ERR_NOMEM;
+    }
+
+    bm_set(u -> ibm, (uint64_t) err);
+
+    return err;
 }
