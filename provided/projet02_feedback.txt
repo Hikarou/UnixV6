@@ -1,0 +1,44 @@
+Submission accepted
+
+stdout:
+=====
+Attempting to make target shell
+cc -std=c99 -Wall -pedantic   -c -o test-inodes.o test-inodes.c
+cc -std=c99 -Wall -pedantic   -c -o test-core.o test-core.c
+cc -std=c99 -Wall -pedantic   -c -o error.o error.c
+cc -std=c99 -Wall -pedantic   -c -o mount.o mount.c
+cc -std=c99 -Wall -pedantic   -c -o sector.o sector.c
+cc -std=c99 -Wall -pedantic   -c -o inode.o inode.c
+cc -std=c99 -Wall -pedantic   -c -o bmblock.o bmblock.c
+cc -std=c99 -Wall -pedantic   -c -o filev6.o filev6.c
+gcc -o test-inodes test-inodes.o test-core.o error.o mount.o sector.o inode.o bmblock.o filev6.o
+cc -std=c99 -Wall -pedantic   -c -o test-file.o test-file.c
+cc -std=c99 -Wall -pedantic   -c -o sha.o sha.c
+gcc -o test-file test-file.o test-core.o filev6.o error.o mount.o sector.o inode.o sha.o bmblock.o -lcrypto
+cc -std=c99 -Wall -pedantic   -c -o test-dirent.o test-dirent.c
+cc -std=c99 -Wall -pedantic   -c -o direntv6.o direntv6.c
+gcc -o test-dirent test-dirent.o test-core.o mount.o error.o direntv6.o sector.o filev6.o inode.o bmblock.o
+cc -std=c99 -Wall -pedantic   -c -o test-direntlookup.o test-direntlookup.c
+gcc -o test-direntlookup test-direntlookup.o test-core.o mount.o error.o direntv6.o sector.o filev6.o inode.o bmblock.o
+cc -std=c99 -Wall -pedantic   -c -o shell.o shell.c
+gcc -g -o shell shell.o mount.o sector.o direntv6.o error.o inode.o sha.o filev6.o bmblock.o -lcrypto
+cc -std=c99 -Wall -pedantic   -c -D_DEFAULT_SOURCE $(pkg-config fuse --cflags) -o fs.o -c fs.c
+cc -std=c99 -Wall -pedantic    -o fs fs.o mount.o sector.o direntv6.o error.o inode.o filev6.o bmblock.o  $(pkg-config fuse --libs)
+cc -std=c99 -Wall -pedantic   -c -o test-bitmap.o test-bitmap.c
+gcc -o test-bitmap test-bitmap.o error.o bmblock.o
+Made target shell successfully
+=====
+Attempting to make target fs
+cc -std=c99 -Wall -pedantic    -o fs fs.o mount.o sector.o direntv6.o error.o inode.o filev6.o bmblock.o  $(pkg-config fuse --libs)
+Made target fs successfully
+Submission accepted
+
+-----
+stderr:
+direntv6.c: In function 'direntv6_create':
+direntv6.c:281:15: warning: initialization discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  char* path = entry;
+               ^
+direntv6.c:297:7: warning: assignment discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  name = entry + k + 1;
+       ^
