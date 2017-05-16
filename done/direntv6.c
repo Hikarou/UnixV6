@@ -52,10 +52,9 @@ int direntv6_opendir(const struct unix_filesystem *u, uint16_t inr, struct direc
 /**
  * @brief return the next directory entry.
  * @param d the directory reader
- * @param name pointer to at least DIRENTMAX_LEN+1 bytes.
-          Filled in with the NULL-terminated string of the entry (OUT)
+ * @param name pointer to at least DIRENTMAX_LEN+1 bytes.  Filled in with the NULL-terminated string of the entry (OUT)
  * @param child_inr pointer to the inode number in the entry (OUT)
- * @return 1 on success; 0 if there are no more entries to read; <0 on error
+ * @return 1 on success;  0 if there are no more entries to read; <0 on error
  */
 int direntv6_readdir(struct directory_reader *d, char *name, uint16_t *child_inr)
 {
@@ -97,7 +96,7 @@ int direntv6_readdir(struct directory_reader *d, char *name, uint16_t *child_inr
 }
 
 /**
- * @brief debugging routine; print the a subtree (note: recursive)
+ * @brief debugging routine; print a subtree (note: recursive)
  * @param u a mounted filesystem
  * @param inr the root of the subtree
  * @param prefix the prefix to the subtree
@@ -271,14 +270,13 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
     M_REQUIRE_NON_NULL(u);
     M_REQUIRE_NON_NULL(entry);
 
-    int err = 0;
     size_t taille = strlen(entry);
-    size_t taille_nom = 0;
     int k = (int) taille;
     uint16_t child = 0;
     char* name = NULL;
     char nom_cmp[DIRENT_MAXLEN+1];
-    char* path = entry;
+    char* path = NULL;
+    path = strncpy(path, entry, taille + 1);
     struct directory_reader d_parent;
     struct direntv6 dir_new;
     struct filev6 file_new;
@@ -294,7 +292,8 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
         --k;
     } while (path[k] != '/' && k >= 0);
 
-    name = entry + k + 1;
+    //name = entry + k + 1; // TODO Vérifier que le code fasse ce qui est attendu 
+    name = path + k + 1;
     path = NULL;
 
     if (k < 1) {
@@ -313,13 +312,13 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
         path[k] = '\0';
     }
 
-    taille_nom = strlen(name);
+    size_t taille_nom = strlen(name);
     if (strlen(name) > DIRENT_MAXLEN) {
         return ERR_FILENAME_TOO_LONG;
     }
 
     // vérifier que le parent existe
-    err =  direntv6_dirlookup(u, ROOT_INUMBER, path);
+    int err =  direntv6_dirlookup(u, ROOT_INUMBER, path);
     if (err <= 0) {
         return err;
     }
