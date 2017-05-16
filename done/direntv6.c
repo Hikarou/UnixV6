@@ -275,8 +275,7 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
     uint16_t child = 0;
     char* name = NULL;
     char nom_cmp[DIRENT_MAXLEN+1];
-    char* path = NULL;
-    path = strncpy(path, entry, taille + 1);
+    char* path = entry;
     struct directory_reader d_parent;
     struct direntv6 dir_new;
     struct filev6 file_new;
@@ -292,8 +291,7 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
         --k;
     } while (path[k] != '/' && k >= 0);
 
-    //name = entry + k + 1; // TODO Vérifier que le code fasse ce qui est attendu 
-    name = path + k + 1;
+    name = entry + k + 1; // TODO Vérifier que le code fasse ce qui est attendu 
     path = NULL;
 
     if (k < 1) {
