@@ -273,9 +273,18 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
     size_t taille = strlen(entry);
     int k = (int) taille;
     uint16_t child = 0;
+	char* entry_usable = NULL;    
+
+	entry_usable = malloc(sizeof(char)*(taille+1));
+	if (entry_usable == NULL){
+		return ERR_NOMEM;
+	}
+	strncpy(entry_usable, entry, taille);
+	entry_usable[taille+1] = '\0';
+
     char* name = NULL;
     char nom_cmp[DIRENT_MAXLEN+1];
-    char* path = entry;
+    char* path = entry_usable;
     struct directory_reader d_parent;
     struct direntv6 dir_new;
     struct filev6 file_new;
@@ -291,7 +300,7 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
         --k;
     } while (path[k] != '/' && k >= 0);
 
-    name = entry + k + 1; // TODO Vérifier que le code fasse ce qui est attendu 
+    name = path + k + 1; // TODO Vérifier que le code fasse ce qui est attendu 
     path = NULL;
 
     if (k < 1) {
@@ -306,10 +315,12 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
         if (path == NULL) {
             return ERR_NOMEM;
         }
-        strncpy(path,entry,k);
+        strncpy(path,entry_usable,k);
         path[k] = '\0';
     }
 
+	free(entry_usable);	
+	
     size_t taille_nom = strlen(name);
     if (strlen(name) > DIRENT_MAXLEN) {
         return ERR_FILENAME_TOO_LONG;
