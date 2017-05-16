@@ -164,6 +164,41 @@ int filev6_writebytes(struct unix_filesystem *u, struct filev6 *fv6, const void 
     M_REQUIRE_NON_NULL(buf);
 
     int err = 0;
+    /* 
+     * On Commene par trois tests:
+     * - le fichier est actuellement un petit fichier et va le rester après avoir écrit
+     * - le fichier est un petit fichier et ne va pas le rester après avoir écrit
+     * - le fichier est un grand fichier 
+     */
+    
+    // avant tout vérifier que le disk est assez grand pour manger le fichier
+    // vérifier que la futur taille du fichier est plus petite que la taille max
+    
+    
+    /****CAS 1****/ 
+    // appeler filev6_writesector autant de fois que nécessaire
+    	// après chaque écriture: modifier l'inode afin d'y écrire le nouveau secteur
+    	// décaler le pointeur sur les data
+    	//  appeler inode_setsize() et écrire le nouvel inode
+
+	/****CAS 2****/
+	// Copier les numeros de secteurs de l'actuel inode dans un nouveau secteur
+	// Créer un inode vide: tout copier de l'inode existant sauf les adresses
+	// Copier les adresses des secteurs existants un nouveau secteur
+		// utiliser filev6_writesector pour cela
+	// Dans le nouvel inode copier l'adresse du secteur d'adresses.
+	// écrire l'inode à la place du premier
+	// passer au CAS 3
+	
+	/****CAS 3****/
+	// appeler filev6_writesector pour remplir les secteurs de donnée
+		// après chaque appel, si un nouveau secteur a été écrit, l'ajouter au secteur d'adresse
+		// mettre à jour la taille de l'inode
+		// si on secteur d'adresses est plein
+			//écrire dans un nouveau secteur la nouvelle adresse
+			// écrire dans l'inode la nouvelle adresse du secteur d'adresse
+			//écrire l'inode
+		
 
     return err;
 
@@ -171,7 +206,11 @@ int filev6_writebytes(struct unix_filesystem *u, struct filev6 *fv6, const void 
 
 
 /**
- * Retourne le nombre de caractère écrit
+ * Cette foncition écrit au maximum un secteur. Elle reçoit des data ainsi que la longueur de
+ * celles-ci. Si le dernier secteur utilisé n'est pas plein, elle le remplit, sinon elle en écrit
+ * un nouveau. Elle retourne le numéro de secteur dans lequel elle a écrit, ainsi que le nombre
+ * de caractère écrit. 
+ *
  *
  */
 int filev6_writesector(struct unix_filesystem *u, struct filev6 *fv6, void* data, int len)
@@ -211,7 +250,7 @@ int filev6_writesector(struct unix_filesystem *u, struct filev6 *fv6, void* data
         if (nb_sector_used > 7) {
             return ERR_BAD_PARAMETER;
         }
-
+		// ***PROPOSITION: changer cela pour qu'on donne directement le nouveau secteur à lire en 
         sector_number = fv6 -> i_node.i_addr[nb_sector_used-1];
         err = sector_read(u -> f, sector_number, read);
 
