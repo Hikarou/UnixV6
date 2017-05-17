@@ -164,6 +164,15 @@ int filev6_writebytes(struct unix_filesystem *u, struct filev6 *fv6, const void 
     M_REQUIRE_NON_NULL(buf);
 
     int err = 0;
+    size_t taille_fichier_actu = inode_getsize(fv6 -> i_number);
+    size_t taille_fichier_futur = taille_fichier_actu + len;
+    
+    // test que le fichier à écrire n'est pas trop grand:
+    if (taille_fichier_futur > 7*ADDRESSES_PER_SECTOR*SECTOR_SIZE){
+    	return ERR_FILE_TOO_LARGE;
+    }
+    
+    
     /* 
      * On Commene par trois tests:
      * - le fichier est actuellement un petit fichier et va le rester après avoir écrit
@@ -171,8 +180,15 @@ int filev6_writebytes(struct unix_filesystem *u, struct filev6 *fv6, const void 
      * - le fichier est un grand fichier 
      */
     
-    // avant tout vérifier que le disk est assez grand pour manger le fichier
-    // vérifier que la futur taille du fichier est plus petite que la taille max
+    if (taille_fichier_futur <= 7*SECTOR_SIZE){
+    	err = write_small_file(u, fv6, buf, len);
+    }
+    else if (taille_fichier_actu <= 7*SECTOR_SIZE){
+    	//err = write_change;
+    }
+    else {
+    //	err = write_big;
+    }
     
     
     /****CAS 1****/ 
@@ -199,11 +215,44 @@ int filev6_writebytes(struct unix_filesystem *u, struct filev6 *fv6, const void 
 			// écrire dans l'inode la nouvelle adresse du secteur d'adresse
 			//écrire l'inode
 		
-
     return err;
 
 }
 
+
+int write_small_file(struct unix_filesystem *u, struct filev6 *fv6, const void *buf, int len)
+{
+	int err = 0;
+	void* ptr = buf;
+	int nb_sector_used = (size_t) inode_getsize(fv6 -> i_number)/SECTOR_SIZE;
+	uint32_t sector_number = 0;
+	
+	struct inode inode_new = fv6 -> i_node;
+	
+	while (err == 0 && len > 0) {
+		sector_number = inode_new.i_addr[nb_sector_used-1];
+		err = filev6_writesector(u, fv6, ptr, len, &sector_number);
+		if (err > 0){
+			ptr += err;
+			len -= err;
+			// TODO faire appel à inode_setsize
+			
+			if (sector_number != 0){
+				++nb_sector_used;
+				inode_new.i_addr[nb_sector_used-1] = sector_number;
+			}
+			
+			err = inode_write(u, fv6 -> i_number, &inode_new);
+		}
+		
+		if (nb_sector_used > 7 && (err == 0)){
+			err = ERR_BAD_PARAMETER;
+		}	
+	}
+	
+	
+	return err;
+}
 
 /**
  * Cette foncition écrit au maximum un secteur. Elle reçoit des data ainsi que la longueur de
@@ -213,7 +262,7 @@ int filev6_writebytes(struct unix_filesystem *u, struct filev6 *fv6, const void 
  *
  *
  */
-int filev6_writesector(struct unix_filesystem *u, struct filev6 *fv6, void* data, int len)
+int filev6_writesector(struct unix_filesystem *u, struct filev6 *fv6, void* data, int len, uint32_t* sector_number)
 {
     M_REQUIRE_NON_NULL(fv6);
     M_REQUIRE_NON_NULL(u);
@@ -224,8 +273,6 @@ int filev6_writesector(struct unix_filesystem *u, struct filev6 *fv6, void* data
     size_t taille_actu = 0;
     int nb_bytes = 0;
     int taille_last_sector = 0;
-    int nb_sector_used = 0;
-    uint32_t sector_number = 0;
     uint8_t sector[SECTOR_SIZE];
     uint8_t read[SECTOR_SIZE];
 
@@ -235,7 +282,7 @@ int filev6_writesector(struct unix_filesystem *u, struct filev6 *fv6, void* data
         return ERR_FILE_TOO_LARGE;
     }
 
-    nb_sector_used = taille_actu / SECTOR_SIZE;
+
     taille_last_sector = taille_actu % SECTOR_SIZE;
     // si la taille actuelle ne remplit pas complètement tous les secteurs
     if (taille_last_sector) {
@@ -246,23 +293,20 @@ int filev6_writesector(struct unix_filesystem *u, struct filev6 *fv6, void* data
         }
         memset(sector, 0, SECTOR_SIZE);
 
-        // Lire le secteur actuel
-        if (nb_sector_used > 7) {
-            return ERR_BAD_PARAMETER;
-        }
-		// ***PROPOSITION: changer cela pour qu'on donne directement le nouveau secteur à lire en 
-        sector_number = fv6 -> i_node.i_addr[nb_sector_used-1];
-        err = sector_read(u -> f, sector_number, read);
+        err = sector_read(u -> f, *sector_number, read);
 
         // rajouter à la fin la suite
         memcpy(sector, read, taille_last_sector);
         memcpy(sector + taille_last_sector, data, nb_bytes);
 
         // Ecrire le nouveau secteur et mettre à jour l'offset
-        err =  sector_write(u -> f, sector_number, sector);
+        err =  sector_write(u -> f, *sector_number, sector);
         if (err) {
             return err;
         }
+        
+        // si on a écrit dans le même secteur qu'indiqué, on le met à 0
+        *sector_number = 0;
     } else {
         // remplir le secteur
         memset(sector, 0, SECTOR_SIZE);
@@ -279,29 +323,16 @@ int filev6_writesector(struct unix_filesystem *u, struct filev6 *fv6, void* data
         if (err < 0) {
             return err;
         }
-        sector_number = (uint32_t) err;
+        *sector_number = (uint32_t) err;
 
         // ecrire dans le secteur
-        err =  sector_write(u -> f, sector_number, sector);
+        err =  sector_write(u -> f, *sector_number, sector);
         if (err) {
             return err;
         }
 
-        /* a mon avis, cette fonction ferait mieux d'aller ailleurs
-         * de même que celle qui met à jour la taille d'un inode
-         */
-
-        // mettre à jour les adresses de l'inode
-        if (nb_sector_used >7) {
-            return ERR_BAD_PARAMETER;
-        }
-        fv6 -> i_node.i_addr[nb_sector_used] = sector_number;
-
     }
 
-
-    // mise à jour de l'offset
-    fv6 -> offset += nb_bytes;
     return nb_bytes;
 }
 

@@ -285,9 +285,13 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
     char* name = NULL;
     char nom_cmp[DIRENT_MAXLEN+1];
     char* path = entry_usable;
+    uint8_t data[DIRENT_MAXLEN+sizeof(uint16_t)+1];
     struct directory_reader d_parent;
-    struct direntv6 dir_new;
+   // struct direntv6 dir_new;
     struct filev6 file_new;
+    
+    uint16_t nb_bin_petit = (1<<8)-1;
+    uint16_t nb_bin_grand = -1 - nb_bin_petit;
 
     // diviser le chemin
     do {
@@ -335,7 +339,7 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
     // on a plus besoin du path.
     free(path);
 
-    // création du directory_reader
+    // ouverture du directory_reader
     err = direntv6_opendir(u, (uint16_t) err, &d_parent);
     if (err) {
         return err;
@@ -357,11 +361,21 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
 
     // intialiser la structure direntv6 et filev6
     file_new.i_number = err;
-    dir_new.d_inumber = err;
-    strncpy(name, dir_new.d_name, DIRENT_MAXLEN);
+    //dir_new.d_inumber = err;
+    //strncpy(name, dir_new.d_name, DIRENT_MAXLEN);
     err = filev6_create(u, mode, &file_new);
-
-    // lire le parent: il se trouve déjà dans directory_Reader:
-    return err;
+    if (err) {
+    	return err;
+    }
+    
+    // écire dans le secteur du parent 
+    data[0] = (uint8_t) file_new.i_number & nb_bin_petit;
+    data[1] = (uint8_t) ((file_new.i_number & nb_bin_grand) >> 8);
+ 	strncpy(name, data+2, DIRENT_MAXLEN);
+ 	data[DIRENT_MAXLEN+sizeof(uint16_t)+1] = '\0';
+ 	
+ 	// appel de filev6_writebytes
+ 	
+    return filev6_writebytes(u, &(d_parent.fv6), data, (int) strlen(data));
 }
 
