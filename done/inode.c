@@ -264,9 +264,10 @@ int inode_setsize(struct inode *inode, int new_size)
     M_REQUIRE_NON_NULL(inode);
 	
 	uint16_t nb_bin_petit = (1<<8)-1;
+	uint16_t nb_bin_grand = -1;
 	
-	inode -> i_size0 = (uint8_t) (nb_bin_petit & new_size);
-	inode -> i_size1 = (uint16_t) (new_size - inode -> i_size0) >> 8;
+	inode -> i_size1 = (uint16_t) (nb_bin_grand & new_size);
+	inode -> i_size0 = (uint8_t) (new_size >> 16) & nb_bin_petit;
 	
 	return 0;
 }

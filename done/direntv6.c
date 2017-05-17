@@ -124,7 +124,6 @@ int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const cha
     fprintf(output, "%s %s/\n", SHORT_DIR_NAME, prefix);
     do {
         err = direntv6_readdir(&d, name, &nextInode);
-
         if (err > 0) {
 
             errFake = direntv6_opendir(u, nextInode, &dTest);
@@ -281,38 +280,36 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
 	}
 	strncpy(entry_usable, entry, taille);
 	entry_usable[taille] = '\0';
-	
-	printf(" TOTAL entry: %s \n", entry_usable);
 
     char* name = NULL;
     char nom_cmp[DIRENT_MAXLEN+1];
-    char* path = entry_usable;
-    uint8_t data[DIRENT_MAXLEN+sizeof(uint16_t)+1];
+    char* path = NULL;
+    uint8_t data[DIRENT_MAXLEN+sizeof(uint16_t)];
     struct directory_reader d_parent;
-   // struct direntv6 dir_new;
     struct filev6 file_new;
     
     uint16_t nb_bin_petit = (1<<8)-1;
     uint16_t nb_bin_grand = -1 - nb_bin_petit;
+    
+    memset(data, 0, DIRENT_MAXLEN+sizeof(uint16_t));
 
     // diviser le chemin
     do {
         --k;
-    } while (path[k] == '/');
+    } while (entry_usable[k] == '/');
 
-    path[k+1] = '\0';
+    entry_usable[k+1] = '\0';
 
     do {
         --k;
-    } while (path[k] != '/' && k >= 0);
+    } while (entry_usable[k] != '/' && k >= 0);
 
     name = entry_usable + k + 1; // TODO Vérifier que le code fasse ce qui est attendu 
-     
-    path = NULL;
 
     if (k < 1) {
         path = malloc(sizeof(char)*2);
         if (path == NULL) {
+        	free(entry_usable);	
             return ERR_NOMEM;
         }
         path[0] = '/';
@@ -320,23 +317,27 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
     } else {
         path = malloc(sizeof(char)*(k+1));
         if (path == NULL) {
+        	
+    		free(entry_usable);	
             return ERR_NOMEM;
         }
         strncpy(path,entry_usable,k);
         path[k] = '\0';
     }
 	
-	 printf("path = %s \n name = %s\n total entry: %s \n", path, name, entry_usable);
-	
-		free(entry_usable);	
     size_t taille_nom = strlen(name);
+    
     if (strlen(name) > DIRENT_MAXLEN) {
+    	free(path);
+    	free(entry_usable);	
         return ERR_FILENAME_TOO_LONG;
     }
 
     // vérifier que le parent existe
     int err =  direntv6_dirlookup(u, ROOT_INUMBER, path);
     if (err <= 0) {
+    	free(path);
+    	free(entry_usable);	
         return err;
     }
 
@@ -346,6 +347,7 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
     // ouverture du directory_reader
     err = direntv6_opendir(u, (uint16_t) err, &d_parent);
     if (err) {
+    	free(entry_usable);	
         return err;
     }
 
@@ -353,33 +355,34 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
     do {
         err =  direntv6_readdir(&d_parent, nom_cmp, &child);
         if (!strncmp(name, nom_cmp, taille_nom)) {
+        	free(entry_usable);	
             return ERR_FILENAME_ALREADY_EXISTS;
         }
-    } while (err > 0);
-
+    } while (err > 0);	
+	
     // Création de l'inode: (si on a le droit de le faire)
     err = inode_alloc(u);
     if (err < 0) {
+    	free(entry_usable);
         return err;
     }
 
     // intialiser la structure direntv6 et filev6
     file_new.i_number = err;
-    //dir_new.d_inumber = err;
-    //strncpy(name, dir_new.d_name, DIRENT_MAXLEN);
     err = filev6_create(u, mode, &file_new);
     if (err) {
+    	free(entry_usable);
     	return err;
     }
     
     // écire dans le secteur du parent 
     data[0] = (uint8_t) file_new.i_number & nb_bin_petit;
     data[1] = (uint8_t) ((file_new.i_number & nb_bin_grand) >> 8);
- 	strncpy(name, data+2, DIRENT_MAXLEN);
- 	data[DIRENT_MAXLEN+sizeof(uint16_t)+1] = '\0';
+ 	memcpy(data+2, name, taille_nom);
  	
+ 	free(entry_usable);
  	// appel de filev6_writebytes
  	
-    return filev6_writebytes(u, &(d_parent.fv6), data, (int) strlen(data));
+    return filev6_writebytes(u, &(d_parent.fv6), data, (int) DIRENT_MAXLEN+sizeof(uint16_t));
 }
 

@@ -159,20 +159,23 @@ int filev6_create(struct unix_filesystem *u, uint16_t mode, struct filev6 *fv6)
  */
 int filev6_writebytes(struct unix_filesystem *u, struct filev6 *fv6, const void *buf, int len)
 {
+
     M_REQUIRE_NON_NULL(fv6);
     M_REQUIRE_NON_NULL(u);
     M_REQUIRE_NON_NULL(buf);
 
+	
     int err = 0;
-    size_t taille_fichier_actu = inode_getsize(fv6 -> i_number);
-    size_t taille_fichier_futur = taille_fichier_actu + len;
+    int32_t taille_fichier_actu = inode_getsize(&(fv6 -> i_node));
+    size_t taille_fichier_futur = (size_t) taille_fichier_actu + len;
     
+    //printf("taille_fichier_futur = %d  len = %d\n", taille_fichier_futur, len);
     // test que le fichier à écrire n'est pas trop grand:
     if (taille_fichier_futur > 7*ADDRESSES_PER_SECTOR*SECTOR_SIZE){
     	return ERR_FILE_TOO_LARGE;
     }
     
-    
+    	
     /* 
      * On Commene par trois tests:
      * - le fichier est actuellement un petit fichier et va le rester après avoir écrit
@@ -225,9 +228,9 @@ int filev6_writebytes(struct unix_filesystem *u, struct filev6 *fv6, const void 
 int write_small_file(struct unix_filesystem *u, struct filev6 *fv6, const void *buf, int len)
 {
 	int err = 0;
-	void* ptr = buf;
-	size_t taille = inode_getsize(&(fv6 -> i_node));
-	int nb_sector_used = (size_t) taille/SECTOR_SIZE;
+	uint8_t* ptr = buf;
+	int32_t taille = inode_getsize(&(fv6 -> i_node));
+	int nb_sector_used = (size_t) taille/SECTOR_SIZE+1;
 	uint32_t sector_number = 0;
 	
 	
@@ -236,10 +239,12 @@ int write_small_file(struct unix_filesystem *u, struct filev6 *fv6, const void *
 	while (err == 0 && len > 0) {
 		sector_number = inode_new.i_addr[nb_sector_used-1];
 		err = filev6_writesector(u, fv6, ptr, len, &sector_number);
+		
 		if (err > 0){
 			ptr += err;
 			len -= err;
 			taille += err;
+						
 			err = inode_setsize(&inode_new, (int) taille);
 			if (err < 0){
 				return err;
@@ -278,11 +283,12 @@ int filev6_writesector(struct unix_filesystem *u, struct filev6 *fv6, void* data
 
 
     int err = 0;
-    size_t taille_actu = 0;
+    int32_t taille_actu = 0;
     int nb_bytes = 0;
     int taille_last_sector = 0;
     uint8_t sector[SECTOR_SIZE];
     uint8_t read[SECTOR_SIZE];
+    char* ptr = data;
 
     // mesure de la taille du fichier actuel
     taille_actu = inode_getsize(&fv6 -> i_node);
@@ -290,8 +296,9 @@ int filev6_writesector(struct unix_filesystem *u, struct filev6 *fv6, void* data
         return ERR_FILE_TOO_LARGE;
     }
 
-
+	
     taille_last_sector = taille_actu % SECTOR_SIZE;
+  		//printf("Taille_last_sector %d\n", taille_last_sector);  
     // si la taille actuelle ne remplit pas complètement tous les secteurs
     if (taille_last_sector) {
         if (len < SECTOR_SIZE-taille_last_sector) {
@@ -324,8 +331,11 @@ int filev6_writesector(struct unix_filesystem *u, struct filev6 *fv6, void* data
             nb_bytes = SECTOR_SIZE;
         }
 
+		
+		//printf("\nb_byptes = %d\n", nb_bytes);
         memcpy(sector, data, nb_bytes);
-
+	
+		
         // trouver le prochain secteur libre
         err = bm_find_next(u -> fbm);
         if (err < 0) {
