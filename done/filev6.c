@@ -219,13 +219,17 @@ int filev6_writebytes(struct unix_filesystem *u, struct filev6 *fv6, const void 
 
 }
 
+//int write_change
+
 
 int write_small_file(struct unix_filesystem *u, struct filev6 *fv6, const void *buf, int len)
 {
 	int err = 0;
 	void* ptr = buf;
-	int nb_sector_used = (size_t) inode_getsize(fv6 -> i_number)/SECTOR_SIZE;
+	size_t taille = inode_getsize(&(fv6 -> i_node));
+	int nb_sector_used = (size_t) taille/SECTOR_SIZE;
 	uint32_t sector_number = 0;
+	
 	
 	struct inode inode_new = fv6 -> i_node;
 	
@@ -235,7 +239,11 @@ int write_small_file(struct unix_filesystem *u, struct filev6 *fv6, const void *
 		if (err > 0){
 			ptr += err;
 			len -= err;
-			// TODO faire appel à inode_setsize
+			taille += err;
+			err = inode_setsize(&inode_new, (int) taille);
+			if (err < 0){
+				return err;
+			}
 			
 			if (sector_number != 0){
 				++nb_sector_used;

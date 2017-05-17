@@ -239,6 +239,8 @@ int inode_write(struct unix_filesystem *u, uint16_t inr, const struct inode *ino
  */
 int inode_alloc(struct unix_filesystem *u)
 {
+	M_REQUIRE_NON_NULL(u);
+
     int err = 0;
 
     err = bm_find_next(u -> ibm);
@@ -249,4 +251,22 @@ int inode_alloc(struct unix_filesystem *u)
     bm_set(u -> ibm, (uint64_t) err);
 
     return err;
+}
+
+/**
+ * @brief set the size of a given inode to the given size
+ * @param inode the inode
+ * @param new_size the new size
+ * @return 0 on success; <0 on error
+ */
+int inode_setsize(struct inode *inode, int new_size)
+{
+    M_REQUIRE_NON_NULL(inode);
+	
+	uint16_t nb_bin_petit = (1<<8)-1;
+	
+	inode -> i_size0 = (uint8_t) (nb_bin_petit & new_size);
+	inode -> i_size1 = (uint16_t) (new_size - inode -> i_size0) >> 8;
+	
+	return 0;
 }

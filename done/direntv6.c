@@ -280,7 +280,9 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
 		return ERR_NOMEM;
 	}
 	strncpy(entry_usable, entry, taille);
-	entry_usable[taille+1] = '\0';
+	entry_usable[taille] = '\0';
+	
+	printf(" TOTAL entry: %s \n", entry_usable);
 
     char* name = NULL;
     char nom_cmp[DIRENT_MAXLEN+1];
@@ -304,7 +306,8 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
         --k;
     } while (path[k] != '/' && k >= 0);
 
-    name = path + k + 1; // TODO Vérifier que le code fasse ce qui est attendu 
+    name = entry_usable + k + 1; // TODO Vérifier que le code fasse ce qui est attendu 
+     
     path = NULL;
 
     if (k < 1) {
@@ -322,9 +325,10 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
         strncpy(path,entry_usable,k);
         path[k] = '\0';
     }
-
-	free(entry_usable);	
 	
+	 printf("path = %s \n name = %s\n total entry: %s \n", path, name, entry_usable);
+	
+		free(entry_usable);	
     size_t taille_nom = strlen(name);
     if (strlen(name) > DIRENT_MAXLEN) {
         return ERR_FILENAME_TOO_LONG;
@@ -348,7 +352,7 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
     // vérifier que le fils n'existe pas
     do {
         err =  direntv6_readdir(&d_parent, nom_cmp, &child);
-        if (!strncmp(name, nom_cmp,taille_nom)) {
+        if (!strncmp(name, nom_cmp, taille_nom)) {
             return ERR_FILENAME_ALREADY_EXISTS;
         }
     } while (err > 0);
