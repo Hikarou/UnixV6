@@ -190,7 +190,7 @@ int filev6_writebytes(struct unix_filesystem *u, struct filev6 *fv6, const void 
     	//err = write_change;
     }
     else {
-    //	err = write_big;
+    	//	err = write_big;
     }
     
     
@@ -215,7 +215,7 @@ int filev6_writebytes(struct unix_filesystem *u, struct filev6 *fv6, const void 
 		// mettre à jour la taille de l'inode
 		// si on secteur d'adresses est plein
 			//écrire dans un nouveau secteur la nouvelle adresse
-			// écrire dans l'inode la nouvelle adresse du secteur d'adresse
+			//écrire dans l'inode la nouvelle adresse du secteur d'adresse
 			//écrire l'inode
 		
     return err;
@@ -230,17 +230,23 @@ int write_small_file(struct unix_filesystem *u, struct filev6 *fv6, const void *
 	int err = 0;
 	uint8_t* ptr = buf;
 	int32_t taille = inode_getsize(&(fv6 -> i_node));
-	int nb_sector_used = (size_t) taille/SECTOR_SIZE+1;
+	int nb_sector_used = taille/SECTOR_SIZE+1;
 	uint32_t sector_number = 0;
-	
 	
 	struct inode inode_new = fv6 -> i_node;
 	
 	while (err == 0 && len > 0) {
 		sector_number = inode_new.i_addr[nb_sector_used-1];
+		//printf("SECTOR_NUMBER envoyé = %d\n", sector_number);
 		err = filev6_writesector(u, fv6, ptr, len, &sector_number);
 		
 		if (err > 0){
+			
+			if (sector_number != 0){
+				nb_sector_used = taille/SECTOR_SIZE+1;
+				inode_new.i_addr[nb_sector_used-1] = sector_number;
+			}
+			
 			ptr += err;
 			len -= err;
 			taille += err;
@@ -248,11 +254,6 @@ int write_small_file(struct unix_filesystem *u, struct filev6 *fv6, const void *
 			err = inode_setsize(&inode_new, (int) taille);
 			if (err < 0){
 				return err;
-			}
-			
-			if (sector_number != 0){
-				++nb_sector_used;
-				inode_new.i_addr[nb_sector_used-1] = sector_number;
 			}
 			
 			err = inode_write(u, fv6 -> i_number, &inode_new);
@@ -263,6 +264,12 @@ int write_small_file(struct unix_filesystem *u, struct filev6 *fv6, const void *
 		}	
 	}
 	
+	/*
+	inode_print(&inode_new);
+	printf("*** AFFICHAGE DES ADRESSES****\n");
+	for (int i = 0; i<7; i++){
+		printf("Adresse %d = %d\n", i, inode_new.i_addr[i]);
+	}*/
 	
 	return err;
 }
@@ -298,7 +305,7 @@ int filev6_writesector(struct unix_filesystem *u, struct filev6 *fv6, void* data
 
 	
     taille_last_sector = taille_actu % SECTOR_SIZE;
-  		//printf("Taille_last_sector %d\n", taille_last_sector);  
+    
     // si la taille actuelle ne remplit pas complètement tous les secteurs
     if (taille_last_sector) {
         if (len < SECTOR_SIZE-taille_last_sector) {
@@ -331,16 +338,14 @@ int filev6_writesector(struct unix_filesystem *u, struct filev6 *fv6, void* data
             nb_bytes = SECTOR_SIZE;
         }
 
-		
-		//printf("\nb_byptes = %d\n", nb_bytes);
-        memcpy(sector, data, nb_bytes);
-	
+        memcpy(sector, data, nb_bytes);	
 		
         // trouver le prochain secteur libre
         err = bm_find_next(u -> fbm);
         if (err < 0) {
             return err;
         }
+        
         *sector_number = (uint32_t) err;
 
         // ecrire dans le secteur
@@ -348,6 +353,8 @@ int filev6_writesector(struct unix_filesystem *u, struct filev6 *fv6, void* data
         if (err) {
             return err;
         }
+        
+        bm_set(u -> fbm, (uint64_t) *sector_number);
 
     }
 
