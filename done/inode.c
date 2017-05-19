@@ -239,7 +239,7 @@ int inode_write(struct unix_filesystem *u, uint16_t inr, const struct inode *ino
  */
 int inode_alloc(struct unix_filesystem *u)
 {
-	M_REQUIRE_NON_NULL(u);
+    M_REQUIRE_NON_NULL(u);
 
     int err = 0;
 
@@ -262,12 +262,12 @@ int inode_alloc(struct unix_filesystem *u)
 int inode_setsize(struct inode *inode, int new_size)
 {
     M_REQUIRE_NON_NULL(inode);
-	
-	uint16_t nb_bin_petit = (1<<8)-1;
-	uint16_t nb_bin_grand = -1;
-	
-	inode -> i_size1 = (uint16_t) (nb_bin_grand & new_size);
-	inode -> i_size0 = (uint8_t) (new_size >> 16) & nb_bin_petit;
-	
-	return 0;
+
+    uint16_t nb_bin_petit = (1<<8)-1;
+    uint16_t nb_bin_grand = -1;
+
+    inode -> i_size1 = (uint16_t) (nb_bin_grand & new_size);
+    inode -> i_size0 = (uint8_t) (new_size >> 16) & nb_bin_petit;
+
+    return 0;
 }

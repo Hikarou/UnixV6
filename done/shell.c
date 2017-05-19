@@ -446,82 +446,82 @@ int do_mkdir(char** args)
 
 int do_add(char** args)
 {
-	struct filev6 fv6;
-	int err = 0;
-	FILE* source = NULL;
-	size_t taille_fichier = 0;
-	char* data = NULL;
-	int k = 0;
-	
+    struct filev6 fv6;
+    int err = 0;
+    FILE* source = NULL;
+    size_t taille_fichier = 0;
+    char* data = NULL;
+    int k = 0;
+
     if (u.f == NULL) {
         printf("ERROR SHELL: mount the FS before operation\n");
         return ERR_NOT_MOUNTED;
     }
-    
+
     //ouvrir le fichier source
     source = fopen(args[1], "r");
-    if (source == NULL){
-    	printf("ERROR FS: Unable to open file %s\n", args[1]);
-    	return ERR_FS;
+    if (source == NULL) {
+        printf("ERROR FS: Unable to open file %s\n", args[1]);
+        return ERR_FS;
     }
     fseek(source, 0, SEEK_END);
     taille_fichier = (size_t) ftell(source) + 1;
     fseek(source, 0, SEEK_SET);
-    
+
     data = calloc(sizeof(char), taille_fichier);
-    if (data == NULL){
-    	fclose(source);
-    	err = ERR_NOMEM;
-    	printf("ERROR FS: ");
-        puts(ERR_MESSAGES[err - ERR_FIRST]);
-        return ERR_FS;
-    }
-    
-    while (!feof(source)){
-	   	data[k] = fgetc(source);
-		++k;
-	}
-	data[k-1] = '\0';
-    fclose(source);
-    
-    // créer le fichier
-    err = direntv6_create(&u, args[2], IALLOC);
-    if (err) {
-    	free(data);
+    if (data == NULL) {
+        fclose(source);
+        err = ERR_NOMEM;
         printf("ERROR FS: ");
         puts(ERR_MESSAGES[err - ERR_FIRST]);
         return ERR_FS;
     }
-    
+
+    while (!feof(source)) {
+        data[k] = fgetc(source);
+        ++k;
+    }
+    data[k-1] = '\0';
+    fclose(source);
+
+    // créer le fichier
+    err = direntv6_create(&u, args[2], IALLOC);
+    if (err) {
+        free(data);
+        printf("ERROR FS: ");
+        puts(ERR_MESSAGES[err - ERR_FIRST]);
+        return ERR_FS;
+    }
+
     // trouver l'inode
     fv6.i_number = direntv6_dirlookup(&u, ROOT_INUMBER, args[2]);
     if (fv6.i_number < 0) {
-    	free(data);
+        free(data);
         printf("ERROR FS: ");
         puts(ERR_MESSAGES[fv6.i_number - ERR_FIRST]);
         return ERR_FS;
     }
-    
+
     // ouvrir le fichier
     err = filev6_open(&u, fv6.i_number, &fv6);
     if (err) {
-    	free(data);
+        free(data);
         printf("ERROR FS: ");
         puts(ERR_MESSAGES[err - ERR_FIRST]);
         return ERR_FS;
     }
-    
-    
+
+
     // écrire dans le fichier
     err = filev6_writebytes(&u, &fv6, data, taille_fichier);
-    
+
     free(data);
-	if (err) {
+    if (err) {
         printf("ERROR FS: ");
         puts(ERR_MESSAGES[err - ERR_FIRST]);
         return ERR_FS;
     }
-    
+
     return ERR_OK;
 }
 

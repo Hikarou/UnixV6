@@ -272,14 +272,14 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
     size_t taille = strlen(entry);
     int k = (int) taille;
     uint16_t child = 0;
-	char* entry_usable = NULL;    
+    char* entry_usable = NULL;
 
-	entry_usable = malloc(sizeof(char)*(taille+1));
-	if (entry_usable == NULL){
-		return ERR_NOMEM;
-	}
-	strncpy(entry_usable, entry, taille);
-	entry_usable[taille] = '\0';
+    entry_usable = malloc(sizeof(char)*(taille+1));
+    if (entry_usable == NULL) {
+        return ERR_NOMEM;
+    }
+    strncpy(entry_usable, entry, taille);
+    entry_usable[taille] = '\0';
 
     char* name = NULL;
     char nom_cmp[DIRENT_MAXLEN+1];
@@ -287,10 +287,10 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
     uint8_t data[DIRENT_MAXLEN+sizeof(uint16_t)];
     struct directory_reader d_parent;
     struct filev6 file_new;
-    
+
     uint16_t nb_bin_petit = (1<<8)-1;
     uint16_t nb_bin_grand = -1 - nb_bin_petit;
-    
+
     memset(data, 0, DIRENT_MAXLEN+sizeof(uint16_t));
 
     // diviser le chemin
@@ -304,12 +304,12 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
         --k;
     } while (entry_usable[k] != '/' && k >= 0);
 
-    name = entry_usable + k + 1; // TODO Vérifier que le code fasse ce qui est attendu 
+    name = entry_usable + k + 1; // TODO Vérifier que le code fasse ce qui est attendu
 
     if (k < 1) {
         path = malloc(sizeof(char)*2);
         if (path == NULL) {
-        	free(entry_usable);	
+            free(entry_usable);
             return ERR_NOMEM;
         }
         path[0] = '/';
@@ -317,27 +317,27 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
     } else {
         path = malloc(sizeof(char)*(k+1));
         if (path == NULL) {
-        	
-    		free(entry_usable);	
+
+            free(entry_usable);
             return ERR_NOMEM;
         }
         strncpy(path,entry_usable,k);
         path[k] = '\0';
     }
-	
+
     size_t taille_nom = strlen(name);
-    
+
     if (strlen(name) > DIRENT_MAXLEN) {
-    	free(path);
-    	free(entry_usable);	
+        free(path);
+        free(entry_usable);
         return ERR_FILENAME_TOO_LONG;
     }
 
     // vérifier que le parent existe
     int err =  direntv6_dirlookup(u, ROOT_INUMBER, path);
     if (err <= 0) {
-    	free(path);
-    	free(entry_usable);	
+        free(path);
+        free(entry_usable);
         return err;
     }
 
@@ -347,7 +347,7 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
     // ouverture du directory_reader
     err = direntv6_opendir(u, (uint16_t) err, &d_parent);
     if (err) {
-    	free(entry_usable);	
+        free(entry_usable);
         return err;
     }
 
@@ -355,15 +355,15 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
     do {
         err =  direntv6_readdir(&d_parent, nom_cmp, &child);
         if (!strncmp(name, nom_cmp, taille_nom)) {
-        	free(entry_usable);	
+            free(entry_usable);
             return ERR_FILENAME_ALREADY_EXISTS;
         }
-    } while (err > 0);	
-	
+    } while (err > 0);
+
     // Création de l'inode: (si on a le droit de le faire)
     err = inode_alloc(u);
     if (err < 0) {
-    	free(entry_usable);
+        free(entry_usable);
         return err;
     }
 
@@ -371,18 +371,18 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
     file_new.i_number = err;
     err = filev6_create(u, mode, &file_new);
     if (err) {
-    	free(entry_usable);
-    	return err;
+        free(entry_usable);
+        return err;
     }
-    
-    // écire dans le secteur du parent 
+
+    // écire dans le secteur du parent
     data[0] = (uint8_t) file_new.i_number & nb_bin_petit;
     data[1] = (uint8_t) ((file_new.i_number & nb_bin_grand) >> 8);
- 	memcpy(data+2, name, taille_nom);
- 	
- 	free(entry_usable);
- 	// appel de filev6_writebytes
- 	
+    memcpy(data+2, name, taille_nom);
+
+    free(entry_usable);
+    // appel de filev6_writebytes
+
     return filev6_writebytes(u, &(d_parent.fv6), data, (int) DIRENT_MAXLEN+sizeof(uint16_t));
 }
 
