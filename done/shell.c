@@ -470,6 +470,7 @@ int do_add(char** args)
     
     data = calloc(sizeof(char), taille_fichier);
     if (data == NULL){
+    	fclose(source);
     	err = ERR_NOMEM;
     	printf("ERROR FS: ");
         puts(ERR_MESSAGES[err - ERR_FIRST]);
@@ -482,11 +483,11 @@ int do_add(char** args)
 	}
 	data[k-1] = '\0';
     fclose(source);
-    //printf("DATA = %s\n", data);
     
     // créer le fichier
     err = direntv6_create(&u, args[2], IALLOC);
     if (err) {
+    	free(data);
         printf("ERROR FS: ");
         puts(ERR_MESSAGES[err - ERR_FIRST]);
         return ERR_FS;
@@ -495,6 +496,7 @@ int do_add(char** args)
     // trouver l'inode
     fv6.i_number = direntv6_dirlookup(&u, ROOT_INUMBER, args[2]);
     if (fv6.i_number < 0) {
+    	free(data);
         printf("ERROR FS: ");
         puts(ERR_MESSAGES[fv6.i_number - ERR_FIRST]);
         return ERR_FS;
@@ -503,6 +505,7 @@ int do_add(char** args)
     // ouvrir le fichier
     err = filev6_open(&u, fv6.i_number, &fv6);
     if (err) {
+    	free(data);
         printf("ERROR FS: ");
         puts(ERR_MESSAGES[err - ERR_FIRST]);
         return ERR_FS;
@@ -513,7 +516,12 @@ int do_add(char** args)
     err = filev6_writebytes(&u, &fv6, data, taille_fichier);
     
     free(data);
-
+	if (err) {
+        printf("ERROR FS: ");
+        puts(ERR_MESSAGES[err - ERR_FIRST]);
+        return ERR_FS;
+    }
+    
     return ERR_OK;
 }
 
