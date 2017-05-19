@@ -16,6 +16,10 @@
 #include "sector.h"
 #include "bmblock.h"
 
+int write_small_file(struct unix_filesystem *u, struct filev6 *fv6, const void *buf, int len);
+int write_big_file(struct unix_filesystem *u, struct filev6 *fv6, const void *buf, int len);
+int write_change(struct unix_filesystem *u, struct filev6 *fv6);
+int filev6_writesector(struct unix_filesystem *u, struct filev6 *fv6, void* data, int len, uint32_t* sector_number);
 
 /**
  * @brief open the file corresponding to a given inode; set offset to zero
