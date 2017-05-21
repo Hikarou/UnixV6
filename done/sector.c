@@ -41,9 +41,7 @@ int sector_read(FILE *f, uint32_t sector, void *data)
 int sector_write(FILE *f, uint32_t sector, const void  *data)
 {
     M_REQUIRE_NON_NULL(f);
-    if (data == NULL) { // TODO C'est pas mieux de faire comme pour f M_REQUIRE_... c'est un problème d'arguments et pas d'IO non?
-        return ERR_IO;
-    }
+    M_REQUIRE_NON_NULL(data);
 
     if (fseek(f, sector * SECTOR_SIZE, SEEK_SET) == -1) {
         return ERR_IO;

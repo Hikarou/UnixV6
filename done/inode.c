@@ -214,18 +214,13 @@ int inode_write(struct unix_filesystem *u, uint16_t inr, const struct inode *ino
         data[nbrInodeSec*32+7] = (uint8_t) ((inode -> i_size1 & nb_bin_grand) >> 8);
 
         for (size_t i = 0; i<ADDR_SMALL_LENGTH; ++i) {
-            //inode -> i_addr[i] = (uint16_t)((data[nbrInodeSec*32+9+2*i] << 8) +
-            //                                data[nbrInodeSec*32+8+2*i]); //TODO A enlever?
             data[nbrInodeSec*32+8+2*i] = (uint8_t) ((inode -> i_addr[i] & nb_bin_petit));
             data[nbrInodeSec*32+9+2*i] = (uint8_t) ((inode -> i_addr[i] & nb_bin_grand) >> 8);
         }
         for (size_t i = 0; i<2; ++i) {
-            //inode -> atime[i] = (uint16_t)((data[nbrInodeSec*32+25+2*i] << 8) +
-            //                               data[nbrInodeSec*32+24 +2*i]);
             data[nbrInodeSec*32+24+2*i] = (uint8_t) (inode -> atime[i] & nb_bin_petit);
             data[nbrInodeSec*32+25+2*i] = (uint8_t) ((inode -> atime[i] & nb_bin_grand) >> 8);
-            // inode -> mtime[i] = (uint16_t)((data[nbrInodeSec*32+29+2*i] << 8) +
-            //                                data[nbrInodeSec*32+28 +2*i]);
+       
             data[nbrInodeSec*32+28+2*i] = (uint8_t) (inode -> mtime[i] & nb_bin_petit);
             data[nbrInodeSec*32+29+2*i] = (uint8_t) ((inode -> mtime[i] & nb_bin_grand) >> 8);
         }
