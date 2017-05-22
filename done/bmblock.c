@@ -33,7 +33,7 @@ struct bmblock_array *bm_alloc(uint64_t min, uint64_t max)
         err = ERR_BAD_PARAMETER;
     } else {
         size_t taille = (max - min)/(sizeof(uint64_t)*8);
-        b = malloc(sizeof(struct bmblock_array) + sizeof(uint64_t)*(taille));
+        b = calloc(1, sizeof(struct bmblock_array) + sizeof(uint64_t)*(taille));
 
         if (b == NULL) {
             err = ERR_NOMEM;
@@ -144,7 +144,7 @@ int bm_find_next(struct bmblock_array *bmblock_array)
 
         if (bmblock_array -> bm[i] != UINT64_C(-1)) {
             // il reste encore la place
-            if (!((bmblock_array -> bm[i]) & (UINT64_C(1) << ((bmblock_array -> cursor)%( sizeof(uint64_t)*8))))) {
+            if (!((bmblock_array -> bm[i]) & (UINT64_C(1) << ((bmblock_array -> cursor)%(sizeof(uint64_t)*8))))) {
                 // si la valeur du curseur actuelle est zero
                 err = bmblock_array -> cursor + bmblock_array -> min;
                 k = 1;

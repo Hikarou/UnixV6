@@ -13,7 +13,7 @@ int test(struct unix_filesystem *u)
 
     char* chaine = NULL;
 
-    chaine = malloc(MAXPATHLEN_UV6);
+    chaine = calloc(1, MAXPATHLEN_UV6);
     if (chaine == NULL) {
         err = ERR_NOMEM;
     } else {

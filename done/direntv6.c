@@ -30,9 +30,8 @@ int direntv6_opendir(const struct unix_filesystem *u, uint16_t inr, struct direc
     M_REQUIRE_NON_NULL(d);
 
     struct filev6 fiv6;
-    int err = 0;
 
-    err = filev6_open(u, inr, &fiv6);
+    int err = filev6_open(u, inr, &fiv6);
     if (err!=0) {
         return err;
     }
@@ -46,7 +45,6 @@ int direntv6_opendir(const struct unix_filesystem *u, uint16_t inr, struct direc
     d -> last = 0;
 
     return 0;
-
 }
 
 /**
@@ -63,11 +61,10 @@ int direntv6_readdir(struct directory_reader *d, char *name, uint16_t *child_inr
     M_REQUIRE_NON_NULL(name);
     M_REQUIRE_NON_NULL(child_inr);
 
-    int err = 0;
     // si on est à la fin du block, on essaie de lire la suite
     if (d -> cur >= d -> last) {
         uint8_t data[SECTOR_SIZE];
-        err = filev6_readblock(&(d -> fv6), data);
+        int err = filev6_readblock(&(d -> fv6), data);
         if (err <= 0) {
             return err; // s'il n'y a pas de suite, => C'est la fin du fichier donc on renvoie 0
         }
@@ -105,18 +102,11 @@ int direntv6_readdir(struct directory_reader *d, char *name, uint16_t *child_inr
 int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const char *prefix)
 {
 
-    int err = 0;
     char name[DIRENT_MAXLEN+1] = "";
     uint16_t nextInode = 0;
-    int errFake = 0;
-    struct directory_reader d;
-    struct directory_reader dTest;
-
     FILE* output = stdout;
-    char* autre = NULL;
-
-    err = direntv6_opendir(u, inr, &d);
-
+    struct directory_reader d;
+    int err = direntv6_opendir(u, inr, &d);
 
     if (err != 0) {
         return err;
@@ -125,11 +115,12 @@ int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const cha
     do {
         err = direntv6_readdir(&d, name, &nextInode);
         if (err > 0) {
-
-            errFake = direntv6_opendir(u, nextInode, &dTest);
+            struct directory_reader dTest;
+            int errFake = direntv6_opendir(u, nextInode, &dTest);
             if (errFake == 0) {
                 // écrire le nom de plus
-                autre = malloc(strlen(prefix) + 2 + strlen(name));
+                char* autre = NULL;
+                autre = calloc(strlen(prefix) + 2 + strlen(name), sizeof(char));
                 if(autre == NULL) {
                     return ERR_NOMEM;
                 }
@@ -171,15 +162,11 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
 {
     M_REQUIRE_NON_NULL(u);
     M_REQUIRE_NON_NULL(entry);
-    int err = 0;
     size_t tailleTot = strlen(entry);
     if (tailleTot == 1 && entry [0] == '/') return ROOT_INUMBER;
     size_t taille = 0;
     size_t shiftTaille = 0;
     size_t k = 0;
-    uint16_t inr_next = 0;
-    char* name_ref;
-    char name_read[DIRENT_MAXLEN+1] = "";
 
     // Nom du futur dossier:
     do {
@@ -206,7 +193,8 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
         ++taille;
     }
 
-    name_ref = malloc((taille)*sizeof(char));
+    char* name_ref;
+    name_ref = calloc(taille, sizeof(char));
     if (name_ref == NULL) {
         return ERR_NOMEM;
     }
@@ -219,13 +207,15 @@ int direntv6_dirlookup(const struct unix_filesystem *u, uint16_t inr, const char
 
     // Recherche du futur dossier ou fichier
     struct directory_reader d;
-    err = direntv6_opendir(u, inr, &d);
+    int err = direntv6_opendir(u, inr, &d);
     if (err<0) {
         free(name_ref);
         return err;
     }
 
     int comp = 0;
+    uint16_t inr_next = 0;
+    char name_read[DIRENT_MAXLEN+1] = "";
     do {
         err = direntv6_readdir(&d, name_read, &inr_next);
         comp = strncmp(name_ref, name_read, taille);
@@ -271,22 +261,15 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
 
     size_t taille = strlen(entry);
     int k = (int) taille;
-    uint16_t child = 0;
     char* entry_usable = NULL;
-
-    entry_usable = malloc(sizeof(char)*(taille+1));
+    entry_usable = calloc(taille + 1, sizeof(char));
     if (entry_usable == NULL) {
         return ERR_NOMEM;
     }
     strncpy(entry_usable, entry, taille);
     entry_usable[taille] = '\0';
 
-    char* name = NULL;
-    char nom_cmp[DIRENT_MAXLEN+1];
-    char* path = NULL;
     uint8_t data[DIRENT_MAXLEN+sizeof(uint16_t)];
-    struct directory_reader d_parent;
-    struct filev6 file_new;
 
     uint16_t nb_bin_petit = (1<<8)-1;
     uint16_t nb_bin_grand = -1 - nb_bin_petit;
@@ -304,10 +287,11 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
         --k;
     } while (entry_usable[k] != '/' && k >= 0);
 
-    name = entry_usable + k + 1; // TODO Vérifier que le code fasse ce qui est attendu
+    char* name = entry_usable + k + 1; // TODO Vérifier que le code fasse ce qui est attendu
 
+    char* path = NULL;
     if (k < 1) {
-        path = malloc(sizeof(char)*2);
+        path = calloc(2, sizeof(char));
         if (path == NULL) {
             free(entry_usable);
             return ERR_NOMEM;
@@ -315,7 +299,7 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
         path[0] = '/';
         path[1] = '\0';
     } else {
-        path = malloc(sizeof(char)*(k+1));
+        path = calloc(k+1, sizeof(char));
         if (path == NULL) {
 
             free(entry_usable);
@@ -345,6 +329,7 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
     free(path);
 
     // ouverture du directory_reader
+    struct directory_reader d_parent;
     err = direntv6_opendir(u, (uint16_t) err, &d_parent);
     if (err) {
         free(entry_usable);
@@ -352,6 +337,8 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
     }
 
     // vérifier que le fils n'existe pas
+    uint16_t child = 0;
+    char nom_cmp[DIRENT_MAXLEN+1] = "";
     do {
         err =  direntv6_readdir(&d_parent, nom_cmp, &child);
         if (!strncmp(name, nom_cmp, taille_nom)) {
@@ -368,6 +355,7 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
     }
 
     // intialiser la structure direntv6 et filev6
+    struct filev6 file_new;
     file_new.i_number = err;
     err = filev6_create(u, mode, &file_new);
     if (err) {

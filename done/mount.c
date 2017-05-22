@@ -260,7 +260,7 @@ int mountv6_mkfs(const char *filename, uint16_t num_blocks, uint16_t num_inodes)
     uint16_t s_fbmsize = 0;      /* size in sectors of the freelist bitmap */
     uint16_t s_ibmsize = 0;      /* size in sectors of the inode bitmap */
     uint16_t s_inode_start = SUPERBLOCK_SECTOR + 1;  /* first sector with inodes */
-    uint16_t s_block_start = SUPERBLOCK_SECTOR + s_isize + 1;  /* first sector with data */
+    uint16_t s_block_start = SUPERBLOCK_SECTOR + s_isize + 1;  /* first sector with data */ //TODO vérifier si c'est SUPERBLOCK_SECTOR qui est attendu ou bien s_inode_start
     uint16_t s_fbm_start = 0;    /* first sector with the freebitmap (==2) */
     uint16_t s_ibm_start = 0;    /* first sector with the inode bitmap */
     uint8_t s_flock = 0;	    /* lock during free list manipulation */

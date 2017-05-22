@@ -22,11 +22,11 @@
  */
 int inode_scan_print(const struct unix_filesystem *u)
 {
-    uint8_t data[SECTOR_SIZE];
     int err = 0;
     FILE * output = stdout;
     int count = 0;
     struct inode inode;
+    uint8_t data[SECTOR_SIZE];
     for (uint32_t i = 0; i < u -> s.s_isize; ++i) {
         err = sector_read(u -> f, u -> s.s_inode_start + i, data);
         if (!err) {
@@ -74,11 +74,11 @@ void inode_print(const struct inode* inode)
         fprintf(output,"size    : %d\n", inode_getsize(inode));
 
     }
-    
-    for (int i = 0; i < 7; ++i){
-		fprintf(output, "Adresse : [i] =  %d\n", inode -> i_addr[i]);
-	}
-	
+
+    for (int i = 0; i < 7; ++i) {
+        fprintf(output, "Adresse : [i] =  %d\n", inode -> i_addr[i]);
+    }
+
     fprintf(output,"***********FS INODE END***********\n");
 }
 
@@ -220,7 +220,7 @@ int inode_write(struct unix_filesystem *u, uint16_t inr, const struct inode *ino
         for (size_t i = 0; i<2; ++i) {
             data[nbrInodeSec*32+24+2*i] = (uint8_t) (inode -> atime[i] & nb_bin_petit);
             data[nbrInodeSec*32+25+2*i] = (uint8_t) ((inode -> atime[i] & nb_bin_grand) >> 8);
-       
+
             data[nbrInodeSec*32+28+2*i] = (uint8_t) (inode -> mtime[i] & nb_bin_petit);
             data[nbrInodeSec*32+29+2*i] = (uint8_t) ((inode -> mtime[i] & nb_bin_grand) >> 8);
         }

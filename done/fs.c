@@ -24,8 +24,6 @@ struct unix_filesystem fs;
 
 static int fs_getattr(const char *path, struct stat *stbuf)
 {
-    int res = 0;
-
     if (fs.f == NULL) {
         exit(1);
     }
@@ -61,7 +59,7 @@ static int fs_getattr(const char *path, struct stat *stbuf)
     stbuf -> st_ctim.tv_sec = i.mtime[0];
     stbuf -> st_ctim.tv_nsec = i.mtime[1];
 
-    return res;
+    return 0;
 }
 
 static int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
@@ -110,20 +108,18 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset,
                    struct fuse_file_info *fi)
 {
     (void) fi;
-    int nb_lu = 0;
     char *ptr = buf;
     char *buf2 = NULL;
-    //size = SECTOR_SIZE/3;
 
-    struct filev6 file;
     // ouvrir le fichier
     int err = direntv6_dirlookup(&fs, ROOT_INUMBER, path);
     if (err < 0) {
         puts(ERR_MESSAGES[err - ERR_FIRST]);
         return 0;
     }
-    uint16_t inode_nb = (uint16_t) err;
 
+    uint16_t inode_nb = (uint16_t) err;
+    struct filev6 file;
     err = inode_read(&fs, inode_nb, &(file.i_node));
     if (err != 0) {
         puts(ERR_MESSAGES[err - ERR_FIRST]);
@@ -144,8 +140,9 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset,
 
     int k = 0;
     //lire les secteurs nécessaires pour avoir 64 ko au max
+    int nb_lu = 0;
     if (size < SECTOR_SIZE) {
-        buf2 = malloc(SECTOR_SIZE);
+        buf2 = calloc(1, SECTOR_SIZE);
         if (buf2 == NULL) {
             return 0;
         }
@@ -200,10 +197,9 @@ static int arg_parse(void *data, const char *filename, int key, struct fuse_args
 {
     (void) data;
     (void) outargs;
+
     if (key == FUSE_OPT_KEY_NONOPT && fs.f == NULL && filename != NULL) {
-
         int err = mountv6(filename, &fs);
-
         if (err != 0) {
             puts(ERR_MESSAGES[err - ERR_FIRST]);
             exit(1);
