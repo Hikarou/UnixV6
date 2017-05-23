@@ -513,7 +513,7 @@ int do_add(char** args)
 
 
     // écrire dans le fichier
-    err = filev6_writebytes(&u, &fv6, data, taille_fichier);
+    err = filev6_writebytes(&u, &fv6, data, taille_fichier - 1);
 
     free(data);
     if (err) {
