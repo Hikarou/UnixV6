@@ -75,7 +75,7 @@ void inode_print(const struct inode* inode)
 
     }
 
-    for (int i = 0; i < 7; ++i) {
+    for (int i = 0; i < ADDR_SMALL_LENGTH; ++i) {
         fprintf(output, "Adresse : [i] =  %d\n", inode -> i_addr[i]);
     }
 
@@ -148,7 +148,7 @@ int inode_findsector(const struct unix_filesystem *u, const struct inode *i, int
 
     if (i -> i_mode & IALLOC) {
         size = inode_getsize(i);
-        if (size < 8*SECTOR_SIZE) {
+        if (size <= ADDR_SMALL_LENGTH*SECTOR_SIZE) {
             nbSector = file_sec_off;
             if (nbSector > 7) {
                 return ERR_OFFSET_OUT_OF_RANGE;
