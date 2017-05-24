@@ -19,7 +19,7 @@
 int write_small_file(struct unix_filesystem *u, struct filev6 *fv6, const void *buf, int len);
 int write_big_file(struct unix_filesystem *u, struct filev6 *fv6, const void *buf, int len);
 int write_change(struct unix_filesystem *u, struct filev6 *fv6);
-int filev6_writesector(struct unix_filesystem *u, struct filev6 *fv6, void* data, int len, uint32_t* sector_number);
+int filev6_writesector(struct unix_filesystem *u, struct filev6 *fv6, const void* data, int len, uint32_t* sector_number);
 
 /**
  * @brief open the file corresponding to a given inode; set offset to zero
@@ -128,7 +128,6 @@ int filev6_create(struct unix_filesystem *u, uint16_t mode, struct filev6 *fv6)
         return ERR_BAD_PARAMETER;
     }
 
-    // Intialiser l'inode TODO: vérfier que ces champs soient les bons
     inode.i_mode = mode;
     inode.i_nlink = 0;
     inode.i_uid = 0;
@@ -170,40 +169,45 @@ int filev6_writebytes(struct unix_filesystem *u, struct filev6 *fv6, const void 
 
     int32_t taille_fichier_actu = inode_getsize(&(fv6 -> i_node));
     size_t taille_fichier_futur = (size_t) taille_fichier_actu + len;
-    
-    int err = 0;
-    int len_small = 0;
-    const void *buf_new = buf;
+
+    int nb_secteurs_demandes = taille_fichier_futur / SECTOR_SIZE + 1;
+    int premier_secteur_libre = bm_find_next(u -> fbm);
+    if (premier_secteur_libre < 0) return ERR_NOT_ENOUGH_BLOCS;
+    for (uint64_t i = 0; i < nb_secteurs_demandes; ++i) {
+        if (bm_get(u -> fbm, premier_secteur_libre + 1)) return ERR_NOT_ENOUGH_BLOCS;
+    }
+    const uint8_t *buf_new = buf;
 
     // test que le fichier à écrire n'est pas trop grand:
     if (taille_fichier_futur > 7*ADDRESSES_PER_SECTOR*SECTOR_SIZE) {
         return ERR_FILE_TOO_LARGE;
     }
-	
-	// si le fichier va rester petit
+
+    // si le fichier va rester petit
+    int err = 0;
     if (taille_fichier_futur <= ADDR_SMALL_LENGTH*SECTOR_SIZE) {
         err = write_small_file(u, fv6, buf, len);
-        
+
     } else if (taille_fichier_actu <= ADDR_SMALL_LENGTH*SECTOR_SIZE && taille_fichier_actu > 0) {
-    	// si le fichier est petit mais va devenir grand
-    	len_small = ADDR_SMALL_LENGTH*SECTOR_SIZE - taille_fichier_actu;
-    	// Commencer par remplir les petits fichiers
-    	if (len_small > 0){
-    		err = write_small_file(u, fv6, buf, len_small);
-    		if (err) {
-    			return err;
-    		}
-    		buf_new += len_small;
-			inode_print(&fv6->i_node);
-    	}
-    	// transformer le système   	
-        err = write_change(u, fv6);    
+        // si le fichier est petit mais va devenir grand
+        int len_small = ADDR_SMALL_LENGTH*SECTOR_SIZE - taille_fichier_actu;
+        // Commencer par remplir les petits fichiers
+        if (len_small > 0) {
+            err = write_small_file(u, fv6, buf, len_small);
+            if (err) {
+                return err;
+            }
+            buf_new += len_small;
+            inode_print(&fv6->i_node);
+        }
+        // transformer le système
+        err = write_change(u, fv6);
         if (err) {
             return err;
         }
-    	// Complèter le grand fichier
+        // Complèter le grand fichier
         err = write_big_file(u, fv6, buf_new, len-len_small);
-        
+
     } else { // Si le fichier est déjà grand
         err = write_big_file(u, fv6, buf, len);
     }
@@ -226,12 +230,12 @@ int write_big_file(struct unix_filesystem *u, struct filev6 *fv6, const void *bu
     M_REQUIRE_NON_NULL(u);
     M_REQUIRE_NON_NULL(buf);
 
-    uint8_t* ptr = (uint8_t*) buf;
+    const uint8_t* ptr = buf;
     uint8_t address_sector[SECTOR_SIZE];
     uint16_t nb_bin_petit = (1<<8)-1;
     uint16_t nb_bin_grand = -1 - nb_bin_petit;
     int k = 0;
-    
+
     // on crée un petit fichier qui contiendra les adresses
     struct filev6 address_file;
     memset(&address_file, 0, sizeof(struct filev6));
@@ -240,7 +244,7 @@ int write_big_file(struct unix_filesystem *u, struct filev6 *fv6, const void *bu
     int32_t taille_data = inode_getsize(&(fv6 -> i_node));
     int nb_sector_used = 0;
     uint32_t data_sector_number = 0;
-    
+
     if (taille_data % SECTOR_SIZE) {
         nb_sector_used = taille_data/SECTOR_SIZE +1;
     } else {
@@ -262,7 +266,7 @@ int write_big_file(struct unix_filesystem *u, struct filev6 *fv6, const void *bu
     if (err < 0) {
         return err;
     }
-	
+
     // écrire l'inode
     err = inode_write(u, address_file.i_number, &address_file.i_node);
     if (err < 0) {
@@ -274,25 +278,25 @@ int write_big_file(struct unix_filesystem *u, struct filev6 *fv6, const void *bu
     if (err < 0) {
         return err;
     }
-	
+
     // lire le dernier secteur d'adresses
     if (taille_data % SECTOR_SIZE > 0) {
         err = filev6_lseek(&address_file, 2*(taille_addr-1));
         if (err < 0) {
-        	return err;
-    	}
-   
-		err = filev6_readblock(&address_file, address_sector);
-		if (err < 0) {
-		    return err;
-		}
-		
-		// lire le dernier secteur d'addresses
-		k = (2*(taille_addr - 1) % SECTOR_SIZE);
-		data_sector_number = (address_sector[k+1] << 8) + address_sector[k];
-		err = 0;
-	}
-    
+            return err;
+        }
+
+        err = filev6_readblock(&address_file, address_sector);
+        if (err < 0) {
+            return err;
+        }
+
+        // lire le dernier secteur d'addresses
+        k = (2*(taille_addr - 1) % SECTOR_SIZE);
+        data_sector_number = (address_sector[k+1] << 8) + address_sector[k];
+        err = 0;
+    }
+    if (data_sector_number >= u -> s.s_fsize) return ERR_NOT_ENOUGH_BLOCS;
     while (err == 0 && len > 0) {
         if (taille_data > 7*ADDRESSES_PER_SECTOR*SECTOR_SIZE) {
             err = ERR_BAD_PARAMETER;
@@ -300,13 +304,13 @@ int write_big_file(struct unix_filesystem *u, struct filev6 *fv6, const void *bu
 
         // write_sector à ce secteur avec les data
         err = filev6_writesector(u, fv6, ptr, len, &data_sector_number);
-      
+
         if (err > 0) {
 
             ptr += err;
             len -= err;
             taille_data += err;
-			
+
             if (data_sector_number != 0) {
                 // si on a écrit les data dans un nouveau secteur
                 // il faut écrire son numéro dans le secteur d'adresses
@@ -320,14 +324,14 @@ int write_big_file(struct unix_filesystem *u, struct filev6 *fv6, const void *bu
                 }
                 // il faut aller relire l'inode écrit par la fonction write_small_file
                 err = inode_read(u, address_file.i_number, &(address_file.i_node));
-               	if (err < 0) {
+                if (err < 0) {
                     return err;
                 }
             }
             // car de toute façon on en a pas besoin de data_sector_number
             data_sector_number = 0;
-			
-			// écrire la nouvelle taille des datas
+
+            // écrire la nouvelle taille des datas
             err = inode_setsize(&(fv6 -> i_node), (int) taille_data);
             if (err < 0) {
                 return err;
@@ -344,14 +348,14 @@ int write_big_file(struct unix_filesystem *u, struct filev6 *fv6, const void *bu
     for (int i = 0; i<ADDR_SMALL_LENGTH; ++i) {
         fv6 -> i_node.i_addr[i] = address_file.i_node.i_addr[i];
     }
-	//inode_print(&(fv6 -> i_node));
+    //inode_print(&(fv6 -> i_node));
     err = inode_write(u, fv6 -> i_number, &(fv6 -> i_node));
     if (err < 0) {
         return err;
     }
 
-    //supprimer l'inode fake    
-  	address_file.i_node.i_mode = 0;
+    //supprimer l'inode fake
+    address_file.i_node.i_mode = 0;
     err = inode_write(u, address_file.i_number, &(address_file.i_node));
     bm_clear(u ->ibm, address_file.i_number);
 
@@ -430,7 +434,7 @@ int write_small_file(struct unix_filesystem *u, struct filev6 *fv6, const void *
     M_REQUIRE_NON_NULL(u);
     M_REQUIRE_NON_NULL(buf);
 
-    uint8_t* ptr = (uint8_t*) buf;
+    const uint8_t* ptr = buf;
     int32_t taille = inode_getsize(&(fv6 -> i_node));
     int nb_sector_used = taille/SECTOR_SIZE+1;
     uint32_t sector_number = 0;
@@ -445,7 +449,7 @@ int write_small_file(struct unix_filesystem *u, struct filev6 *fv6, const void *
         sector_number = inode_new.i_addr[nb_sector_used-1];
         //printf("SECTEUR SMALL: %d\n", sector_number);
         err = filev6_writesector(u, fv6, ptr, len, &sector_number);
-		
+
         if (err > 0) {
 
             if (sector_number != 0) {
@@ -470,7 +474,7 @@ int write_small_file(struct unix_filesystem *u, struct filev6 *fv6, const void *
 }
 
 /**
- * @brief write a most on sector given by sector_number. If it writes a new sector, 
+ * @brief write a most on sector given by sector_number. If it writes a new sector,
  * the number changes
  * @param u the filesystem (IN)
  * @param fv6 the filev6 (IN)
@@ -479,7 +483,7 @@ int write_small_file(struct unix_filesystem *u, struct filev6 *fv6, const void *
  * @param sector_number nomber of sector to be written (IN-OUT)
  * @return number of bytes written on success; <0 on errror
  */
-int filev6_writesector(struct unix_filesystem *u, struct filev6 *fv6, void* data, int len, uint32_t* sector_number)
+int filev6_writesector(struct unix_filesystem *u, struct filev6 *fv6, const void* data, int len, uint32_t* sector_number)
 {
     M_REQUIRE_NON_NULL(fv6);
     M_REQUIRE_NON_NULL(u);

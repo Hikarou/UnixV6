@@ -28,13 +28,14 @@ static int fs_getattr(const char *path, struct stat *stbuf)
         exit(1);
     }
 
-    int inode_nb = direntv6_dirlookup(&fs, ROOT_INUMBER, path);
-    if (inode_nb < 0) {
-        return inode_nb;
+    int err = direntv6_dirlookup(&fs, ROOT_INUMBER, path);
+    if (err < 0) {
+        return err;
     }
 
+    uint16_t inode_nb = (uint16_t) err;
     struct inode i;
-    int err = inode_read(&fs, inode_nb, &i);
+    err = inode_read(&fs, inode_nb, &i);
     if (err != 0) {
         return err;
     }
@@ -138,7 +139,7 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset,
         return 0;
     }
 
-    int k = 0;
+    size_t k = 0;
     //lire les secteurs nécessaires pour avoir 64 ko au max
     int nb_lu = 0;
     if (size < SECTOR_SIZE) {
