@@ -140,27 +140,14 @@ int mountv6(const char *filename, struct unix_filesystem *u)
     if (toCheck !=BOOTBLOCK_MAGIC_NUM) {
         return ERR_BADBOOTSECTOR;
     }
-    uint8_t superblock[SECTOR_SIZE];
-    returnSecRead = sector_read(u -> f, SUPERBLOCK_SECTOR, superblock);
+    struct superblock superbck;
+    returnSecRead = sector_read(u -> f, SUPERBLOCK_SECTOR, &superbck);
     if (returnSecRead != 0) {
         return returnSecRead;
     }
 
-    u -> s.s_isize = (superblock[1] << 8) + superblock[0];
-    u -> s.s_fsize = (superblock[3] << 8) + superblock[2];
-    u -> s.s_fbmsize = (superblock[5] << 8) + superblock[4];
-    u -> s.s_ibmsize = (superblock[7] << 8) + superblock[6];
-    u -> s.s_inode_start = (superblock[9] << 8) + superblock[8];
-    u -> s.s_block_start = (superblock[11] << 8) + superblock[10];
-    u -> s.s_fbm_start = (superblock[13] << 8) + superblock[12];
-    u -> s.s_ibm_start = (superblock[15] << 8) + superblock[14];
-    u -> s.s_flock = superblock[16];
-    u -> s.s_ilock = superblock[17];
-    u -> s.s_fmod = superblock[18];
-    u -> s.s_ronly = superblock[19];
-    u -> s.s_time[0] = (superblock[21] << 8) + superblock[20];
-    u -> s.s_time[1] = (superblock[23] << 8) + superblock[22];
-
+    u -> s = superbck;
+    
     u -> fbm = NULL;
     u -> ibm = NULL;
     u -> fbm = bm_alloc((uint64_t) (u -> s.s_block_start + 1), (uint64_t) u -> s.s_fsize-1);

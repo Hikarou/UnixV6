@@ -7,6 +7,7 @@
  * @date mars 2017
  */
 #include <stdio.h>
+#include <string.h>
 #include "inode.h"
 #include "unixv6fs.h"
 #include "mount.h"
@@ -87,8 +88,11 @@ void inode_print(const struct inode* inode)
 int inode_read(const struct unix_filesystem *u, uint16_t inr, struct inode *inode)
 {
     int err = 0;
-    uint8_t data[SECTOR_SIZE];
+    //uint8_t data[SECTOR_SIZE];
+    struct inode data[INODES_PER_SECTOR];
     size_t nbrInodeSec = 0;
+
+	memset(data, 0, INODES_PER_SECTOR);
 
     // regarde de ou à ou commencent les inodes
     if ((u -> s.s_isize)*INODES_PER_SECTOR < inr || inr < ROOT_INUMBER) {
@@ -99,27 +103,11 @@ int inode_read(const struct unix_filesystem *u, uint16_t inr, struct inode *inod
     err = sector_read(u -> f, (uint32_t) (u -> s.s_inode_start + inr / INODES_PER_SECTOR), data);
     if (!err) {
         nbrInodeSec = inr%INODES_PER_SECTOR;
-        inode -> i_mode = (uint16_t)((data[nbrInodeSec*32+1] << 8) + data[nbrInodeSec*32]);
-        if (inode -> i_mode & IALLOC) {
-            inode -> i_nlink = data[nbrInodeSec*32+2];
-            inode -> i_uid = data[nbrInodeSec*32+3];
-            inode -> i_gid = data[nbrInodeSec*32+4];
-            inode -> i_size0 = data[nbrInodeSec*32+5];
-            inode -> i_size1 = (uint16_t)((data[nbrInodeSec*32+7] << 8) + data[nbrInodeSec*32+6]);
-            for (size_t i = 0; i<ADDR_SMALL_LENGTH; ++i) {
-                inode -> i_addr[i] = (uint16_t)((data[nbrInodeSec*32+9+2*i] << 8) +
-                                                data[nbrInodeSec*32+8+2*i]);
-            }
-            for (size_t i = 0; i<2; ++i) {
-                inode -> atime[i] = (uint16_t)((data[nbrInodeSec*32+25+2*i] << 8) +
-                                               data[nbrInodeSec*32+24 +2*i]);
-                inode -> mtime[i] = (uint16_t)((data[nbrInodeSec*32+29+2*i] << 8) +
-                                               data[nbrInodeSec*32+28 +2*i]);
-            }
-        } else {
-            inode = NULL;
-            return ERR_UNALLOCATED_INODE;
-        }
+        *inode = data[nbrInodeSec];
+         if (!(inode -> i_mode & IALLOC)){
+		     inode = NULL;
+		     return ERR_UNALLOCATED_INODE;
+		 }
     } else {
         return err;
     }
@@ -185,10 +173,8 @@ int inode_write(struct unix_filesystem *u, uint16_t inr, const struct inode *ino
     M_REQUIRE_NON_NULL(inode);
 
     int err = 0;
-    uint8_t data[SECTOR_SIZE];
+    struct inode data[INODES_PER_SECTOR];
     size_t nbrInodeSec = 0;
-    uint16_t nb_bin_petit = (1<<8)-1;
-    uint16_t nb_bin_grand = -1 - nb_bin_petit;
 
 
     if ((u -> s.s_isize)*INODES_PER_SECTOR < inr || inr < ROOT_INUMBER) {
@@ -199,28 +185,7 @@ int inode_write(struct unix_filesystem *u, uint16_t inr, const struct inode *ino
     nbrInodeSec = inr%INODES_PER_SECTOR;
 
     if (!err) {
-        data[nbrInodeSec*32] = (uint8_t) (inode -> i_mode & nb_bin_petit);
-        data[nbrInodeSec*32+1] = (uint8_t) ((inode -> i_mode & nb_bin_grand) >> 8);
-        data[nbrInodeSec*32+2] = (uint8_t) (inode -> i_nlink);
-        data[nbrInodeSec*32+3] = (uint8_t) (inode -> i_uid);
-        data[nbrInodeSec*32+4] = (uint8_t) (inode -> i_gid);
-        data[nbrInodeSec*32+5] = (uint8_t) (inode -> i_size0);
-        data[nbrInodeSec*32+6] = (uint8_t) (inode -> i_size1 & nb_bin_petit);
-        data[nbrInodeSec*32+7] = (uint8_t) ((inode -> i_size1 & nb_bin_grand) >> 8);
-
-        for (size_t i = 0; i<ADDR_SMALL_LENGTH; ++i) {
-            data[nbrInodeSec*32+8+2*i] = (uint8_t) ((inode -> i_addr[i] & nb_bin_petit));
-            data[nbrInodeSec*32+9+2*i] = (uint8_t) ((inode -> i_addr[i] & nb_bin_grand) >> 8);
-        }
-        for (size_t i = 0; i<2; ++i) {
-            data[nbrInodeSec*32+24+2*i] = (uint8_t) (inode -> atime[i] & nb_bin_petit);
-            data[nbrInodeSec*32+25+2*i] = (uint8_t) ((inode -> atime[i] & nb_bin_grand) >> 8);
-
-            data[nbrInodeSec*32+28+2*i] = (uint8_t) (inode -> mtime[i] & nb_bin_petit);
-            data[nbrInodeSec*32+29+2*i] = (uint8_t) ((inode -> mtime[i] & nb_bin_grand) >> 8);
-        }
-
-
+		data[nbrInodeSec] = *inode;
         return sector_write(u -> f, (uint32_t) (u -> s.s_inode_start + inr / INODES_PER_SECTOR), data);
     } else {
         return err;
