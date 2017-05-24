@@ -74,11 +74,6 @@ void inode_print(const struct inode* inode)
         fprintf(output,"size    : %d\n", inode_getsize(inode));
 
     }
-
-    for (int i = 0; i < ADDR_SMALL_LENGTH; ++i) {
-        fprintf(output, "Adresse : [i] =  %d\n", inode -> i_addr[i]);
-    }
-
     fprintf(output,"***********FS INODE END***********\n");
 }
 

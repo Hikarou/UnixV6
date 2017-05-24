@@ -3,7 +3,7 @@ CFLAGS += -std=c99 -Wall -pedantic
 #CFLAGS += -Wextra -Wfloat-equal -Wshadow -Wpointer-arith -Wbad-function-cast 
 #CFLAGS += -Wcast-qual -Wcast-align -Wwrite-strings -Wconversion -Wunreachable-code
 
-all: test-inodes test-file test-dirent test-direntlookup shell fs test-bitmap
+all: test-inodes test-file test-dirent shell fs test-bitmap
 
 inode.o: inode.c inode.h
 

@@ -127,9 +127,8 @@ int main()
                         err = ERR_ARGS;
                     }
                 }
-
-                free(parsed);
             }
+            free(parsed);
         } else {
             err = ERR_NOMEM;
             puts(ERR_MESSAGES[err - ERR_FIRST]);
