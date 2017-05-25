@@ -88,11 +88,10 @@ void inode_print(const struct inode* inode)
 int inode_read(const struct unix_filesystem *u, uint16_t inr, struct inode *inode)
 {
     int err = 0;
-    //uint8_t data[SECTOR_SIZE];
     struct inode data[INODES_PER_SECTOR];
     size_t nbrInodeSec = 0;
 
-	memset(data, 0, INODES_PER_SECTOR);
+    memset(data, 0, INODES_PER_SECTOR);
 
     // regarde de ou à ou commencent les inodes
     if ((u -> s.s_isize)*INODES_PER_SECTOR < inr || inr < ROOT_INUMBER) {
@@ -104,10 +103,10 @@ int inode_read(const struct unix_filesystem *u, uint16_t inr, struct inode *inod
     if (!err) {
         nbrInodeSec = inr%INODES_PER_SECTOR;
         *inode = data[nbrInodeSec];
-         if (!(inode -> i_mode & IALLOC)){
-		     inode = NULL;
-		     return ERR_UNALLOCATED_INODE;
-		 }
+        if (!(inode -> i_mode & IALLOC)) {
+            inode = NULL;
+            return ERR_UNALLOCATED_INODE;
+        }
     } else {
         return err;
     }
@@ -185,7 +184,7 @@ int inode_write(struct unix_filesystem *u, uint16_t inr, const struct inode *ino
     nbrInodeSec = inr%INODES_PER_SECTOR;
 
     if (!err) {
-		data[nbrInodeSec] = *inode;
+        data[nbrInodeSec] = *inode;
         return sector_write(u -> f, (uint32_t) (u -> s.s_inode_start + inr / INODES_PER_SECTOR), data);
     } else {
         return err;
@@ -201,9 +200,7 @@ int inode_alloc(struct unix_filesystem *u)
 {
     M_REQUIRE_NON_NULL(u);
 
-    int err = 0;
-
-    err = bm_find_next(u -> ibm);
+    int err = bm_find_next(u -> ibm);
     if (err < 0) {
         return ERR_NOMEM;
     }

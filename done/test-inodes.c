@@ -6,16 +6,16 @@
 int test(struct unix_filesystem *u)
 {
     int err = 0;
-    struct inode inode;
-    struct filev6 fv6;
+    //struct inode inode;
+    //struct filev6 fv6;
 
-    fv6.i_number = 5;
-    uint16_t mode = IALLOC ;
+    //fv6.i_number = 5;
+    //uint16_t mode = IALLOC ;
 
     err = inode_scan_print(u);
-    if(!err) {
-        err = inode_read(u,3,&inode);
-    }
+    //if(!err) {
+    //    err = inode_read(u,3,&inode);
+    //}
 
     /*inode_print(&inode);
 
@@ -36,12 +36,12 @@ int test(struct unix_filesystem *u)
     inode_print(&inode);
     */
 
-    err = filev6_create(u, mode, &fv6);
+    //err = filev6_create(u, mode, &fv6);
 
-    err = inode_read(u,5,&inode);
-    printf("err = %d\n",err);
-    inode_print(&inode);
-    err = inode_scan_print(u);
+    //err = inode_read(u,5,&inode);
+    //printf("err = %d\n",err);
+    //inode_print(&inode);
+    //err = inode_scan_print(u);
 
     return err;
 }

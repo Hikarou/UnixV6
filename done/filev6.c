@@ -199,7 +199,7 @@ int filev6_writebytes(struct unix_filesystem *u, struct filev6 *fv6, const void 
                 return err;
             }
             buf_new += len_small;
-            
+
         }
         // transformer le système
         err = write_change(u, fv6);
@@ -349,7 +349,7 @@ int write_big_file(struct unix_filesystem *u, struct filev6 *fv6, const void *bu
     for (int i = 0; i<ADDR_SMALL_LENGTH; ++i) {
         fv6 -> i_node.i_addr[i] = address_file.i_node.i_addr[i];
     }
-   
+
     err = inode_write(u, fv6 -> i_number, &(fv6 -> i_node));
     if (err < 0) {
         return err;
@@ -448,7 +448,7 @@ int write_small_file(struct unix_filesystem *u, struct filev6 *fv6, const void *
         }
 
         sector_number = inode_new.i_addr[nb_sector_used-1];
-       
+
         err = filev6_writesector(u, fv6, ptr, len, &sector_number);
 
         if (err > 0) {
@@ -500,15 +500,6 @@ int filev6_writesector(struct unix_filesystem *u, struct filev6 *fv6, const void
     if (taille_actu >  7 * ADDRESSES_PER_SECTOR * SECTOR_SIZE) {
         return ERR_FILE_TOO_LARGE;
     }
-	// TODO à enlever je pense
-    //vérification si l'on ne dépasse pas la taille du disque
-    //size_t taille_fichier_futur = (size_t) taille_actu + len;
-    //int nb_secteurs_demandes = taille_fichier_futur / SECTOR_SIZE + 1;
-    //int premier_secteur_libre = bm_find_next(u -> fbm);
-    //if (premier_secteur_libre < 0) return ERR_NOT_ENOUGH_BLOCS;
-    //for (uint64_t i = 0; i < nb_secteurs_demandes; ++i) {
-    //    if (bm_get(u -> fbm, premier_secteur_libre + 1)) return ERR_NOT_ENOUGH_BLOCS;
-    //}
 
     int taille_last_sector = taille_actu % SECTOR_SIZE;
 

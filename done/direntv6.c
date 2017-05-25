@@ -56,7 +56,6 @@ int direntv6_opendir(const struct unix_filesystem *u, uint16_t inr, struct direc
  */
 int direntv6_readdir(struct directory_reader *d, char *name, uint16_t *child_inr)
 {
-
     M_REQUIRE_NON_NULL(d);
     M_REQUIRE_NON_NULL(name);
     M_REQUIRE_NON_NULL(child_inr);
@@ -101,7 +100,6 @@ int direntv6_readdir(struct directory_reader *d, char *name, uint16_t *child_inr
  */
 int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const char *prefix)
 {
-
     char name[DIRENT_MAXLEN+1] = "";
     uint16_t nextInode = 0;
     FILE* output = stdout;
@@ -287,7 +285,7 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
         --k;
     } while (entry_usable[k] != '/' && k >= 0);
 
-    char* name = entry_usable + k + 1; // TODO Vérifier que le code fasse ce qui est attendu
+    char* name = entry_usable + k + 1;
 
     char* path = NULL;
     if (k < 1) {

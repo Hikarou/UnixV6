@@ -427,7 +427,6 @@ int do_mkfs(char** args)
 
 int do_mkdir(char** args)
 {
-
     int err = 0;
     if (u.f == NULL) {
         printf("ERROR SHELL: mount the FS before operation\n");

@@ -65,7 +65,6 @@ void fill_fbm(struct unix_filesystem * u)
 {
     int taille = 0;
     int taille_grand = 0;
-    int32_t offset = 0;
     struct inode inode;
 
     // mettre tous les secteurs à libre
@@ -75,7 +74,7 @@ void fill_fbm(struct unix_filesystem * u)
 
     // pour chaque inode: appeler inode find sector
     for (uint64_t i = u -> ibm -> min - 1; i < u -> ibm -> max; ++i) {
-        offset = 0;
+        int32_t offset = 0;
         int err = bm_get(u -> ibm, i);
 
         if (err == 1 || i == u -> ibm -> min - 1) {
@@ -133,9 +132,7 @@ int mountv6(const char *filename, struct unix_filesystem *u)
         return returnSecRead;
     }
 
-    uint8_t toCheck;
-    toCheck = data[BOOTBLOCK_MAGIC_NUM_OFFSET];
-
+    uint8_t toCheck = data[BOOTBLOCK_MAGIC_NUM_OFFSET];
 
     if (toCheck !=BOOTBLOCK_MAGIC_NUM) {
         return ERR_BADBOOTSECTOR;
@@ -147,7 +144,7 @@ int mountv6(const char *filename, struct unix_filesystem *u)
     }
 
     u -> s = superbck;
-    
+
     u -> fbm = NULL;
     u -> ibm = NULL;
     u -> fbm = bm_alloc((uint64_t) (u -> s.s_block_start + 1), (uint64_t) u -> s.s_fsize-1);
