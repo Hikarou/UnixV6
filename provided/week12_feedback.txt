@@ -1,3 +1,3 @@
 Submission Failed
 
-expected tag week12, but only found tags: week04, week11, week08, week09, week05, projet02, week06, projet01
+expected tag week12, but only found tags: projet01, week05, week09, week06, week11, projet02, week04, week08
