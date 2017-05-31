@@ -1,0 +1,6 @@
+test-cat1-first: pass
+test-cat1-simple: pass
+test-cat2-first: pass
+test-lsall-first: pass
+test-lsall-simple: pass
+week 08: 5/5
