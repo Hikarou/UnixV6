@@ -26,28 +26,25 @@ int inode_scan_print(const struct unix_filesystem *u)
     int err = 0;
     FILE * output = stdout;
     int count = 0;
-    struct inode inode;
-    uint8_t data[SECTOR_SIZE];
+    struct inode inode_data[INODES_PER_SECTOR];
     for (uint32_t i = 0; i < u -> s.s_isize; ++i) {
-        err = sector_read(u -> f, u -> s.s_inode_start + i, data);
+        err = sector_read(u -> f, u -> s.s_inode_start + i, inode_data);
         if (!err) {
             for (uint16_t k = 0; k < INODES_PER_SECTOR; ++k) {
-                inode.i_mode = (uint16_t)((data[k * 32 + 1] << 8) + data[k * 32]);
-                inode.i_size0 = data[k * 32 + 5];
-                inode.i_size1 = (uint16_t)((data[k * 32 + 7] << 8) + data[k * 32 + 6]);
-                if (inode.i_mode & IALLOC) {
+                if (inode_data[k].i_mode & IALLOC) {
                     ++count;
                     fprintf(output, "Inode %3d (", count);
-                    if (inode.i_mode & IFDIR) {
+                    if (inode_data[k].i_mode & IFDIR) {
                         fprintf(output, "%s", SHORT_DIR_NAME);
                     } else {
                         fprintf(output, "%s", SHORT_FIL_NAME);
                     }
-                    fprintf(output, ") len %6d\n", inode_getsize(&inode));
+                    fprintf(output, ") len %6d\n", inode_getsize(inode_data + k));
                 }
             }
         } else {
-            i = u -> s.s_isize; // si il y a une erreur on sort de la boucle
+            fprintf(output,"\n");
+    		return err;
         }
     }
     fprintf(output,"\n");

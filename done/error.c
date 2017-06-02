@@ -17,5 +17,6 @@ const char * const ERR_MESSAGES[] = {
     "file too large",
     "offset out of range",
     "bad parameter",
-    "not enough sectors for inodes"
+    "not enough sectors for inodes",
+    "impossible to find next free sectors or inode"
 };

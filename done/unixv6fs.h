@@ -231,6 +231,7 @@ struct inode {
  * The root directory (/) is at inode 1; inode 0 is never used.
  */
 
+
 #define ROOT_INUMBER    1
 
 /*

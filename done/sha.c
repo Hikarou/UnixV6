@@ -69,16 +69,20 @@ void print_sha_inode(struct unix_filesystem *u, struct inode inode, int inr)
         size_t length = 0;
         struct filev6 f;
         int error = filev6_open(u, (uint16_t) inr, &f);
-        //getting all the content from inode
-        do {
-            error = filev6_readblock(&f, subcontent);
-            for(int i = 0; i < error; ++i) {
-                content[length + (size_t) + i] = subcontent[i];
-            }
-            length += (size_t)error;
-            content[length] = 0;
-        } while(error > 0);
-        print_sha_from_content(content, length);
+        
+        if (!error){
+		    int lu = 0;
+		    //getting all the content from inode
+		    do {
+		        lu = filev6_readblock(&f, subcontent);
+		        for(int i = 0; i < lu; ++i) {
+		            content[length + (size_t) + i] = subcontent[i];
+		        }
+		        length += (size_t)lu;
+		        content[length] = 0;
+		    } while(lu > 0);
+		    print_sha_from_content(content, length);
+    	}
     }
     printf("\n");
 }

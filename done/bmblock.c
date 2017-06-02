@@ -14,8 +14,6 @@
 #include "bmblock.h"
 #include "error.h"
 
-#define ERR_NO_PLACE -26
-
 
 /**
  * @brief allocate a new bmblock_array to handle elements indexed

@@ -35,6 +35,7 @@ enum error_codes {
     ERR_OFFSET_OUT_OF_RANGE,
     ERR_BAD_PARAMETER,
     ERR_NOT_ENOUGH_BLOCS,
+    ERR_NO_PLACE,
     ERR_LAST // not an actual error but to have e.g. the total number of errors
 };
 
