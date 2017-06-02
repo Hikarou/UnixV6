@@ -62,21 +62,12 @@ int direntv6_readdir(struct directory_reader *d, char *name, uint16_t *child_inr
 
     // si on est à la fin du block, on essaie de lire la suite
     if (d -> cur >= d -> last) {
-        uint8_t data[SECTOR_SIZE];
-        int err = filev6_readblock(&(d -> fv6), data);
+        int err = filev6_readblock(&(d -> fv6), d -> dirs);
         if (err <= 0) {
             return err; // s'il n'y a pas de suite, => C'est la fin du fichier donc on renvoie 0
         }
         // s'il y a une suite, on regarde combien de fichiers il y a dans le dossier, et on remplit dirs
         d -> last = err / (int)sizeof(struct direntv6);
-        for (d -> cur = 0; (d -> cur) < (d -> last); ++(d -> cur)) {
-            // remplir les deux champs de direntv6
-            int cur = d -> cur;
-            struct direntv6 * curDir = &(d -> dirs[cur]);
-            int curEntry = cur * (int)sizeof(struct direntv6);
-            curDir -> d_inumber = (data[curEntry +1] << 8) + data[curEntry];
-            strncpy(curDir -> d_name, (char*)(data + 2 + curEntry), DIRENT_MAXLEN);
-        }
         d -> cur = 0;
     }
 
@@ -267,12 +258,9 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
     strncpy(entry_usable, entry, taille);
     entry_usable[taille] = '\0';
 
-    uint8_t data[DIRENT_MAXLEN+sizeof(uint16_t)];
+    struct direntv6 dirs;
 
-    uint16_t nb_bin_petit = (1<<8)-1;
-    uint16_t nb_bin_grand = -1 - nb_bin_petit;
-
-    memset(data, 0, DIRENT_MAXLEN+sizeof(uint16_t));
+    memset(&dirs, 0, sizeof(struct direntv6));
 
     // diviser le chemin
     do {
@@ -362,13 +350,12 @@ int direntv6_create(struct unix_filesystem *u, const char *entry, uint16_t mode)
     }
 
     // écire dans le secteur du parent
-    data[0] = (uint8_t) file_new.i_number & nb_bin_petit;
-    data[1] = (uint8_t) ((file_new.i_number & nb_bin_grand) >> 8);
-    memcpy(data+2, name, taille_nom);
+    dirs.d_inumber = file_new.i_number;
+    strncpy(dirs.d_name, name, taille_nom);
 
     free(entry_usable);
     // appel de filev6_writebytes
 
-    return filev6_writebytes(u, &(d_parent.fv6), data, (int) DIRENT_MAXLEN+sizeof(uint16_t));
+    return filev6_writebytes(u, &(d_parent.fv6), &dirs, sizeof(struct direntv6));
 }
 

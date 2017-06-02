@@ -27,22 +27,21 @@
  */
 void fill_ibm(struct unix_filesystem * u)
 {
-    struct inode inode;
-    uint8_t data[SECTOR_SIZE];
+    struct inode sect_inode[INODES_PER_SECTOR];
     uint64_t actu = 0;
-    uint64_t i = 0;
+    uint64_t sector_number = 0;
+
 
     for (uint64_t j = u -> ibm -> min; j < u -> ibm -> max; ++j) { // tout effacer
         bm_clear(u -> ibm, j);
     }
 
     while (actu < u -> ibm -> max) { // pour chaque secteur
-        int err = sector_read(u -> f, u -> s.s_inode_start + i, data);
+        int err = sector_read(u -> f, u -> s.s_inode_start + sector_number, sect_inode);
         for (uint16_t k = 0; k < INODES_PER_SECTOR; ++k) { // pour chaque inode
             if (!err) { // si pas d'erreur de lecture
                 if ((actu >= u -> ibm -> min) && (actu <= u -> ibm -> max)) {
-                    inode.i_mode = (uint16_t)((data[k * 32 + 1] << 8) + data[k * 32]);
-                    if (inode.i_mode & IALLOC) {
+                    if (sect_inode[k].i_mode & IALLOC) {
                         bm_set(u -> ibm, actu);
                     } else {
                         bm_clear(u -> ibm, actu);
@@ -53,7 +52,7 @@ void fill_ibm(struct unix_filesystem * u)
             }
             ++actu;
         }
-        ++i;
+        ++sector_number;
     }
 }
 
@@ -218,9 +217,6 @@ int mountv6_mkfs(const char *filename, uint16_t num_blocks, uint16_t num_inodes)
         return ERR_NOT_ENOUGH_BLOCS;
     }
 
-    uint16_t nb_bin_petit = (1<<8)-1;
-    uint16_t nb_bin_grand = -1 - nb_bin_petit;
-
     //Calcul des valeur de superblock et tests
     uint16_t s_fsize = num_blocks;	    /* size in sectors of entire volume */
     uint16_t s_isize = num_inodes/INODES_PER_SECTOR;    	/* size in sectors of the inodes */
@@ -254,7 +250,8 @@ int mountv6_mkfs(const char *filename, uint16_t num_blocks, uint16_t num_inodes)
     uint8_t sector[SECTOR_SIZE];
     memset(sector, 0, SECTOR_SIZE);
     sector[BOOTBLOCK_MAGIC_NUM_OFFSET] = BOOTBLOCK_MAGIC_NUM;
-    if (sector_write(fichier, 0, sector)) {
+    err = sector_write(fichier, 0, sector);
+    if (err) {
         fclose(fichier);
         return err;
     }
@@ -264,19 +261,19 @@ int mountv6_mkfs(const char *filename, uint16_t num_blocks, uint16_t num_inodes)
         return err;
     }
 
-    memset(sector,0,SECTOR_SIZE);
-
     // écrire inode_root
+    struct inode sect_inode[INODES_PER_SECTOR];
+    memset(sect_inode, 0, INODES_PER_SECTOR*sizeof(struct inode));
+    
     struct inode inode;
     memset(&inode, 0, sizeof(struct inode));
     inode.i_mode = IALLOC | IFDIR;
     inode.i_addr[0] = s.s_block_start;
 
-    sector[32] = (uint8_t) (inode.i_mode & nb_bin_petit);
-    sector[32+1] = (uint8_t) ((inode.i_mode & nb_bin_grand) >> 8);
-    sector[32+8] = (uint8_t) ((inode.i_addr[0] & nb_bin_petit));
+	sect_inode[ROOT_INUMBER] = inode;
+ 
 
-    err = sector_write(fichier, s.s_inode_start, sector);
+    err = sector_write(fichier, s.s_inode_start, sect_inode);
     if (err) {
         fclose(fichier);
         return err;
