@@ -24,8 +24,6 @@ struct directory_reader {
     int last;
 };
 
-
-
 /**
  * @brief opens a directory reader for the specified inode 'inr'
  * @param u the mounted filesystem

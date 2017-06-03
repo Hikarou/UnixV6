@@ -12,6 +12,7 @@
 #include "error.h"
 #include "filev6.h"
 #include "inode.h"
+#include "sector.h"
 #include "sha.h"
 
 //Helper to print the inode
@@ -21,16 +22,14 @@ void printTheInode(const struct unix_filesystem *u, uint16_t inr, struct filev6 
 
     if (error >= 0) {
         printf("Printing inode #%u:\n", inr);
-        struct inode i;
-        error = inode_read(u, inr, &i);
-
-        inode_print(&i);
-        if (i.i_mode & IFDIR) {
+        inode_print(&(f -> i_node));
+        if (f -> i_node.i_mode & IFDIR) {
             printf("which is a directory.\n\n");
         } else {
             uint8_t table[SECTOR_SIZE+1];
             printf("The first sector of data of which contains:\n");
             error = filev6_readblock(f, table);
+	    if (error < 0) return;
             table[SECTOR_SIZE] = '\0';
             printf("%s\n", table);
         }
@@ -49,8 +48,9 @@ int test(struct unix_filesystem *u)
     printTheInode(u, 5, &f);
     printf("----\n\nListing inodes SHA:\n");
 
-    uint16_t count = 1;
+    uint16_t count = 0;
 
+    /*
     struct inode i;
     err = inode_read(u, count, &i);
 
@@ -58,6 +58,17 @@ int test(struct unix_filesystem *u)
         print_sha_inode(u, i, count);
         ++count;
         err = inode_read(u, count, &i);
+    }
+    // */
+    struct inode inode_data[INODES_PER_SECTOR];
+    for (uint32_t i = 0; i < u -> s.s_isize; ++i) {
+        err = sector_read(u -> f, u -> s.s_inode_start + i, inode_data);
+	if (!err) {
+            for (uint16_t k = 0; k < INODES_PER_SECTOR; ++k) {
+                print_sha_inode(u, inode_data[k], count);
+		++count;
+	    }
+	}
     }
     if (err == ERR_UNALLOCATED_INODE && count > 1) {
         /* puisque le signal d'arrêt est une errur, on remet à zéro si il a bien

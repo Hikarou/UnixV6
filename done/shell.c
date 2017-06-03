@@ -65,7 +65,7 @@ int do_add(char**);
 
 int tokenize_input (char*, char***, int*);
 
-struct shell_map shell_cmds[NB_CMDS] = {
+struct shell_map shell_cmds[] = {
     {"help", do_help, "display this help.", 0, NULL},
     {"exit", do_exit, "exit shell.", 0, NULL},
     {"quit", do_exit, "exit shell.", 0, NULL},
@@ -97,8 +97,9 @@ int main()
         parsed = calloc(NB_ARGS, sizeof(void*));
         if (parsed != NULL) {
             fgets(input, MAX_READ, stdin);
-            if (input[strlen(input)-1] == '\n') {
-                input[strlen(input)-1] = '\0';
+	    char last_char = input[strlen(input) - 1];
+            if (last_char == '\n') {
+                last_char = '\0';
             }
             input[MAX_READ] = '\0';
             // take care if end of file or error in file
@@ -111,7 +112,7 @@ int main()
                     do {
                         err = strcmp(parsed[0], shell_cmds[k].name);
                         ++k;
-                    } while (k < 13 && err != 0);
+                    } while (k < NB_CMDS && err != 0);
                     --k;
                     if (err == 0) {
                         function = shell_cmds[k].fct;
@@ -143,6 +144,13 @@ int main()
     return 0;
 }
 
+/**
+ * @brief tokenize the input given
+ * @param input the input to tonkenize (IN)
+ * @param parsed the input tokenized (OUT)
+ * @param size_parsed the length of parsed
+ * @return 0 on success; >0 on error
+ */
 int tokenize_input (char* input, char*** parsed, int* size_parsed)
 {
     char* ptr = NULL;
@@ -223,7 +231,14 @@ int do_help()
 
 int do_mount(char** args)
 {
-    int err = mountv6(args[1], &u);
+    int err = 0;
+    if (u.f != NULL) {
+        err = umountv6(&u);
+    }
+
+    if (err != 0) return err;
+
+    err = mountv6(args[1], &u);
 
     if (err != 0) {
         printf("ERROR FS: ");
@@ -281,7 +296,7 @@ int do_cat(char** args)
         puts(ERR_MESSAGES[inode_nb - ERR_FIRST]);
         return ERR_FS;
     }
-
+    /* Selon la demande du correcteur
     err = inode_read(&u, inode_nb, &(file.i_node));
     if (err != 0) {
         printf("ERROR FS: ");
@@ -293,12 +308,18 @@ int do_cat(char** args)
         printf("ERROR SHELL: cat on a directory is not defined\n");
         return ERR_ARGS;
     }
+    // */
 
     err = filev6_open(&u, inode_nb, &file);
     if (err != 0) {
         printf("ERROR FS: ");
         puts(ERR_MESSAGES[err - ERR_FIRST]);
         return ERR_FS;
+    }
+
+    if (file.i_node.i_mode & IFDIR) {
+        printf("ERROR SHELL: cat on a directory is not defined\n");
+        return ERR_ARGS;
     }
 
     do {
@@ -339,11 +360,8 @@ int do_sha(char** args)
         puts(ERR_MESSAGES[err - ERR_FIRST]);
         return ERR_FS;
     }
+
     // Allocation test already done in inode_read
-    if (file.i_node.i_mode & IFDIR) {
-        printf("SHA inode %d: no SHA for directories\n", inode_nb);
-        return ERR_ARGS;
-    }
     print_sha_inode(&u, file.i_node, (int) inode_nb);
     printf("\n");
 
@@ -374,7 +392,7 @@ int do_inode (char** args)
 int do_istat(char** args)
 {
     int err = 0;
-    int inr = 0;
+    //int inr = 0;
     struct inode i;
 
     if (u.f == NULL) {
@@ -382,7 +400,8 @@ int do_istat(char** args)
         return ERR_NOT_MOUNTED;
     }
 
-    err = sscanf(args[1], "%d", &inr);
+    //err = sscanf(args[1], "%d", &inr);
+    int inr = atoi(args[1]);
     if (err<1 || inr < 0) {
         printf("ERROR FS: inode out of range\n");
         return ERR_ARGS;

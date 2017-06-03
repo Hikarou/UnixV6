@@ -8,6 +8,7 @@
  */
 #include <stdio.h>
 #include <string.h>
+#include <inttypes.h>
 #include "inode.h"
 #include "unixv6fs.h"
 #include "mount.h"
@@ -63,12 +64,12 @@ void inode_print(const struct inode* inode)
     if (inode == NULL) {
         fprintf(output,"NULL ptr\n");
     } else {
-        fprintf(output,"i_mode  : %d\n", inode -> i_mode);
-        fprintf(output,"i_nlink : %d\n", inode -> i_nlink);
-        fprintf(output,"i_uid   : %d\n", inode -> i_uid);
-        fprintf(output,"i_gid   : %d\n", inode -> i_gid);
-        fprintf(output,"i_size0 : %d\n", inode -> i_size0);
-        fprintf(output,"i_size1 : %d\n", inode -> i_size1);
+        fprintf(output,"i_mode  : %" PRIu16 "\n", inode -> i_mode);
+        fprintf(output,"i_nlink : %" PRIu8 "\n", inode -> i_nlink);
+        fprintf(output,"i_uid   : %" PRIu8 "\n", inode -> i_uid);
+        fprintf(output,"i_gid   : %" PRIu8 "\n", inode -> i_gid);
+        fprintf(output,"i_size0 : %" PRIu8 "\n", inode -> i_size0);
+        fprintf(output,"i_size1 : %" PRIu16 "\n", inode -> i_size1);
         fprintf(output,"size    : %d\n", inode_getsize(inode));
 
     }
@@ -129,15 +130,15 @@ int inode_findsector(const struct unix_filesystem *u, const struct inode *i, int
         size = inode_getsize(i);
         if (size <= ADDR_SMALL_LENGTH*SECTOR_SIZE) {
             nbSector = file_sec_off;
-            if (nbSector > 7) {
+            if (nbSector > ADDR_SMALL_LENGTH) {
                 return ERR_OFFSET_OUT_OF_RANGE;
             } else {
                 return (i -> i_addr[nbSector]);
             }
-        } else if (size < 7 * ADDRESSES_PER_SECTOR * SECTOR_SIZE ) {
+        } else if (size <= (ADDR_SMALL_LENGTH - 1) * ADDRESSES_PER_SECTOR * SECTOR_SIZE ) {
             adNbSector =  file_sec_off/ADDRESSES_PER_SECTOR;
             nbSector = file_sec_off%ADDRESSES_PER_SECTOR;
-            if (adNbSector > 7) {
+            if (adNbSector > (ADDR_SMALL_LENGTH - 1)) {
                 return ERR_OFFSET_OUT_OF_RANGE;
             } else {
                 err = sector_read(u->f, i->i_addr[adNbSector], data);

@@ -15,6 +15,7 @@
 #include "sha.h"
 #include "inode.h"
 #include "filev6.h"
+#include "error.h"
 
 /**
  * @brief transforms an array of chars into something readable given by the exercise
@@ -82,7 +83,9 @@ void print_sha_inode(struct unix_filesystem *u, struct inode inode, int inr)
 		        content[length] = 0;
 		    } while(lu > 0);
 		    print_sha_from_content(content, length);
-    	}
+    	} else {
+           puts(ERR_MESSAGES[error - ERR_FIRST]); 
+	}
     }
     printf("\n");
 }

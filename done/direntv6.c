@@ -127,6 +127,7 @@ int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const cha
                 if (err == 0) {
                     err = 1;
                 } else {
+		    free (autre);
                     return err;
                 }
 

@@ -11,19 +11,10 @@ int test(struct unix_filesystem *u)
 {
     int err = 0;
 
-    char* chaine = NULL;
-
-    chaine = calloc(1, MAXPATHLEN_UV6);
-    if (chaine == NULL) {
-        err = ERR_NOMEM;
-    } else {
-        memset(chaine, 0, MAXPATHLEN_UV6);
-        memset(chaine, '\0',1);
+    char chaine[MAXPATHLEN_UV6]= "";
 
         err = direntv6_print_tree(u,ROOT_INUMBER,chaine);
         printf("\n");
-        free(chaine);
-    }
 
     return err;
 }
