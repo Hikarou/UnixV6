@@ -24,19 +24,20 @@ struct unix_filesystem fs;
 
 static int fs_getattr(const char *path, struct stat *stbuf)
 {
+	int err = 0;
     if (fs.f == NULL) {
         exit(1);
     }
 
-    int err = direntv6_dirlookup(&fs, ROOT_INUMBER, path);
-    if (err < 0) {
-        return err;
+    int inode_nb = direntv6_dirlookup(&fs, ROOT_INUMBER, path);
+    if (inode_nb < 0) {
+        return inode_nb;
     }
-
-    uint16_t inode_nb = (uint16_t) err;
-    struct inode i;
-    err = inode_read(&fs, inode_nb, &i);
-    if (err != 0) {
+    
+    struct filev6 file;
+    
+    err = filev6_open(&fs, (uint16_t) inode_nb, &file);
+    if (err < 0) {
         return err;
     }
 
@@ -44,21 +45,21 @@ static int fs_getattr(const char *path, struct stat *stbuf)
 
     stbuf -> st_dev = 0;
     stbuf -> st_ino = inode_nb;
-    stbuf -> st_mode = (i.i_mode & IFDIR) ? S_IFDIR : S_IFREG;
+    stbuf -> st_mode = (file.i_node.i_mode & IFDIR) ? S_IFDIR : S_IFREG;
     stbuf -> st_mode = stbuf -> st_mode | S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH;
-    stbuf -> st_nlink = i.i_nlink;
-    stbuf -> st_uid = i.i_uid;
-    stbuf -> st_gid = i.i_gid;
+    stbuf -> st_nlink = file.i_node.i_nlink;
+    stbuf -> st_uid = file.i_node.i_uid;
+    stbuf -> st_gid = file.i_node.i_gid;
     stbuf -> st_rdev = 0;
-    stbuf -> st_size = inode_getsize(&i);
+    stbuf -> st_size = inode_getsize(&file.i_node);
     stbuf -> st_blksize = SECTOR_SIZE;
     stbuf -> st_blocks = (stbuf -> st_size)/SECTOR_SIZE;
-    stbuf -> st_atim.tv_sec = i.atime[0];
-    stbuf -> st_atim.tv_nsec = i.atime[1];
-    stbuf -> st_mtim.tv_sec = i.mtime[0];
-    stbuf -> st_mtim.tv_nsec = i.mtime[1];
-    stbuf -> st_ctim.tv_sec = i.mtime[0];
-    stbuf -> st_ctim.tv_nsec = i.mtime[1];
+    stbuf -> st_atim.tv_sec = file.i_node.atime[0];
+    stbuf -> st_atim.tv_nsec = file.i_node.atime[1];
+    stbuf -> st_mtim.tv_sec = file.i_node.mtime[0];
+    stbuf -> st_mtim.tv_nsec = file.i_node.mtime[1];
+    stbuf -> st_ctim.tv_sec = file.i_node.mtime[0];
+    stbuf -> st_ctim.tv_nsec = file.i_node.mtime[1];
 
     return 0;
 }
@@ -110,7 +111,10 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset,
 {
     (void) fi;
     char *ptr = buf;
-    char *buf2 = NULL;
+    char buf2[SECTOR_SIZE];
+	memset(buf2, 0, SECTOR_SIZE);
+
+	struct filev6 file;
 
     // ouvrir le fichier
     int err = direntv6_dirlookup(&fs, ROOT_INUMBER, path);
@@ -119,15 +123,7 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset,
         return 0;
     }
 
-    uint16_t inode_nb = (uint16_t) err;
-    struct filev6 file;
-    err = inode_read(&fs, inode_nb, &(file.i_node));
-    if (err != 0) {
-        puts(ERR_MESSAGES[err - ERR_FIRST]);
-        return 0;
-    }
-
-    err = filev6_open(&fs, inode_nb, &file);
+    err = filev6_open(&fs, (uint16_t) err, &file);
     if (err != 0) {
         puts(ERR_MESSAGES[err - ERR_FIRST]);
         return 0;
@@ -143,10 +139,7 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset,
     //lire les secteurs nécessaires pour avoir 64 ko au max
     int nb_lu = 0;
     if (size < SECTOR_SIZE) {
-        buf2 = calloc(1, SECTOR_SIZE);
-        if (buf2 == NULL) {
-            return 0;
-        }
+
         // utilisation de memcpy
         k = file.offset % SECTOR_SIZE;
         err = filev6_readblock(&file, buf2);
@@ -163,7 +156,7 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset,
             memcpy(buf, buf2+k, size);
             nb_lu = size;
         }
-        free(buf2);
+      
     } else {
         do {
             err = filev6_readblock(&file, ptr);

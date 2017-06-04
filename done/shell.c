@@ -25,7 +25,7 @@
 #define ERR_NOT_MOUNTED 3
 #define ERR_FS 4
 #define NOT_IMPLEMENTED 5
-#define NB_ARGS 3
+#define NB_ARGS 1
 
 struct unix_filesystem u;
 
@@ -94,12 +94,19 @@ int main()
         size_parsed = 0;
         k = 0;
         err = 0;
-        parsed = calloc(NB_ARGS, sizeof(void*));
+        
+        /* ici on crée un tableau de chaine de caractères: il est dynamique car sa taille 
+         * peut changer dans la fonction tokenize_input. Il est vrai qu'on aurait pu faire
+         * un tableau statique de 3 éléments mais pour plusieurs fonctions, ce tableau ne 
+         * serait que partiellement rempli.
+         */
+        parsed = calloc(NB_ARGS, sizeof(char*));
         if (parsed != NULL) {
             fgets(input, MAX_READ, stdin);
-	    char last_char = input[strlen(input) - 1];
-            if (last_char == '\n') {
-                last_char = '\0';
+            int position_last_char = strlen(input) - 1;
+	    
+            if (input[position_last_char] == '\n') {
+                input[position_last_char] = '\0';
             }
             input[MAX_READ] = '\0';
             // take care if end of file or error in file
@@ -119,6 +126,11 @@ int main()
 
                         if ((shell_cmds[k]).argc == (size_t)size_parsed-1) {
                             err = function(parsed);
+                            if (err < 0){
+                            	printf("ERROR FS: ");
+     							puts(ERR_MESSAGES[err - ERR_FIRST]);
+     							err = ERR_FS;
+                            }
                         } else {
                             printf("ERROR SHELL: wrong number of arguements\n");
                             err = ERR_ARGS;
@@ -179,7 +191,7 @@ int tokenize_input (char* input, char*** parsed, int* size_parsed)
                     input[i] = '\0';
                     if (*size_parsed > size-1) {
                         ++size;
-                        *parsed = realloc(*parsed, sizeof(void*) * size);
+                        *parsed = realloc(*parsed, sizeof(char*) * size);
                         if (*parsed == NULL) return EXIT;
                     }
                     (*parsed)[*(size_parsed)] = ptr;
@@ -234,16 +246,15 @@ int do_mount(char** args)
     int err = 0;
     if (u.f != NULL) {
         err = umountv6(&u);
+        u.f = NULL;
     }
 
     if (err != 0) return err;
 
     err = mountv6(args[1], &u);
 
-    if (err != 0) {
-        printf("ERROR FS: ");
-        puts(ERR_MESSAGES[err - ERR_FIRST]);
-        return ERR_FS;
+    if (err < 0) {
+        return err;
     }
 
     return ERR_OK;
@@ -258,10 +269,8 @@ int do_lsall()
 
     int err = direntv6_print_tree(&u, ROOT_INUMBER, "");
 
-    if (err != 0) {
-        printf("ERROR FS: ");
-        puts(ERR_MESSAGES[err - ERR_FIRST]);
-        return ERR_FS;
+    if (err < 0) {
+        return err;
     }
 
     return ERR_OK;
@@ -292,29 +301,12 @@ int do_cat(char** args)
 
     inode_nb = direntv6_dirlookup(&u, ROOT_INUMBER, args[1]);
     if (inode_nb < 0) {
-        printf("ERROR FS: ");
-        puts(ERR_MESSAGES[inode_nb - ERR_FIRST]);
-        return ERR_FS;
+        return inode_nb;
     }
-    /* Selon la demande du correcteur
-    err = inode_read(&u, inode_nb, &(file.i_node));
-    if (err != 0) {
-        printf("ERROR FS: ");
-        puts(ERR_MESSAGES[err - ERR_FIRST]);
-        return ERR_FS;
-    }
-    // Allocation test already done in inode_read
-    if (file.i_node.i_mode & IFDIR) {
-        printf("ERROR SHELL: cat on a directory is not defined\n");
-        return ERR_ARGS;
-    }
-    // */
 
     err = filev6_open(&u, inode_nb, &file);
-    if (err != 0) {
-        printf("ERROR FS: ");
-        puts(ERR_MESSAGES[err - ERR_FIRST]);
-        return ERR_FS;
+    if (err < 0) {
+        return err;
     }
 
     if (file.i_node.i_mode & IFDIR) {
@@ -348,17 +340,13 @@ int do_sha(char** args)
 
     inode_nb = direntv6_dirlookup(&u, ROOT_INUMBER, args[1]);
     if (inode_nb < 0) {
-        printf("ERROR FS: ");
-        puts(ERR_MESSAGES[inode_nb - ERR_FIRST]);
-        return ERR_FS;
+        return inode_nb;
     }
 
     err = inode_read(&u, inode_nb, &(file.i_node));
 
-    if (err != 0) {
-        printf("ERROR FS: ");
-        puts(ERR_MESSAGES[err - ERR_FIRST]);
-        return ERR_FS;
+    if (err < 0) {
+        return err;
     }
 
     // Allocation test already done in inode_read
@@ -379,9 +367,7 @@ int do_inode (char** args)
 
     inode_nb = direntv6_dirlookup(&u, ROOT_INUMBER, args[1]);
     if (inode_nb < 0) {
-        printf("ERROR FS: ");
-        puts(ERR_MESSAGES[inode_nb - ERR_FIRST]);
-        return ERR_FS;
+        return inode_nb;
     }
 
     printf("inode: %d\n", inode_nb);
@@ -392,7 +378,7 @@ int do_inode (char** args)
 int do_istat(char** args)
 {
     int err = 0;
-    //int inr = 0;
+   
     struct inode i;
 
     if (u.f == NULL) {
@@ -400,18 +386,15 @@ int do_istat(char** args)
         return ERR_NOT_MOUNTED;
     }
 
-    //err = sscanf(args[1], "%d", &inr);
     int inr = atoi(args[1]);
-    if (err<1 || inr < 0) {
-        printf("ERROR FS: inode out of range\n");
+    if (inr < 0) {
+        printf("ERROR SHELL: inode out of range\n");
         return ERR_ARGS;
     }
 
     err = inode_read(&u, inr, &i);
-    if (err != 0) {
-        printf("ERROR FS: ");
-        puts(ERR_MESSAGES[err - ERR_FIRST]);
-        return ERR_FS;
+    if (err < 0) {
+        return err;
     }
 
     inode_print(&i);
