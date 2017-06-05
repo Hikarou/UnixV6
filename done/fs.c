@@ -69,29 +69,18 @@ static int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 {
     (void) offset;
     (void) fi;
-
+	
     filler(buf, ".", NULL, 0);
     filler(buf, "..", NULL, 0);
-
+	
+	struct directory_reader d;
     int err = direntv6_dirlookup(&fs, ROOT_INUMBER, path);
     if (err < 0) {
         return err;
     }
     uint16_t inode_nb = (uint16_t) err;
-
-    struct inode i;
-    err = inode_read(&fs, inode_nb, &i);
-
-    if (err != 0) {
-        return err;
-    }
-
-    if (!(i.i_mode & IFDIR)) {
-        return ERR_BAD_PARAMETER;
-    }
-
-    struct directory_reader d;
-    err = direntv6_opendir(&fs, inode_nb, &d);
+	
+	err = direntv6_opendir(&fs, inode_nb, &d);    
 
     if (err < 0) return err;
 
