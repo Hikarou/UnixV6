@@ -247,11 +247,12 @@ int do_mount(char** args)
     int err = 0;
     if (u.f != NULL) {
         err = umountv6(&u);
-        u.f = NULL;
     }
-
+	printf("err = %d\n", err);
     if (err != 0) return err;
-
+ 	
+ 	u.f = NULL;
+	
     err = mountv6(args[1], &u);
 
     if (err < 0) {
