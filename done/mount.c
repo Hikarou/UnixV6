@@ -201,7 +201,7 @@ int umountv6(struct unix_filesystem *u)
         return ERR_IO;
     }
 
-	u -> f = NULL;
+    u -> f = NULL;
     return 0;
 }
 
