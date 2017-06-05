@@ -124,13 +124,13 @@ int inode_findsector(const struct unix_filesystem *u, const struct inode *i, int
     int32_t size = 0;
     int err = 0;
     int adNbSector = 0;
-    uint8_t data[SECTOR_SIZE];
+    uint16_t data[SECTOR_SIZE];
 
     if (i -> i_mode & IALLOC) {
         size = inode_getsize(i);
         if (size <= ADDR_SMALL_LENGTH*SECTOR_SIZE) {
             nbSector = file_sec_off;
-            if (nbSector > ADDR_SMALL_LENGTH) {
+            if (nbSector >= ADDR_SMALL_LENGTH) {
                 return ERR_OFFSET_OUT_OF_RANGE;
             } else {
                 return (i -> i_addr[nbSector]);
@@ -143,7 +143,7 @@ int inode_findsector(const struct unix_filesystem *u, const struct inode *i, int
             } else {
                 err = sector_read(u->f, i->i_addr[adNbSector], data);
                 if (!err) {
-                    return (data[2*nbSector+1]<<8)+data[2*nbSector];
+                    return data[nbSector];
                 } else {
                     return err;
                 }

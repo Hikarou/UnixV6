@@ -140,7 +140,6 @@ int direntv6_print_tree(const struct unix_filesystem *u, uint16_t inr, const cha
             }
         }
 
-
     } while (err>0);
 
     return err;

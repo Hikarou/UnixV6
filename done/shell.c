@@ -419,9 +419,7 @@ int do_mkfs(char** args)
     }
     err = mountv6_mkfs(args[1],  num_blocks,  num_inodes);
     if (err) {
-        printf("ERROR FS: ");
-        puts(ERR_MESSAGES[err - ERR_FIRST]);
-        return ERR_FS;
+        return err;
     }
 
     return ERR_OK;
@@ -437,9 +435,7 @@ int do_mkdir(char** args)
 
     err = direntv6_create(&u, args[1], IALLOC | IFDIR);
     if (err) {
-        printf("ERROR FS: ");
-        puts(ERR_MESSAGES[err - ERR_FIRST]);
-        return ERR_FS;
+        return err;
     }
     return ERR_OK;
 }
@@ -471,10 +467,7 @@ int do_add(char** args)
     data = calloc(sizeof(char), taille_fichier);
     if (data == NULL) {
         fclose(source);
-        err = ERR_NOMEM;
-        printf("ERROR FS: ");
-        puts(ERR_MESSAGES[err - ERR_FIRST]);
-        return ERR_FS;
+        return ERR_NOMEM;
     }
 
     while (!feof(source)) {
@@ -488,27 +481,21 @@ int do_add(char** args)
     err = direntv6_create(&u, args[2], IALLOC);
     if (err) {
         free(data);
-        printf("ERROR FS: ");
-        puts(ERR_MESSAGES[err - ERR_FIRST]);
-        return ERR_FS;
+        return err;
     }
 
     // trouver l'inode
     fv6.i_number = direntv6_dirlookup(&u, ROOT_INUMBER, args[2]);
     if (fv6.i_number < 0) {
         free(data);
-        printf("ERROR FS: ");
-        puts(ERR_MESSAGES[fv6.i_number - ERR_FIRST]);
-        return ERR_FS;
+        return fv6.i_number;
     }
 
     // ouvrir le fichier
     err = filev6_open(&u, fv6.i_number, &fv6);
     if (err) {
         free(data);
-        printf("ERROR FS: ");
-        puts(ERR_MESSAGES[err - ERR_FIRST]);
-        return ERR_FS;
+        return err;
     }
 
 
@@ -517,9 +504,7 @@ int do_add(char** args)
 
     free(data);
     if (err) {
-        printf("ERROR FS: ");
-        puts(ERR_MESSAGES[err - ERR_FIRST]);
-        return ERR_FS;
+        return err;
     }
 
     return ERR_OK;
