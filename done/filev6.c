@@ -154,7 +154,8 @@ int filev6_create(struct unix_filesystem *u, uint16_t mode, struct filev6 *fv6)
 }
 
 /**
- * @brief write the len bytes of the given buffer on disk to the given filev6
+ * @brief write the len bytes of the given buffer on disk to the given filev6.
+ * 		  this function choose between 3 functions if the file is big or small
  * @param u the filesystem (IN)
  * @param fv6 the filev6 (IN)
  * @param buf the data we want to write (IN)
@@ -469,7 +470,7 @@ int write_small_file(struct unix_filesystem *u, struct filev6 *fv6, const void *
 
 /**
  * @brief write a most on sector given by sector_number. If it writes a new sector,
- * the number changes
+ * the sector_number changes. If not, the sector number is set to zero.
  * @param u the filesystem (IN)
  * @param fv6 the filev6 (IN)
  * @param buf the data we want to write (IN)
