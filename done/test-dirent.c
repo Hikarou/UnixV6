@@ -13,8 +13,8 @@ int test(struct unix_filesystem *u)
 
     char chaine[MAXPATHLEN_UV6]= "";
 
-        err = direntv6_print_tree(u,ROOT_INUMBER,chaine);
-        printf("\n");
+    err = direntv6_print_tree(u,ROOT_INUMBER,chaine);
+    printf("\n");
 
     return err;
 }

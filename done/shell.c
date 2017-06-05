@@ -94,17 +94,17 @@ int main()
         size_parsed = 0;
         k = 0;
         err = 0;
-        
-        /* ici on crée un tableau de chaine de caractères: il est dynamique car sa taille 
+
+        /* ici on crée un tableau de chaine de caractères: il est dynamique car sa taille
          * peut changer dans la fonction tokenize_input. Il est vrai qu'on aurait pu faire
-         * un tableau statique de 3 éléments mais pour plusieurs fonctions, ce tableau ne 
+         * un tableau statique de 3 éléments mais pour plusieurs fonctions, ce tableau ne
          * serait que partiellement rempli.
          */
         parsed = calloc(NB_ARGS, sizeof(char*));
         if (parsed != NULL) {
             fgets(input, MAX_READ, stdin);
             int position_last_char = strlen(input) - 1;
-	    
+
             if (input[position_last_char] == '\n') {
                 input[position_last_char] = '\0';
             }
@@ -126,10 +126,10 @@ int main()
 
                         if ((shell_cmds[k]).argc == (size_t)size_parsed-1) {
                             err = function(parsed);
-                            if (err < 0){
-                            	printf("ERROR FS: ");
-     							puts(ERR_MESSAGES[err - ERR_FIRST]);
-     							err = ERR_FS;
+                            if (err < 0) {
+                                printf("ERROR FS: ");
+                                puts(ERR_MESSAGES[err - ERR_FIRST]);
+                                err = ERR_FS;
                             }
                         } else {
                             printf("ERROR SHELL: wrong number of arguements\n");
@@ -243,6 +243,7 @@ int do_help()
 
 int do_mount(char** args)
 {
+
     int err = 0;
     if (u.f != NULL) {
         err = umountv6(&u);
@@ -378,7 +379,7 @@ int do_inode (char** args)
 int do_istat(char** args)
 {
     int err = 0;
-   
+
     struct inode i;
 
     if (u.f == NULL) {

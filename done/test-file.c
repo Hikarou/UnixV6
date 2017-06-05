@@ -29,7 +29,7 @@ void printTheInode(const struct unix_filesystem *u, uint16_t inr, struct filev6 
             uint8_t table[SECTOR_SIZE+1];
             printf("The first sector of data of which contains:\n");
             error = filev6_readblock(f, table);
-	    if (error < 0) return;
+            if (error < 0) return;
             table[SECTOR_SIZE] = '\0';
             printf("%s\n", table);
         }
@@ -63,12 +63,12 @@ int test(struct unix_filesystem *u)
     struct inode inode_data[INODES_PER_SECTOR];
     for (uint32_t i = 0; i < u -> s.s_isize; ++i) {
         err = sector_read(u -> f, u -> s.s_inode_start + i, inode_data);
-	if (!err) {
+        if (!err) {
             for (uint16_t k = 0; k < INODES_PER_SECTOR; ++k) {
                 print_sha_inode(u, inode_data[k], count);
-		++count;
-	    }
-	}
+                ++count;
+            }
+        }
     }
     if (err == ERR_UNALLOCATED_INODE && count > 1) {
         /* puisque le signal d'arrêt est une errur, on remet à zéro si il a bien

@@ -372,7 +372,7 @@ int write_change(struct unix_filesystem *u, struct filev6 *fv6)
     M_REQUIRE_NON_NULL(u);
 
     int nb_addr_used = inode_getsize(&(fv6 -> i_node))/SECTOR_SIZE;
-    
+
     struct inode inode_new = fv6 -> i_node;
 
     // initialisation du secteur

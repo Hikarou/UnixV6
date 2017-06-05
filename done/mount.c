@@ -197,7 +197,7 @@ int umountv6(struct unix_filesystem *u)
     free(u -> ibm);
     free(u -> fbm);
 
-    if(!fclose(u -> f)) {
+    if(fclose(u -> f) != 0) {
         return ERR_IO;
     }
 
@@ -264,14 +264,14 @@ int mountv6_mkfs(const char *filename, uint16_t num_blocks, uint16_t num_inodes)
     // écrire inode_root
     struct inode sect_inode[INODES_PER_SECTOR];
     memset(sect_inode, 0, INODES_PER_SECTOR*sizeof(struct inode));
-    
+
     struct inode inode;
     memset(&inode, 0, sizeof(struct inode));
     inode.i_mode = IALLOC | IFDIR;
     inode.i_addr[0] = s.s_block_start;
 
-	sect_inode[ROOT_INUMBER] = inode;
- 
+    sect_inode[ROOT_INUMBER] = inode;
+
 
     err = sector_write(fichier, s.s_inode_start, sect_inode);
     if (err) {

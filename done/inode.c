@@ -45,7 +45,7 @@ int inode_scan_print(const struct unix_filesystem *u)
             }
         } else {
             fprintf(output,"\n");
-    		return err;
+            return err;
         }
     }
     fprintf(output,"\n");

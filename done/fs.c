@@ -24,7 +24,7 @@ struct unix_filesystem fs;
 
 static int fs_getattr(const char *path, struct stat *stbuf)
 {
-	int err = 0;
+    int err = 0;
     if (fs.f == NULL) {
         exit(1);
     }
@@ -33,9 +33,9 @@ static int fs_getattr(const char *path, struct stat *stbuf)
     if (inode_nb < 0) {
         return inode_nb;
     }
-    
+
     struct filev6 file;
-    
+
     err = filev6_open(&fs, (uint16_t) inode_nb, &file);
     if (err < 0) {
         return err;
@@ -69,18 +69,18 @@ static int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 {
     (void) offset;
     (void) fi;
-	
+
     filler(buf, ".", NULL, 0);
     filler(buf, "..", NULL, 0);
-	
-	struct directory_reader d;
+
+    struct directory_reader d;
     int err = direntv6_dirlookup(&fs, ROOT_INUMBER, path);
     if (err < 0) {
         return err;
     }
     uint16_t inode_nb = (uint16_t) err;
-	
-	err = direntv6_opendir(&fs, inode_nb, &d);    
+
+    err = direntv6_opendir(&fs, inode_nb, &d);
 
     if (err < 0) return err;
 
@@ -101,9 +101,9 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset,
     (void) fi;
     char *ptr = buf;
     char buf2[SECTOR_SIZE];
-	memset(buf2, 0, SECTOR_SIZE);
+    memset(buf2, 0, SECTOR_SIZE);
 
-	struct filev6 file;
+    struct filev6 file;
 
     // ouvrir le fichier
     int err = direntv6_dirlookup(&fs, ROOT_INUMBER, path);
@@ -145,7 +145,7 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset,
             memcpy(buf, buf2+k, size);
             nb_lu = size;
         }
-      
+
     } else {
         do {
             err = filev6_readblock(&file, ptr);
