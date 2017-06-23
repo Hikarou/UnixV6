@@ -23,7 +23,7 @@
     - print_sha_inode: 4          # max 5
 - direntv6.c:
     - direntv6_opendir: 2.5      # max 2.5
-    - direntv6_readdir: 3      # max 5
+    - direntv6_readdir: 5      # max 5
     - direntv6_print_tree: 4   # max 5
     - dirlookup: 10             # max 10
 - shell.c:
