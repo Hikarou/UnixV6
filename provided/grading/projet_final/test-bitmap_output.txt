@@ -1,0 +1,18 @@
+STDOUT
+TEST_BEGIN
+bitmap_test_alloc_min_gt_max: PASS
+bitmap_test_alloc_min_eq_max: PASS
+bitmap_test_find_next_min_eq_max: PASS
+bitmap_test_get_min_eq_max: PASS
+bitmap_test_set_get_min_eq_max: PASS
+bitmap_test_set_get_clear_min_eq_max: PASS
+bitmap_test_standard_case: PASS
+bitmap_test_holes_find_next: PASS
+bitmap_test_set_out_of_range: PASS
+bitmap_test_get_out_of_range: PASS
+bitmap_test_find_next_empty: PASS
+bitmap_test_clear_ok: PASS
+TEST_END
+
+-----------
+STDERR

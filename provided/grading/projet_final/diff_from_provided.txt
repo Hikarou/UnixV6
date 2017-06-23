@@ -1,0 +1,120 @@
+unixv6fs.h:
+19d18
+<  * @author original UNIX v6 team + Mendel Rosenblum (Stanford) + Edouard Bugnion
+202,204c201,210
+<     /* TODO WEEK 04:
+<      * la première chose à faire est de définir cette structure.
+<      */
+---
+>     uint16_t i_mode;
+>     uint8_t i_nlink;
+>     uint8_t i_uid;
+>     uint8_t i_gid;
+>     uint8_t i_size0;
+>     uint16_t i_size1;
+>     uint16_t i_addr[ADDR_SMALL_LENGTH];
+>     uint16_t atime[2];
+>     uint16_t mtime[2];
+> 
+239c246
+<     uint16_t d_inumber;
+---
+>     uint16_t d_inumber;               //Contains the number of correponding inode
+
+
+mount.h:
+7d6
+<  * @author Edouard Bugnion
+25a25,37
+> 
+> /**
+>  * @brief  fill the vector bitmap of the inodes 
+>  * u - the mounted filesystem
+>  */
+> void fill_ibm(struct unix_filesystem * u);
+> 
+> /**
+>  * @brief  fill the vector bitmap of the sectors 
+>  * u - the mounted filesystem
+>  */
+> void fill_fbm(struct unix_filesystem * u);
+> 
+46a59,61
+> /*
+>  * staff only; students will not have to implement
+>  */
+
+
+error.h:
+7d6
+<  * @author Edouard Bugnion
+37a37
+>     ERR_NO_PLACE,
+
+
+inode.h:
+7d6
+<  * @author Edouard Bugnion
+
+
+sha.h:
+7d6
+<  * @author Aurélien Soccard
+10a10
+> #include <openssl/sha.h>
+
+
+test-core.c:
+5d4
+<  * @author Aurélien Soccard & Jean-Cédric Chappelier
+
+
+filev6.h:
+7d6
+<  * @author Edouard Bugnion
+54c53
+<  * @param mode the mode of the file
+---
+>  * @param mode the new offset of the file
+
+
+sector.h:
+7d6
+<  * @author Edouard Bugnion
+
+
+error.c:
+20c20,21
+<     "not enough sectors for inodes"
+---
+>     "not enough sectors for inodes",
+>     "impossible to find next free sectors or inode"
+
+
+direntv6.h:
+7d6
+<  * @author Edouard Bugnion
+21,24c20,23
+<     /* TODO WEEK 06:
+<      * définir cette structure.
+<      */
+<     int unused; // so that it can compile before WEEK 6
+---
+>     struct filev6 fv6;
+>     struct direntv6 dirs[DIRENTRIES_PER_SECTOR];
+>     int cur ;
+>     int last;
+
+
+bmblock.h:
+7d6
+<  * @author Edouard Bugnion
+19c18,22
+<     int unused; // so that it can compile before WEEK 9
+---
+>    size_t length;
+>    uint64_t cursor;
+>    uint64_t min;
+>    uint64_t max;
+>    uint64_t bm[1];
+

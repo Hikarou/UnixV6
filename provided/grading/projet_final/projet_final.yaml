@@ -1,0 +1,79 @@
+- id: jfp-mf
+- nb tests passes: 38 
+- Makefile: 3                            # max 3
+- unixv6fs.h, struct inode: 2.25            # max 2.25
+- direntv6.h, struct directory_reader: 1  # max 1
+- bmblock.h, struct bmblock_array: 1      # max 1
+- bmblock.c:
+    - bm_alloc: 4             # max 5
+    - bm_get: 2.5              # max 2.5
+    - bm_set: 2.5              # max 2.5
+    - bm_clear: 2.5            # max 2.5
+    - bm_print: 2.5             # max 2.5
+    - bm_find_next: 5         # max 5
+- sector.c:
+    - sector_read: 2.5               # max 2.5
+    - sector_write: 2.5             # max 2.5
+- mount.c:
+    - mountv6: 7.5                   # max 7.5
+    - mountv6_print_superblock: 2.5  # max 2.5
+    - umountv6: 3                  # max 3
+    - fill_fbm: 5                  # max 5
+    - fill_ibm: 2.5                  # max 2.5
+    - mountv6_mkfs: 7              # max 10
+- inode.c:
+    - inode_scan_print: 5   # max 5
+    - inode_print: 2.5       # max 2.5
+    - inode_read: 5         # max 5
+    - inode_findsector: 10   # max 10
+    - inode_alloc: 2.5       # max 2.5
+    - inode_write: 5       # max 5
+    - inode_setsize: 2.5      # max 2.5
+- filev6.c:
+    - filev6_open: 2.5           # max 2.5
+    - filev6_readblock: 5      # max 5
+    - filev6_lseek: 2.5          # max 2.5
+    - filev6_create: 2.5         # max 2.5
+    - filev6_writebytes: 4    # max 5
+    - filev6_writesector, base: 15            # max 15
+    - filev6_writesector, gros fichiers: 15    # max 15
+- sha.c:
+    - sha_to_string: 2.5           # max 2.5
+    - print_sha_from_content: 2.5   # max 2.5
+    - print_sha_inode: 4          # max 5
+- direntv6.c:
+    - direntv6_opendir: 2.5      # max 2.5
+    - direntv6_readdir: 5      # max 5
+    - direntv6_print_tree: 5  # max 5
+    - dirlookup: 10            # max 10
+    - direntv6_create: 11      # max 15 | pas de modularisation, slash mal gérés
+- shell.c:
+    - structs/types (hors erreurs): 6     # max 6
+    - tokenisation: 5                    # max 5
+    - gestion générique des commandes: 5  # max 5
+    - commande help: 2.5                    # max 2.5
+    - commande exit/quit: 2.5               # max 2.5
+    - commande mount: 2                   # max 2
+    - commande lsall: 2.5                  # max 2.5
+    - commande cat: 5                     # max 5
+    - commande istat: 2.5                  # max 2.5
+    - commande inode: 2.5                  # max 2.5
+    - commande sha: 2.5                     # max 2.5
+    - commande psb: 2.5                    # max 2.5
+    - commande mkfs: 2                   # max 2
+    - commande mkdir: 2.5                   # max 2.5
+    - commande add: 9                     # max 10
+    - mécanisme degestion des erreurs: 2.5 # max 2.5
+    - main(): 5                          # max 5
+- fs.c:
+    - fs_getattr: 5    # max 5
+    - fs_readdir: 5   # max 5
+    - fs_read: 5       # max 5
+    - arg_parse: 2.5    # max 2.5
+    - main(): 2.5        # max 2.5
+- test-dirent.c: 2.5  # max 2.5
+- test-file.c: 5     # max 5
+- test-inodes.c: 2.5  # max 2.5
+- test-bitmap.c: 2.5  # max 2.5
+- style: 2       # max 2
+- bonus/malus: 0 # max 5 | +1 par rapport au rendu précédent pour modularisation dans filev6.c
